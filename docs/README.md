@@ -42,7 +42,7 @@ Contributions to the `jupyterhub-cost-monitoring` project are welcome! Please fo
 2. Create a feature branch.
 3. Submit a pull request.
 
-Please refer to [`CONTRIUBUTING.md`](CONTRIBUTING.md) for more details.
+Please refer to [`CONTRIBUTING.md`](CONTRIBUTING.md) for more details.
 
 ## License
 
