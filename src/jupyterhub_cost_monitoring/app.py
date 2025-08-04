@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, timedelta, timezone
 
-from flask import Flask, request, url_for, render_template_string
+from flask import Flask, render_template_string, request, url_for
 
 from .query_cost_aws import (
     query_hub_names,
@@ -54,24 +54,28 @@ def _parse_from_to_in_query_params():
 
     return from_date, to_date
 
+
 @app.route("/")
 def index():
     links = []
     for rule in app.url_map.iter_rules():
         # Skip static routes and those requiring parameters
-        if rule.endpoint != 'static' and len(rule.arguments) == 0:
+        if rule.endpoint != "static" and len(rule.arguments) == 0:
             url = url_for(rule.endpoint)
             links.append((rule.endpoint, url))
-    
+
     # Render links using a simple HTML template
-    return render_template_string('''
+    return render_template_string(
+        """
         <h1>Available Endpoints</h1>
         <ul>
         {% for endpoint, url in links %}
             <li><a href="{{ url }}">{{ endpoint }}</a></li>
         {% endfor %}
         </ul>
-    ''', links=links)
+    """,
+        links=links,
+    )
 
 
 @app.route("/health/ready")
