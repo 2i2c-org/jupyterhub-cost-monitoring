@@ -5,14 +5,14 @@ on:
   workflow_dispatch:
   push:
     paths-ignore:
-      - "docs/**"
-      - "**.md"
-      - ".github/workflows/*"
-      - "!.github/workflows/publish-helm-chart.yaml"
+    - docs/**
+    - '**.md'
+    - .github/workflows/*
+    - '!.github/workflows/publish-helm-chart.yaml'
     branches:
-      - "main"
+    - main
     tags:
-      - "**"
+    - '**'
 
 jobs:
   # Packages the Helm chart, and pushes it to 2i2c-org/jupyterhub-cost-monitoring@gh-pages.
@@ -26,34 +26,34 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
-        with:
+    - uses: actions/checkout@v4
+      with:
           # chartpress needs git history
-          fetch-depth: 0
+        fetch-depth: 0
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: 3.x
 
-      - name: Login to Quay.io
-        uses: docker/login-action@v3
-        with:
-          registry: quay.io
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_PASSWORD }}
+    - name: Login to Quay.io
+      uses: docker/login-action@v3
+      with:
+        registry: quay.io
+        username: ${{ secrets.QUAY_USERNAME }}
+        password: ${{ secrets.QUAY_PASSWORD }}
 
-      - name: Configure a git user
-        run: |
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "github-actions"
+    - name: Configure a git user
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "github-actions"
 
-      - name: Install dependencies
-        run: |
-          pip install -r dev-requirements.txt
-          pip list
-          helm version
+    - name: Install dependencies
+      run: |
+        pip install -r dev-requirements.txt
+        pip list
+        helm version
 
-      - name: Run chartpress
-        run: chartpress --push --publish-chart
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Run chartpress
+      run: chartpress --push --publish-chart
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

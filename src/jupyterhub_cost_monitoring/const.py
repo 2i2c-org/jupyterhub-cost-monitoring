@@ -132,7 +132,7 @@ FILTER_HOME_STORAGE_COSTS = {
             },
         },
         # node-purpose flag is set on k8s nodes.
-        # we can use it to filter out root EBS volumes attched to nodes that are not
+        # we can use it to filter out root EBS volumes attached to nodes that are not
         # used for home directory storage.
         {
             "Tags": {

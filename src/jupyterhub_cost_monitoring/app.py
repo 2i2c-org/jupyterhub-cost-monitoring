@@ -1,15 +1,14 @@
-import logging
 from datetime import datetime, timedelta, timezone
 
-from flask import Flask, request, url_for, render_template_string
+from flask import Flask, render_template_string, request, url_for
 
+from .logs import get_logger
 from .query_cost_aws import (
     query_hub_names,
     query_total_costs,
     query_total_costs_per_component,
     query_total_costs_per_hub,
 )
-from .logs import get_logger
 
 app = Flask(__name__)
 logger = get_logger(__name__)

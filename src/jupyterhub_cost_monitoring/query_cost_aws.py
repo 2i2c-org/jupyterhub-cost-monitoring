@@ -3,7 +3,6 @@ Queries to AWS Cost Explorer to get different kinds of cost data.
 """
 
 import functools
-import logging
 from pprint import pformat
 
 import boto3

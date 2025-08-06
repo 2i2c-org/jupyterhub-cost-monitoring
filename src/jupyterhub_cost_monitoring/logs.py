@@ -1,7 +1,6 @@
 import logging
 import os
 
-
 # Set up logging configuration
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
