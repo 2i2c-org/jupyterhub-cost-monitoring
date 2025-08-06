@@ -8,6 +8,7 @@ from .query_cost_aws import (
     query_total_costs,
     query_total_costs_per_component,
     query_total_costs_per_hub,
+    query_total_storage_costs_per_user,
 )
 
 app = Flask(__name__)
@@ -110,3 +111,45 @@ def total_costs_per_component():
     hub_name = request.args.get("hub")
 
     return query_total_costs_per_component(from_date, to_date, hub_name)
+
+
+@app.route("/storage-costs-per-user")
+def storage_costs_per_user():
+    from_date, to_date = _parse_from_to_in_query_params()
+    hub_name = request.args.get("hub")
+
+    # # Get total storage costs from AWS
+    # home_storage_costs = query_total_costs_per_component(from_date, to_date, hub_name)
+    # storage_costs_by_date = {}
+    # for entry in home_storage_costs:
+    #     if entry["name"] == "home storage":
+    #         storage_costs_by_date[entry["date"]] = float(entry["cost"])
+
+    # Get per-user storage costs
+    per_user_storage_costs = query_total_storage_costs_per_user(
+        from_date, to_date, hub_name
+    )
+
+    # logger.info("\nStorage cost validation (per day):")
+    # logger.info("-" * 60)
+    # for date in sorted(storage_costs_by_date.keys()):
+    #     total_aws_cost = storage_costs_by_date[date]
+
+    #     # Calculate sum of per-user costs for this date
+    #     per_user_sum = 0.0
+    #     if date in per_user_storage_costs:
+    #         per_user_sum = sum(per_user_storage_costs[date].values())
+
+    #     logger.info(f"Date: {date}")
+    #     logger.info(f"  AWS Total Storage Cost: ${total_aws_cost:.2f}")
+    #     logger.info(f"  Sum of Per-User Costs:  ${per_user_sum:.2f}")
+    #     logger.info(
+    #         f"  Difference:             ${abs(total_aws_cost - per_user_sum):.2f}"
+    #     )
+
+    #     if abs(total_aws_cost - per_user_sum) > 0.01:  # Allow for small rounding errors
+    #         logger.info(f"  ⚠️  WARNING: Costs don't match!")
+    #     else:
+    #         logger.info(f"  ✅ Costs match")
+
+    return per_user_storage_costs

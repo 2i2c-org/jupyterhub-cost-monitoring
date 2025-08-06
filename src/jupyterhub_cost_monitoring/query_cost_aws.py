@@ -3,6 +3,7 @@ Queries to AWS Cost Explorer to get different kinds of cost data.
 """
 
 import functools
+from datetime import datetime
 from pprint import pformat
 
 import boto3
@@ -19,6 +20,7 @@ from .const import (
     SERVICE_COMPONENT_MAP,
 )
 from .logs import get_logger
+from .prometheus_client import query_user_usage_share
 
 logger = get_logger(__name__)
 aws_ce_client = boto3.client("ce")
@@ -485,3 +487,46 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None):
             final_response.append(entry)
 
     return final_response
+
+
+def query_total_storage_costs_per_user(from_date, to_date, hub: str = None):
+    """
+    Query total storage costs per user by combining AWS storage costs with Prometheus usage data.
+
+    Args:
+        from_date: Start date for the query (YYYY-MM-DD format)
+        to_date: End date for the query (YYYY-MM-DD format)
+        hub: The hub namespace to query (optional, if None queries all hubs)
+
+    Returns:
+        Dict mapping date to dict of user (username) to their storage cost
+    """
+    # Get home storage costs from AWS for this hub
+    home_storage_costs = query_total_costs_per_component(from_date, to_date, hub)
+
+    # Filter to only home storage costs
+    storage_costs_by_date = {}
+    for entry in home_storage_costs:
+        if entry["name"] == "home storage":
+            storage_costs_by_date[entry["date"]] = float(entry["cost"])
+
+    # Convert dates to Unix timestamps for Prometheus query
+    start_dt = datetime.strptime(from_date, "%Y-%m-%d")
+    end_dt = datetime.strptime(to_date, "%Y-%m-%d")
+    prometheus_from = str(int(start_dt.timestamp()))
+    prometheus_to = str(int(end_dt.timestamp()))
+
+    # Get user usage percentages from Prometheus
+    usage_shares = query_user_usage_share(prometheus_from, prometheus_to, hub)
+
+    # Calculate per-user costs by weighting total cost with usage percentages
+    result = {}
+    for date, users in usage_shares.items():
+        total_storage_cost = storage_costs_by_date.get(date, 0.0)
+        result[date] = {}
+
+        for user, usage_share in users.items():
+            user_cost = total_storage_cost * usage_share
+            result[date][user] = round(user_cost, 4)
+
+    return result
