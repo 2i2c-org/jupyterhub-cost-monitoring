@@ -4,12 +4,14 @@ Queries to AWS Cost Explorer to get different kinds of cost data.
 
 import functools
 import logging
+from pprint import pformat
 
 import boto3
 
 from .cache import ttl_lru_cache
 from .const import (
     FILTER_ATTRIBUTABLE_COSTS,
+    FILTER_HOME_STORAGE_COSTS,
     FILTER_USAGE_COSTS,
     GRANULARITY_DAILY,
     GROUP_BY_HUB_TAG,
@@ -17,8 +19,9 @@ from .const import (
     METRICS_UNBLENDED_COST,
     SERVICE_COMPONENT_MAP,
 )
+from .logs import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 aws_ce_client = boto3.client("ce")
 
 
@@ -371,6 +374,25 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None):
     #     },
     # ]
     #
+
+    # EC2 - Other is a service that can include costs for EBS volumes and snapshots
+    # By default, these costs are mapped to the compute component, but
+    # a part of the costs from EBS volumes and snapshots can be attributed to "home storage" too
+    # so we need to query those costs separately and adjust the compute costs
+
+    filter["And"].append(FILTER_HOME_STORAGE_COSTS)
+
+    home_storage_ebs_cost_response = query_aws_cost_explorer(
+        metrics=[METRICS_UNBLENDED_COST],
+        granularity=GRANULARITY_DAILY,
+        from_date=from_date,
+        to_date=to_date,
+        filter=filter,
+        group_by=[GROUP_BY_SERVICE_DIMENSION],
+    )
+
+    logger.debug(pformat(home_storage_ebs_cost_response))
+
     # processed_response is a list with entries looking like this...
     #
     # [
@@ -402,4 +424,65 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None):
             ]
         )
 
-    return processed_response
+    # Create index for faster lookups by date and component name
+    entries_by_date = {}
+    for entry in processed_response:
+        date = entry["date"]
+        if date not in entries_by_date:
+            entries_by_date[date] = {}
+        entries_by_date[date][entry["name"]] = entry
+
+    # Process home storage costs and adjust compute costs accordingly
+    for home_e in home_storage_ebs_cost_response["ResultsByTime"]:
+        date = home_e["TimePeriod"]["Start"]
+
+        # Calculate total home storage cost for this date
+        home_storage_cost = 0.0
+        for g in home_e["Groups"]:
+            if g["Keys"][0] == "EC2 - Other":
+                home_storage_cost += float(g["Metrics"]["UnblendedCost"]["Amount"])
+
+        if home_storage_cost > 0:
+            date_entries = entries_by_date.get(date, {})
+
+            # Subtract from compute component (EC2 - Other maps to compute)
+            compute_entry = date_entries.get("compute")
+            if compute_entry:
+                current_compute_cost = float(compute_entry["cost"])
+                new_compute_cost = max(0.0, current_compute_cost - home_storage_cost)
+                compute_entry["cost"] = f"{new_compute_cost:.2f}"
+                logger.debug(
+                    f"Adjusted compute cost for {date}: {current_compute_cost:.2f} -> {new_compute_cost:.2f}"
+                )
+
+            # Add to home storage component
+            home_storage_entry = date_entries.get("home storage")
+            if home_storage_entry:
+                current_home_storage_cost = float(home_storage_entry["cost"])
+                new_home_storage_cost = current_home_storage_cost + home_storage_cost
+                home_storage_entry["cost"] = f"{new_home_storage_cost:.2f}"
+                logger.debug(
+                    f"Updated home storage cost for {date}: {current_home_storage_cost:.2f} -> {new_home_storage_cost:.2f}"
+                )
+            else:
+                # Create new home storage entry if it doesn't exist
+                new_entry = {
+                    "date": date,
+                    "cost": f"{home_storage_cost:.2f}",
+                    "name": "home storage",
+                }
+                # Update index
+                if date not in entries_by_date:
+                    entries_by_date[date] = {}
+                entries_by_date[date]["home storage"] = new_entry
+                logger.debug(
+                    f"Added new home storage entry for {date}: {home_storage_cost:.2f}"
+                )
+
+    # Generate final response from index, sorted by date
+    final_response = []
+    for date in sorted(entries_by_date.keys()):
+        for _, entry in entries_by_date[date].items():
+            final_response.append(entry)
+
+    return final_response

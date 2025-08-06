@@ -10,7 +10,7 @@ CLUSTER_NAME = os.environ["CLUSTER_NAME"]
 
 SERVICE_COMPONENT_MAP = {
     "AWS Backup": "backup",
-    "EC2 - Other": "compute",
+    "EC2 - Other": "compute",  # Note: this can include EBS volumes and snapshots used for home storage as well
     "Amazon Elastic Compute Cloud - Compute": "compute",
     "Amazon Elastic Container Service for Kubernetes": "fixed",
     "Amazon Elastic File System": "home storage",
@@ -105,4 +105,58 @@ GROUP_BY_HUB_TAG = {
 GROUP_BY_SERVICE_DIMENSION = {
     "Type": "DIMENSION",
     "Key": "SERVICE",
+}
+
+FILTER_HOME_STORAGE_COSTS = {
+    "And": [
+        {
+            "Dimensions": {
+                "Key": "SERVICE",
+                "Values": ["EC2 - Other"],
+                "MatchOptions": ["EQUALS"],
+            },
+        },
+        {
+            "Tags": {
+                "Key": "2i2c.org/cluster-name",
+                "Values": [CLUSTER_NAME],
+                "MatchOptions": ["EQUALS"],
+            },
+        },
+        {
+            "Not": {
+                "Tags": {
+                    "Key": "2i2c:hub-name",
+                    "MatchOptions": ["ABSENT"],
+                },
+            },
+        },
+        # node-purpose flag is set on k8s nodes.
+        # we can use it to filter out root EBS volumes attched to nodes that are not
+        # used for home directory storage.
+        {
+            "Tags": {
+                "Key": "2i2c:node-purpose",
+                "MatchOptions": ["ABSENT"],
+            },
+        },
+        {
+            "Dimensions": {
+                "Key": "RECORD_TYPE",
+                "Values": ["Usage"],
+                "MatchOptions": ["EQUALS"],
+            },
+        },
+        {
+            "Dimensions": {
+                "Key": "USAGE_TYPE_GROUP",
+                "Values": [
+                    "EC2: EBS - Snapshots",
+                    "EC2: EBS - SSD(gp2)",
+                    "EC2: EBS - SSD(gp3)",
+                ],
+                "MatchOptions": ["EQUALS"],
+            },
+        },
+    ]
 }

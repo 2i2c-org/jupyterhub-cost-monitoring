@@ -38,7 +38,7 @@ This project uses the Python package manager `uv`. Below are the steps to set up
 
    ```bash
    cd src/jupyterhub_cost_monitoring
-   flask run --port=8080
+   flask run --port=8080 --reload
    ```
 
 1. Visit [http://127.0.0.1:8080](http://127.0.0.1:8080) to view the application.
