@@ -7,6 +7,8 @@ requires-python = ">=3.12"
 dependencies = [
     "boto3>=1.39.12",
     "flask>=3.1.1",
+    "requests>=2.32.4",
+    "yarl>=1.20.1",
 ]
 
 [dependency-groups]
@@ -14,3 +16,6 @@ dev = [
     "mystmd>=1.6.0",
     "ruff>=0.12.5",
 ]
+
+[tool.isort]
+profile = "black"

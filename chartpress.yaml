@@ -10,18 +10,18 @@
 #
 
 charts:
-  - name: jupyterhub-cost-monitoring
-    chartPath: helm/jupyterhub-cost-monitoring
-    imagePrefix: quay.io/2i2c/
+- name: jupyterhub-cost-monitoring
+  chartPath: helm/jupyterhub-cost-monitoring
+  imagePrefix: quay.io/2i2c/
     # Set dev version by taking latest tag and incrementing patch
-    baseVersion: patch
+  baseVersion: patch
 
-    repo:
-      git: 2i2c-org/jupyterhub-cost-monitoring
-      published: https://2i2c.org/jupyterhub-cost-monitoring/
+  repo:
+    git: 2i2c-org/jupyterhub-cost-monitoring
+    published: https://2i2c.org/jupyterhub-cost-monitoring/
 
-    images:
-      jupyterhub-cost-monitoring:
-        dockerfilePath: Dockerfile
-        contextPath: .
-        valuesPath: image
+  images:
+    jupyterhub-cost-monitoring:
+      dockerfilePath: Dockerfile
+      contextPath: .
+      valuesPath: image
