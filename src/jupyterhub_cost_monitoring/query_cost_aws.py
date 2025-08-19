@@ -9,7 +9,7 @@ from pprint import pformat
 import boto3
 
 from .cache import ttl_lru_cache
-from .const import (
+from .const_cost_aws import (
     FILTER_ATTRIBUTABLE_COSTS,
     FILTER_HOME_STORAGE_COSTS,
     FILTER_USAGE_COSTS,
@@ -274,13 +274,16 @@ def query_total_costs_per_hub(from_date, to_date):
 
 
 @ttl_lru_cache(seconds_to_live=3600)
-def query_total_costs_per_component(from_date, to_date, hub_name=None):
+def query_total_costs_per_component(from_date, to_date, hub_name=None, component=None):
     """
     A query with processing of the response tailored to report total costs per
     component - a grouping of services.
 
     If a hub_name is specified, component costs are filtered to only consider
     costs directly attributable to the hub name.
+
+    If a component is specified, the response is filtered to only include that
+    component only.
     """
     filter = {
         "And": [
@@ -410,18 +413,19 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None):
         component_costs = {}
         for g in e["Groups"]:
             service_name = g["Keys"][0]
-            name = _get_component_name(service_name)
+            if not component:
+                component = _get_component_name(service_name)
             cost = float(g["Metrics"]["UnblendedCost"]["Amount"])
-            component_costs[name] = component_costs.get(name, 0.0) + cost
+            component_costs[component] = component_costs.get(component, 0.0) + cost
 
         processed_response.extend(
             [
                 {
                     "date": e["TimePeriod"]["Start"],
                     "cost": f"{cost:.2f}",
-                    "name": name,
+                    "component": component,
                 }
-                for name, cost in component_costs.items()
+                for component, cost in component_costs.items()
             ]
         )
 
