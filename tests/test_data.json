@@ -1,0 +1,170 @@
+[
+    {
+        "date": "2023-01-01",
+        "user": "user_0",
+        "hub": "staging",
+        "component": "compute",
+        "value": 4.0
+    },
+    {
+        "date": "2023-01-02",
+        "user": "user_0",
+        "hub": "staging",
+        "component": "compute",
+        "value": 2.0
+    },
+    {
+        "date": "2023-01-01",
+        "user": "user_1",
+        "hub": "staging",
+        "component": "compute",
+        "value": 0.0
+    },
+    {
+        "date": "2023-01-02",
+        "user": "user_1",
+        "hub": "staging",
+        "component": "compute",
+        "value": 4.0
+    },
+    {
+        "date": "2023-01-01",
+        "user": "user_2",
+        "hub": "staging",
+        "component": "compute",
+        "value": 8.0
+    },
+    {
+        "date": "2023-01-02",
+        "user": "user_2",
+        "hub": "staging",
+        "component": "compute",
+        "value": 2.0
+    },
+    {
+        "date": "2023-01-01",
+        "user": "user_0",
+        "hub": "staging",
+        "component": "home-directory",
+        "value": 3.0
+    },
+    {
+        "date": "2023-01-02",
+        "user": "user_0",
+        "hub": "staging",
+        "component": "home-directory",
+        "value": 4.0
+    },
+    {
+        "date": "2023-01-01",
+        "user": "user_1",
+        "hub": "staging",
+        "component": "home-directory",
+        "value": 2.0
+    },
+    {
+        "date": "2023-01-02",
+        "user": "user_1",
+        "hub": "staging",
+        "component": "home-directory",
+        "value": 2.0
+    },
+    {
+        "date": "2023-01-01",
+        "user": "user_2",
+        "hub": "staging",
+        "component": "home-directory",
+        "value": 9.0
+    },
+    {
+        "date": "2023-01-02",
+        "user": "user_2",
+        "hub": "staging",
+        "component": "home-directory",
+        "value": 7.0
+    },
+    {
+        "date": "2023-01-01",
+        "user": "user_0",
+        "hub": "prod",
+        "component": "compute",
+        "value": 9.0
+    },
+    {
+        "date": "2023-01-02",
+        "user": "user_0",
+        "hub": "prod",
+        "component": "compute",
+        "value": 5.0
+    },
+    {
+        "date": "2023-01-01",
+        "user": "user_1",
+        "hub": "prod",
+        "component": "compute",
+        "value": 3.0
+    },
+    {
+        "date": "2023-01-02",
+        "user": "user_1",
+        "hub": "prod",
+        "component": "compute",
+        "value": 3.0
+    },
+    {
+        "date": "2023-01-01",
+        "user": "user_2",
+        "hub": "prod",
+        "component": "compute",
+        "value": 7.0
+    },
+    {
+        "date": "2023-01-02",
+        "user": "user_2",
+        "hub": "prod",
+        "component": "compute",
+        "value": 1.0
+    },
+    {
+        "date": "2023-01-01",
+        "user": "user_0",
+        "hub": "prod",
+        "component": "home-directory",
+        "value": 8.0
+    },
+    {
+        "date": "2023-01-02",
+        "user": "user_0",
+        "hub": "prod",
+        "component": "home-directory",
+        "value": 5.0
+    },
+    {
+        "date": "2023-01-01",
+        "user": "user_1",
+        "hub": "prod",
+        "component": "home-directory",
+        "value": 6.0
+    },
+    {
+        "date": "2023-01-02",
+        "user": "user_1",
+        "hub": "prod",
+        "component": "home-directory",
+        "value": 4.0
+    },
+    {
+        "date": "2023-01-01",
+        "user": "user_2",
+        "hub": "prod",
+        "component": "home-directory",
+        "value": 6.0
+    },
+    {
+        "date": "2023-01-02",
+        "user": "user_2",
+        "hub": "prod",
+        "component": "home-directory",
+        "value": 1.0
+    }
+]
