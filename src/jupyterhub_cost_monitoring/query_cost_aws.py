@@ -414,7 +414,7 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None, component
                 component = _get_component_name(service_name)
             cost = float(g["Metrics"]["UnblendedCost"]["Amount"])
             component_costs[component] = component_costs.get(component, 0.0) + cost
-
+            component = None
         processed_response.extend(
             [
                 {

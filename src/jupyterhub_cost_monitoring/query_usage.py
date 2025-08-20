@@ -18,7 +18,9 @@ prometheus_url = os.environ.get(
 
 
 @ttl_lru_cache(seconds_to_live=3600)
-def query_prometheus(query: str, from_date: str, to_date: str) -> requests.Response:
+def query_prometheus(
+    query: str, from_date: str, to_date: str, step: str = TIME_RESOLUTION
+) -> requests.Response:
     """
     Query the Prometheus server with the given query.
     """
@@ -27,7 +29,7 @@ def query_prometheus(query: str, from_date: str, to_date: str) -> requests.Respo
         "query": query,
         "start": from_date,
         "end": to_date,
-        "step": TIME_RESOLUTION,
+        "step": step,
     }
     query_api = URL(prometheus_api.with_path("/api/v1/query_range"))
     response = requests.get(query_api, params=parameters)
