@@ -410,19 +410,26 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None, component
         component_costs = {}
         for g in e["Groups"]:
             service_name = g["Keys"][0]
-            if not component:
-                component = _get_component_name(service_name)
+            component_name = _get_component_name(service_name)
             cost = float(g["Metrics"]["UnblendedCost"]["Amount"])
-            component_costs[component] = component_costs.get(component, 0.0) + cost
-            component = None
+            component_costs[component_name] = (
+                component_costs.get(component_name, 0.0) + cost
+            )
+
+        # Filter to specific component if requested
+        if component:
+            component_costs = {
+                k: v for k, v in component_costs.items() if k == component
+            }
+
         processed_response.extend(
             [
                 {
                     "date": e["TimePeriod"]["Start"],
                     "cost": f"{cost:.2f}",
-                    "component": component,
+                    "component": component_name,
                 }
-                for component, cost in component_costs.items()
+                for component_name, cost in component_costs.items()
             ]
         )
 
@@ -512,10 +519,8 @@ def query_total_costs_per_user(
         List of dicts with keys: date, hub, component, user, value (cost in USD)
         Results are sorted by date, hub, component, then value (highest cost first)
     """
-    # Get home storage costs from AWS for this hub
     costs_per_component = query_total_costs_per_component(from_date, to_date, hub)
 
-    # Filter to only home storage costs
     costs_by_date = {}
     for entry in costs_per_component:
         costs_by_date.setdefault(entry["date"], {})[entry["component"]] = float(
