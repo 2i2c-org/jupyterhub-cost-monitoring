@@ -48,3 +48,31 @@ def generate_test_data(
                     }
     with open(f"test_data_{data_type}.json", "w") as f:
         json.dump(data, f, indent=4)
+
+
+def generate_test_output():
+    """
+    Generate test output based on the test usage and test cost data.
+    """
+    with open("test_data_usage.json") as f:
+        data_usage = json.load(f)
+
+    with open("test_data_cost.json") as f:
+        data_cost = json.load(f)
+
+    df_usage = pd.DataFrame(data_usage)
+    df_cost = pd.DataFrame(data_cost)
+
+    total_usage = df_usage.groupby(["date", "component", "hub"])["value"].transform(
+        "sum"
+    )
+
+    df_usage["cost_factor"] = df_usage["value"] / total_usage
+
+    merged = df_usage.merge(df_cost, on=["date", "component", "hub"], how="left")
+
+    merged["cost"] = merged["cost_factor"] * merged["value_y"]
+
+    df_usage["cost"] = merged["cost"]
+
+    df_usage.to_json("test_output.json", orient="records", indent=4)
