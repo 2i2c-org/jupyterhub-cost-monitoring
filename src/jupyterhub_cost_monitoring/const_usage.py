@@ -14,24 +14,14 @@ MEMORY_REQUESTS_PER_USER = """
             group_left(annotation_hub_jupyter_org_username) group(
                 kube_pod_annotations{namespace=~".*", annotation_hub_jupyter_org_username=~".*"}
             ) by (pod, namespace, annotation_hub_jupyter_org_username)
-        ) by (annotation_hub_jupyter_org_username, namespace)
-        /
-        ignoring (annotation_hub_jupyter_org_username) group_left 
-        sum(
-            kube_pod_container_resource_requests{resource="memory", namespace=~".*", pod=~"jupyter-.*"} * on (namespace, pod)
-            group_left(annotation_hub_jupyter_org_username) group(
-                kube_pod_annotations{namespace=~".*", annotation_hub_jupyter_org_username=~".*"}
-            ) by (pod, namespace, annotation_hub_jupyter_org_username)
-        ) by (namespace),
+        ) by (annotation_hub_jupyter_org_username, namespace),
         "username", "$1", "annotation_hub_jupyter_org_username", "(.*)"
     )
 """
 
 STORAGE_USAGE_PER_USER = """
     label_replace(
-        sum(dirsize_total_size_bytes{namespace=~".*"}) by (namespace, directory)
-        /
-        ignoring (directory) group_left sum(dirsize_total_size_bytes{namespace=~".*"}) by (namespace),
+        sum(dirsize_total_size_bytes{namespace=~".*"}) by (namespace, directory),
         "username", "$1", "directory", "(.*)"
     )
 """
