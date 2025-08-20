@@ -64,6 +64,7 @@ def _parse_from_to_in_query_params(api_provider: str = "prometheus" or "aws"):
         return from_date, to_date
 
 
+
 @app.route("/")
 def index():
     """
