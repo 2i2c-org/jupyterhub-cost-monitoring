@@ -3,8 +3,7 @@ Queries to AWS Cost Explorer to get different kinds of cost data.
 """
 
 import functools
-from datetime import datetime
-from pprint import pformat
+from datetime import datetime, timezone
 
 import boto3
 
@@ -20,7 +19,7 @@ from .const_cost_aws import (
     SERVICE_COMPONENT_MAP,
 )
 from .logs import get_logger
-from .prometheus_client import query_user_usage_share
+from .query_usage import query_usage
 
 logger = get_logger(__name__)
 aws_ce_client = boto3.client("ce")
@@ -395,8 +394,6 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None, component
         group_by=[GROUP_BY_SERVICE_DIMENSION],
     )
 
-    logger.debug(pformat(home_storage_ebs_cost_response))
-
     # processed_response is a list with entries looking like this...
     #
     # [
@@ -435,7 +432,7 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None, component
         date = entry["date"]
         if date not in entries_by_date:
             entries_by_date[date] = {}
-        entries_by_date[date][entry["name"]] = entry
+        entries_by_date[date][entry["component"]] = entry
 
     # Process home storage costs and adjust compute costs accordingly
     for home_e in home_storage_ebs_cost_response["ResultsByTime"]:
@@ -474,7 +471,7 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None, component
                 new_entry = {
                     "date": date,
                     "cost": f"{home_storage_cost:.2f}",
-                    "name": "home storage",
+                    "component": "home storage",
                 }
                 # Update index
                 if date not in entries_by_date:
@@ -493,44 +490,71 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None, component
     return final_response
 
 
-def query_total_storage_costs_per_user(from_date, to_date, hub: str = None):
+def query_total_costs_per_user(
+    from_date, to_date, hub: str = None, component: str = None, user: str = None
+):
     """
-    Query total storage costs per user by combining AWS storage costs with Prometheus usage data.
+    Query total costs per user by combining AWS costs with Prometheus usage data.
+
+    This function calculates individual user costs by:
+    1. Getting total AWS costs per component (compute, home storage) from Cost Explorer
+    2. Getting usage fractions per user from Prometheus metrics
+    3. Multiplying total costs by each user's usage fraction
 
     Args:
         from_date: Start date for the query (YYYY-MM-DD format)
         to_date: End date for the query (YYYY-MM-DD format)
         hub: The hub namespace to query (optional, if None queries all hubs)
+        component: The component to query (optional, if None queries all components)
+        user: The user to query (optional, if None queries all users)
 
     Returns:
-        Dict mapping date to dict of user (username) to their storage cost
+        List of dicts with keys: date, hub, component, user, value (cost in USD)
+        Results are sorted by date, hub, component, then value (highest cost first)
     """
     # Get home storage costs from AWS for this hub
-    home_storage_costs = query_total_costs_per_component(from_date, to_date, hub)
+    costs_per_component = query_total_costs_per_component(from_date, to_date, hub)
 
     # Filter to only home storage costs
-    storage_costs_by_date = {}
-    for entry in home_storage_costs:
-        if entry["name"] == "home storage":
-            storage_costs_by_date[entry["date"]] = float(entry["cost"])
+    costs_by_date = {}
+    for entry in costs_per_component:
+        costs_by_date.setdefault(entry["date"], {})[entry["component"]] = float(
+            entry["cost"]
+        )
 
     # Convert dates to Unix timestamps for Prometheus query
-    start_dt = datetime.strptime(from_date, "%Y-%m-%d")
-    end_dt = datetime.strptime(to_date, "%Y-%m-%d")
-    prometheus_from = str(int(start_dt.timestamp()))
-    prometheus_to = str(int(end_dt.timestamp()))
+    # Treat from_date and to_date as UTC midnight
+    # TODO: double check timezone handling
+    start_dt = datetime.strptime(from_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    end_dt = datetime.strptime(to_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    prometheus_from = str(
+        int(start_dt.replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
+    )
+    prometheus_to = str(
+        int(end_dt.replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
+    )
 
     # Get user usage percentages from Prometheus
-    usage_shares = query_user_usage_share(prometheus_from, prometheus_to, hub)
+    usage_shares = query_usage(
+        prometheus_from,
+        prometheus_to,
+        hub_name=hub,
+        component_name=component,
+        user_name=user,
+    )
 
-    # Calculate per-user costs by weighting total cost with usage percentages
-    result = {}
-    for date, users in usage_shares.items():
-        total_storage_cost = storage_costs_by_date.get(date, 0.0)
-        result[date] = {}
-
-        for user, usage_share in users.items():
-            user_cost = total_storage_cost * usage_share
-            result[date][user] = round(user_cost, 4)
-
-    return result
+    results = []
+    for entry in usage_shares:
+        date = entry["date"]
+        component = entry["component"]
+        usage_share = entry["value"]
+        if date in costs_by_date and component in costs_by_date[date]:
+            total_cost_for_component = costs_by_date[date][component]
+            entry["value"] = round(
+                usage_share * total_cost_for_component, 4
+            )  # Adjust usage share to cost
+            results.append(entry)
+    results.sort(
+        key=lambda x: (x["date"], x["hub"], x["component"], -float(x["value"]))
+    )
+    return results

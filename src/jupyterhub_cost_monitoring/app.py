@@ -8,7 +8,7 @@ from .query_cost_aws import (
     query_total_costs,
     query_total_costs_per_component,
     query_total_costs_per_hub,
-    query_total_storage_costs_per_user,
+    query_total_costs_per_user,
 )
 from .query_usage import query_usage
 
@@ -141,46 +141,46 @@ def total_costs_per_component():
     return query_total_costs_per_component(from_date, to_date, hub_name, component)
 
 
-@app.route("/storage-costs-per-user")
-def storage_costs_per_user():
-    from_date, to_date = _parse_from_to_in_query_params()
+@app.route("/costs-per-user")
+def costs_per_user():
+    """
+    Endpoint to query costs per user by combining AWS costs with Prometheus usage data.
+
+    This endpoint calculates individual user costs by:
+    1. Getting total AWS costs per component (compute, storage) from Cost Explorer
+    2. Getting usage fractions per user from Prometheus metrics
+    3. Multiplying total costs by each user's usage fraction
+
+    Query Parameters:
+        from (str): Start date in YYYY-MM-DD format (defaults to 30 days ago)
+        to (str): End date in YYYY-MM-DD format (defaults to current date)
+        hub (str, optional): Filter to specific hub namespace
+        component (str, optional): Filter to specific component (compute, home storage)
+        user (str, optional): Filter to specific user
+
+    Returns:
+        List of dicts with keys: date, hub, component, user, value (cost in USD)
+        Results are sorted by date, hub, component, then value (highest cost first)
+    """
+    from_date, to_date = _parse_from_to_in_query_params(api_provider="aws")
     hub_name = request.args.get("hub")
+    component = request.args.get("component")
+    user = request.args.get("user")
+    # Grafana will pass empty string to get data for all hubs,
+    # so we need to handle that case.
+    if not hub_name:
+        hub_name = None
+    if not component:
+        component = None
+    if not user:
+        user = None
 
-    # # Get total storage costs from AWS
-    # home_storage_costs = query_total_costs_per_component(from_date, to_date, hub_name)
-    # storage_costs_by_date = {}
-    # for entry in home_storage_costs:
-    #     if entry["name"] == "home storage":
-    #         storage_costs_by_date[entry["date"]] = float(entry["cost"])
-
-    # Get per-user storage costs
-    per_user_storage_costs = query_total_storage_costs_per_user(
-        from_date, to_date, hub_name
+    # Get per-user costs by combining AWS costs with Prometheus usage data
+    per_user_costs = query_total_costs_per_user(
+        from_date, to_date, hub_name, component, user
     )
 
-    # logger.info("\nStorage cost validation (per day):")
-    # logger.info("-" * 60)
-    # for date in sorted(storage_costs_by_date.keys()):
-    #     total_aws_cost = storage_costs_by_date[date]
-
-    #     # Calculate sum of per-user costs for this date
-    #     per_user_sum = 0.0
-    #     if date in per_user_storage_costs:
-    #         per_user_sum = sum(per_user_storage_costs[date].values())
-
-    #     logger.info(f"Date: {date}")
-    #     logger.info(f"  AWS Total Storage Cost: ${total_aws_cost:.2f}")
-    #     logger.info(f"  Sum of Per-User Costs:  ${per_user_sum:.2f}")
-    #     logger.info(
-    #         f"  Difference:             ${abs(total_aws_cost - per_user_sum):.2f}"
-    #     )
-
-    #     if abs(total_aws_cost - per_user_sum) > 0.01:  # Allow for small rounding errors
-    #         logger.info(f"  ⚠️  WARNING: Costs don't match!")
-    #     else:
-    #         logger.info(f"  ✅ Costs match")
-
-    return per_user_storage_costs
+    return per_user_costs
 
 
 @app.route("/total-usage")
