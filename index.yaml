@@ -3,6 +3,26 @@ entries:
   jupyterhub-cost-monitoring:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2025-08-21T08:04:33.897567481Z"
+    description: A Flask application serving JSON queried from the AWS Cost Explorer
+      API, for use by Grafana dashboard panels via the Infinity datasource plugin
+      to visualize cloud costs for Zero to JupyterHub deployments.
+    digest: 93cb24b36faf342e3e582b7cc83499b25e9ba86fb0f483489183062ceae15402
+    home: https://github.com/2i2c-org/jupyterhub-cost-monitoring
+    keywords:
+    - aws
+    - cost explorer
+    - flask
+    - jupyterhub
+    kubeVersion: '>=1.28.0-0'
+    name: jupyterhub-cost-monitoring
+    sources:
+    - https://github.com/2i2c-org/jupyterhub-cost-monitoring
+    urls:
+    - https://2i2c.org/jupyterhub-cost-monitoring/jupyterhub-cost-monitoring-0.0.1-0.dev.git.77.h6efb59e.tgz
+    version: 0.0.1-0.dev.git.77.h6efb59e
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2025-08-20T20:29:28.62788453Z"
     description: A Flask application serving JSON queried from the AWS Cost Explorer
       API, for use by Grafana dashboard panels via the Infinity datasource plugin
@@ -381,4 +401,4 @@ entries:
     urls:
     - https://2i2c.org/jupyterhub-cost-monitoring/jupyterhub-cost-monitoring-0.0.1-0.dev.git.51.hc003a3b.tgz
     version: 0.0.1-0.dev.git.51.hc003a3b
-generated: "2025-08-20T20:29:28.627345668Z"
+generated: "2025-08-21T08:04:33.896993529Z"
