@@ -123,14 +123,6 @@ FILTER_HOME_STORAGE_COSTS = {
                 "MatchOptions": ["EQUALS"],
             },
         },
-        {
-            "Not": {
-                "Tags": {
-                    "Key": "2i2c:hub-name",
-                    "MatchOptions": ["ABSENT"],
-                },
-            },
-        },
         # node-purpose flag is set on k8s nodes.
         # we can use it to filter out root EBS volumes attached to nodes that are not
         # used for home directory storage.
@@ -138,13 +130,6 @@ FILTER_HOME_STORAGE_COSTS = {
             "Tags": {
                 "Key": "2i2c:node-purpose",
                 "MatchOptions": ["ABSENT"],
-            },
-        },
-        {
-            "Dimensions": {
-                "Key": "RECORD_TYPE",
-                "Values": ["Usage"],
-                "MatchOptions": ["EQUALS"],
             },
         },
         {
@@ -157,6 +142,116 @@ FILTER_HOME_STORAGE_COSTS = {
                 ],
                 "MatchOptions": ["EQUALS"],
             },
+        },
+        # hub-db-dir is the name of the persistent volume claim used for the hub database.
+        # it's considered a fixed cost, and is not tied to any user.
+        {
+            "Not": {
+                "Tags": {
+                    "Key": "kubernetes.io/created-for/pvc/name",
+                    "Values": ["hub-db-dir"],
+                    "MatchOptions": ["EQUALS"],
+                },
+            },
+        },
+        # Support components (Prometheus, Grafana, Alertmanager) are not tied to any specific hub or user.
+        # We filter them out to avoid counting their costs towards home storage.
+        # They are considered fixed costs.
+        # See also: FILTER_FIXED_COSTS
+        {
+            "Not": {
+                # Support components (Prometheus, Grafana, Alertmanager)
+                "Tags": {
+                    "Key": "kubernetes.io/created-for/pvc/namespace",
+                    "Values": ["support"],
+                    "MatchOptions": ["EQUALS"],
+                },
+            }
+        },
+    ]
+}
+
+
+# Some costs like costs associated with core nodes, hub database storage, and support components
+# (Prometheus, Grafana, Alertmanager) are not tied to any specific hub or user.
+# We consider these fixed costs and filter them out from compute costs before calculating user costs.
+FILTER_FIXED_COSTS = {
+    "Or": [
+        # Core node storage
+        {
+            "And": [
+                {
+                    "Dimensions": {
+                        "Key": "SERVICE",
+                        "Values": ["EC2 - Other"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+                {
+                    "Tags": {
+                        "Key": "2i2c:node-purpose",
+                        "Values": ["core"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+            ]
+        },
+        # Core node compute
+        {
+            "And": [
+                {
+                    "Dimensions": {
+                        "Key": "SERVICE",
+                        "Values": ["Amazon Elastic Compute Cloud - Compute"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+                {
+                    "Tags": {
+                        "Key": "2i2c:node-purpose",
+                        "Values": ["core"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+            ]
+        },
+        # Hub database storage
+        {
+            "And": [
+                {
+                    "Dimensions": {
+                        "Key": "SERVICE",
+                        "Values": ["EC2 - Other"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+                {
+                    "Tags": {
+                        "Key": "kubernetes.io/created-for/pvc/name",
+                        "Values": ["hub-db-dir"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+            ]
+        },
+        # Support components storage (Prometheus, Grafana, Alertmanager)
+        {
+            "And": [
+                {
+                    "Dimensions": {
+                        "Key": "SERVICE",
+                        "Values": ["EC2 - Other"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+                {
+                    "Tags": {
+                        "Key": "kubernetes.io/created-for/pvc/namespace",
+                        "Values": ["support"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+            ]
         },
     ]
 }

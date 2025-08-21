@@ -4,12 +4,14 @@ Queries to AWS Cost Explorer to get different kinds of cost data.
 
 import functools
 from datetime import datetime, timezone
+from pprint import pformat
 
 import boto3
 
 from .cache import ttl_lru_cache
 from .const_cost_aws import (
     FILTER_ATTRIBUTABLE_COSTS,
+    FILTER_FIXED_COSTS,
     FILTER_HOME_STORAGE_COSTS,
     FILTER_USAGE_COSTS,
     GRANULARITY_DAILY,
@@ -272,26 +274,72 @@ def query_total_costs_per_hub(from_date, to_date):
     return processed_response
 
 
-@ttl_lru_cache(seconds_to_live=3600)
-def query_total_costs_per_component(from_date, to_date, hub_name=None, component=None):
+def _process_home_storage_costs(entries_by_date, home_storage_ebs_cost_response):
     """
-    A query with processing of the response tailored to report total costs per
-    component - a grouping of services.
+    Helper function to process home storage costs and adjust compute costs accordingly.
 
-    If a hub_name is specified, component costs are filtered to only consider
-    costs directly attributable to the hub name.
-
-    If a component is specified, the response is filtered to only include that
-    component only.
+    Args:
+        entries_by_date: Dictionary indexed by date containing component entries
+        home_storage_ebs_cost_response: AWS Cost Explorer response for home storage EBS costs
     """
-    filter = {
-        "And": [
-            FILTER_USAGE_COSTS,
-            FILTER_ATTRIBUTABLE_COSTS,
-        ]
-    }
+    for home_e in home_storage_ebs_cost_response["ResultsByTime"]:
+        date = home_e["TimePeriod"]["Start"]
+
+        # Calculate total home storage cost for this date
+        home_storage_cost = 0.0
+        for g in home_e["Groups"]:
+            if g["Keys"][0] == "EC2 - Other":
+                home_storage_cost += float(g["Metrics"]["UnblendedCost"]["Amount"])
+
+        if home_storage_cost > 0:
+            date_entries = entries_by_date.get(date, {})
+
+            # Subtract from compute component (EC2 - Other maps to compute)
+            compute_entry = date_entries.get("compute")
+            if compute_entry:
+                current_compute_cost = float(compute_entry["cost"])
+                new_compute_cost = max(0.0, current_compute_cost - home_storage_cost)
+                compute_entry["cost"] = f"{new_compute_cost:.2f}"
+                logger.debug(
+                    f"Adjusted compute cost for {date}: {current_compute_cost:.2f} -> {new_compute_cost:.2f}"
+                )
+
+            # Add to home storage component
+            home_storage_entry = date_entries.get("home storage")
+            if home_storage_entry:
+                current_home_storage_cost = float(home_storage_entry["cost"])
+                new_home_storage_cost = current_home_storage_cost + home_storage_cost
+                home_storage_entry["cost"] = f"{new_home_storage_cost:.2f}"
+                logger.debug(
+                    f"Updated home storage cost for {date}: {current_home_storage_cost:.2f} -> {new_home_storage_cost:.2f}"
+                )
+            else:
+                # Create new home storage entry if it doesn't exist
+                new_entry = {
+                    "date": date,
+                    "cost": f"{home_storage_cost:.2f}",
+                    "component": "home storage",
+                }
+                # Update index
+                if date not in entries_by_date:
+                    entries_by_date[date] = {}
+                entries_by_date[date]["home storage"] = new_entry
+                logger.debug(
+                    f"Added new home storage entry for {date}: {home_storage_cost:.2f}"
+                )
+
+
+def _add_hub_filter(filter_dict: dict, hub_name: str = None) -> None:
+    """
+    Add hub-specific filtering to a given filter dictionary.
+
+    Args:
+        filter_dict: The filter dictionary to modify (must have "And" key)
+        hub_name: The hub name to filter by. If "shared", filters for absent hub tags.
+                 If a specific name, filters for that hub. If None, no filter added.
+    """
     if hub_name == "shared":
-        filter["And"].append(
+        filter_dict["And"].append(
             {
                 "Tags": {
                     "Key": "2i2c:hub-name",
@@ -300,7 +348,7 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None, component
             }
         )
     elif hub_name:
-        filter["And"].append(
+        filter_dict["And"].append(
             {
                 "Tags": {
                     "Key": "2i2c:hub-name",
@@ -310,12 +358,105 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None, component
             }
         )
 
+
+def _create_base_filter() -> dict:
+    """
+    Create the base filter used for most cost queries.
+
+    Returns:
+        Base filter dictionary with usage and attributable cost filters
+    """
+    return {
+        "And": [
+            FILTER_USAGE_COSTS,
+            FILTER_ATTRIBUTABLE_COSTS,
+        ]
+    }
+
+
+def _process_fixed_costs(entries_by_date, fixed_cost_response):
+    """
+    Helper function to process fixed costs and adjust compute costs accordingly.
+
+    Args:
+        entries_by_date: Dictionary indexed by date containing component entries
+        fixed_cost_response: AWS Cost Explorer response for fixed costs
+    """
+    logger.debug(
+        f"Processing fixed costs: {pformat(fixed_cost_response['ResultsByTime'])}"
+    )
+    for fixed_e in fixed_cost_response["ResultsByTime"]:
+        date = fixed_e["TimePeriod"]["Start"]
+
+        # Calculate total fixed cost for this date
+        fixed_cost = 0.0
+        for g in fixed_e["Groups"]:
+            fixed_cost += float(g["Metrics"]["UnblendedCost"]["Amount"])
+
+        if fixed_cost > 0:
+            date_entries = entries_by_date.get(date, {})
+
+            # Subtract from compute component (EC2 - Other maps to compute)
+            compute_entry = date_entries.get("compute")
+            if compute_entry:
+                current_compute_cost = float(compute_entry["cost"])
+                new_compute_cost = max(0.0, current_compute_cost - fixed_cost)
+                compute_entry["cost"] = f"{new_compute_cost:.2f}"
+                logger.debug(
+                    f"Adjusted compute cost for {date} (fixed cost): {current_compute_cost:.2f} -> {new_compute_cost:.2f}"
+                )
+
+            # Add to fixed component
+            fixed_entry = date_entries.get("fixed")
+            if fixed_entry:
+                current_fixed_cost = float(fixed_entry["cost"])
+                new_fixed_cost = current_fixed_cost + fixed_cost
+                fixed_entry["cost"] = f"{new_fixed_cost:.2f}"
+                logger.debug(
+                    f"Updated fixed cost for {date}: {current_fixed_cost:.2f} -> {new_fixed_cost:.2f}"
+                )
+            else:
+                # Create new fixed entry if it doesn't exist
+                new_entry = {
+                    "date": date,
+                    "cost": f"{fixed_cost:.2f}",
+                    "component": "fixed",
+                }
+                # Update index
+                if date not in entries_by_date:
+                    entries_by_date[date] = {}
+                entries_by_date[date]["fixed"] = new_entry
+                logger.debug(f"Added new fixed entry for {date}: {fixed_cost:.2f}")
+
+
+@ttl_lru_cache(seconds_to_live=3600)
+def query_total_costs_per_component(
+    from_date: str, to_date: str, hub_name: str = None, component: str = None
+):
+    """
+    A query with processing of the response tailored to report total costs per
+    component - a grouping of services.
+
+    Args:
+        from_date: Start date for the query (YYYY-MM-DD format)
+        to_date: End date for the query (YYYY-MM-DD format)
+        hub_name: The hub name to filter by. If "shared", filters for shared costs.
+                 If a specific name, filters for that hub. If None, queries all hubs.
+        component: The component to filter by. If None, queries all components.
+
+    Returns:
+        List of dicts with keys: date, cost, component
+    """
+    # Create base filter and add hub-specific filtering
+    base_filter = _create_base_filter()
+    _add_hub_filter(base_filter, hub_name)
+
     response = query_aws_cost_explorer(
         metrics=[METRICS_UNBLENDED_COST],
         granularity=GRANULARITY_DAILY,
         from_date=from_date,
         to_date=to_date,
-        filter=filter,
+        filter=base_filter,
         group_by=[GROUP_BY_SERVICE_DIMENSION],
     )
 
@@ -378,22 +519,6 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None, component
     # ]
     #
 
-    # EC2 - Other is a service that can include costs for EBS volumes and snapshots
-    # By default, these costs are mapped to the compute component, but
-    # a part of the costs from EBS volumes and snapshots can be attributed to "home storage" too
-    # so we need to query those costs separately and adjust the compute costs
-
-    filter["And"].append(FILTER_HOME_STORAGE_COSTS)
-
-    home_storage_ebs_cost_response = query_aws_cost_explorer(
-        metrics=[METRICS_UNBLENDED_COST],
-        granularity=GRANULARITY_DAILY,
-        from_date=from_date,
-        to_date=to_date,
-        filter=filter,
-        group_by=[GROUP_BY_SERVICE_DIMENSION],
-    )
-
     # processed_response is a list with entries looking like this...
     #
     # [
@@ -405,6 +530,9 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None, component
     # ]
     #
     processed_response = []
+
+    logger.debug(f"Processing response: {pformat(response['ResultsByTime'])}")
+
     for e in response["ResultsByTime"]:
         # coalesce service costs to component costs
         component_costs = {}
@@ -417,6 +545,7 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None, component
             )
 
         # Filter to specific component if requested
+        logger.debug(f"Component costs before filtering: {component_costs}")
         if component:
             component_costs = {
                 k: v for k, v in component_costs.items() if k == component
@@ -441,57 +570,62 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None, component
             entries_by_date[date] = {}
         entries_by_date[date][entry["component"]] = entry
 
+    logger.debug(
+        f"Entries by date before deduplication: {entries_by_date}\n\n"
+    )  # Debugging output
+
+    # EC2 - Other is a service that can include costs for EBS volumes and snapshots
+    # By default, these costs are mapped to the compute component, but
+    # a part of the costs from EBS volumes and snapshots can be attributed to "home storage" too
+    # so we need to query those costs separately and adjust the compute costs
+
+    # Create home storage filter using the same base filter and hub filtering
+    home_storage_filter = _create_base_filter()
+    _add_hub_filter(home_storage_filter, hub_name)
+    home_storage_filter["And"].append(FILTER_HOME_STORAGE_COSTS)
+
+    home_storage_ebs_cost_response = query_aws_cost_explorer(
+        metrics=[METRICS_UNBLENDED_COST],
+        granularity=GRANULARITY_DAILY,
+        from_date=from_date,
+        to_date=to_date,
+        filter=home_storage_filter,
+        group_by=[GROUP_BY_SERVICE_DIMENSION],
+    )
+
     # Process home storage costs and adjust compute costs accordingly
-    for home_e in home_storage_ebs_cost_response["ResultsByTime"]:
-        date = home_e["TimePeriod"]["Start"]
+    _process_home_storage_costs(entries_by_date, home_storage_ebs_cost_response)
 
-        # Calculate total home storage cost for this date
-        home_storage_cost = 0.0
-        for g in home_e["Groups"]:
-            if g["Keys"][0] == "EC2 - Other":
-                home_storage_cost += float(g["Metrics"]["UnblendedCost"]["Amount"])
+    logger.debug(
+        f"Entries by date after home storage processing: {entries_by_date}\n\n"
+    )
 
-        if home_storage_cost > 0:
-            date_entries = entries_by_date.get(date, {})
+    # Query fixed costs (core nodes, hub databases, support components)
+    # These should be subtracted from compute and added to a "fixed" component
+    fixed_cost_filter = _create_base_filter()
+    _add_hub_filter(fixed_cost_filter, hub_name)
+    fixed_cost_filter["And"].append(FILTER_FIXED_COSTS)
 
-            # Subtract from compute component (EC2 - Other maps to compute)
-            compute_entry = date_entries.get("compute")
-            if compute_entry:
-                current_compute_cost = float(compute_entry["cost"])
-                new_compute_cost = max(0.0, current_compute_cost - home_storage_cost)
-                compute_entry["cost"] = f"{new_compute_cost:.2f}"
-                logger.debug(
-                    f"Adjusted compute cost for {date}: {current_compute_cost:.2f} -> {new_compute_cost:.2f}"
-                )
+    fixed_cost_response = query_aws_cost_explorer(
+        metrics=[METRICS_UNBLENDED_COST],
+        granularity=GRANULARITY_DAILY,
+        from_date=from_date,
+        to_date=to_date,
+        filter=fixed_cost_filter,
+        group_by=[GROUP_BY_SERVICE_DIMENSION],
+    )
 
-            # Add to home storage component
-            home_storage_entry = date_entries.get("home storage")
-            if home_storage_entry:
-                current_home_storage_cost = float(home_storage_entry["cost"])
-                new_home_storage_cost = current_home_storage_cost + home_storage_cost
-                home_storage_entry["cost"] = f"{new_home_storage_cost:.2f}"
-                logger.debug(
-                    f"Updated home storage cost for {date}: {current_home_storage_cost:.2f} -> {new_home_storage_cost:.2f}"
-                )
-            else:
-                # Create new home storage entry if it doesn't exist
-                new_entry = {
-                    "date": date,
-                    "cost": f"{home_storage_cost:.2f}",
-                    "component": "home storage",
-                }
-                # Update index
-                if date not in entries_by_date:
-                    entries_by_date[date] = {}
-                entries_by_date[date]["home storage"] = new_entry
-                logger.debug(
-                    f"Added new home storage entry for {date}: {home_storage_cost:.2f}"
-                )
+    # Process fixed costs and adjust compute costs accordingly
+    _process_fixed_costs(entries_by_date, fixed_cost_response)
+
+    logger.debug(f"Entries by date after fixed cost processing: {entries_by_date}\n\n")
 
     # Generate final response from index, sorted by date
     final_response = []
     for date in sorted(entries_by_date.keys()):
         for _, entry in entries_by_date[date].items():
+            if component and entry["component"] != component:
+                continue
             final_response.append(entry)
 
     return final_response
