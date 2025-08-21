@@ -139,11 +139,9 @@ def _sum_absolute_usage_by_date(result: list[dict]) -> list[dict]:
     """
     Sum the absolute usage values by date.
 
-    The Prometheus queries now return absolute usage values at each time step.
-    We sum these values across all time steps within each date to get the
-    total daily usage for each user.
+    The Prometheus queries can return multiple absolute usage values per day.
+    We sum across all entries within each date to get the total daily usage for each user.
     """
-    # print(f"Processing result: {pformat(result)}")
     sums = defaultdict(float)
 
     for entry in result:
