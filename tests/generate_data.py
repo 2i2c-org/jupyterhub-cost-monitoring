@@ -50,29 +50,53 @@ def generate_test_data(
         json.dump(data, f, indent=4)
 
 
-def generate_test_output():
+def generate_test_output_hub():
     """
-    Generate test output based on the test usage and test cost data.
+    Generate test output grouped by hub based on the test usage and test cost data.
     """
     with open("test_data_usage.json") as f:
         data_usage = json.load(f)
-
     with open("test_data_cost.json") as f:
         data_cost = json.load(f)
-
     df_usage = pd.DataFrame(data_usage)
     df_cost = pd.DataFrame(data_cost)
-
     total_usage = df_usage.groupby(["date", "component", "hub"])["value"].transform(
         "sum"
     )
-
     df_usage["cost_factor"] = df_usage["value"] / total_usage
-
     merged = df_usage.merge(df_cost, on=["date", "component", "hub"], how="left")
-
     merged["cost"] = merged["cost_factor"] * merged["value_y"]
-
     df_usage["cost"] = merged["cost"]
+    df_usage.to_json("test_output_hub.json", orient="records", indent=4)
 
-    df_usage.to_json("test_output.json", orient="records", indent=4)
+
+def generate_test_output_component():
+    """
+    Generate test output grouped by component based on the test usage and test cost data.
+    """
+    with open("test_data_usage.json") as f:
+        data_usage = json.load(f)
+    with open("test_data_cost.json") as f:
+        data_cost = json.load(f)
+    df_usage = pd.DataFrame(data_usage)
+    df_usage = df_usage.groupby(["date", "component", "user"], as_index=False).sum()
+    df_cost = pd.DataFrame(data_cost)
+    df_cost = (
+        df_cost.groupby(["date", "component"], as_index=False)
+        .sum()
+        .drop(columns=["hub"])
+    )
+    total_usage = df_usage.groupby(["date", "component"], as_index=False)[
+        "value"
+    ].transform("sum")
+    df_usage["cost_factor"] = (
+        df_usage.groupby(["date", "component", "user"], as_index=False)[
+            "value"
+        ].transform("sum")
+        / total_usage
+    )
+    merged = df_usage.merge(df_cost, on=["date", "component"], how="left")
+    merged["cost"] = merged["cost_factor"] * merged["value_y"]
+    df_usage["cost"] = merged["cost"]
+    df_usage = df_usage.drop(columns=["hub"])
+    df_usage.to_json("test_output_component.json", orient="records", indent=4)
