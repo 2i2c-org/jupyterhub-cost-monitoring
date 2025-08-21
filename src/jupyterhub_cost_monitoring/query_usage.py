@@ -5,7 +5,6 @@ Query the Prometheus server to get usage of JupyterHub resources.
 import os
 from collections import defaultdict
 from datetime import datetime, timezone
-from pprint import pformat
 
 import requests
 from yarl import URL
@@ -68,11 +67,11 @@ def query_usage(
     else:
         response = query_prometheus(USAGE_MAP[component_name], from_date, to_date)
         result.extend(_process_response(response, component_name))
-    result = _filter_json(result, hub=hub_name, user=user_name)
     # Calculate daily cost factors from absolute usage totals
     result = _calculate_daily_cost_factors(result, hub_name=hub_name)
     # sort the result by date
     result.sort(key=lambda x: (x["date"], x["component"], x["hub"], x["user"]))
+    result = _filter_json(result, hub=hub_name, user=user_name)
     return result
 
 
@@ -87,7 +86,6 @@ def _process_response(
     and sums the absolute usage values across time steps within each date.
     """
     result = []
-    print(f"Processing response: {pformat(response['data']['result'])}")
     for data in response["data"]["result"]:
         hub = data["metric"]["namespace"]
         user = data["metric"]["username"]
