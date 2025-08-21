@@ -215,6 +215,28 @@ FILTER_FIXED_COSTS = {
                 },
             ]
         },
+        # Cluster NAT gateway - common for all hubs
+        {
+            "And": [
+                {
+                    "Dimensions": {
+                        "Key": "SERVICE",
+                        "Values": ["EC2 - Other"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+                {
+                    "Dimensions": {
+                        "Key": "USAGE_TYPE_GROUP",
+                        "Values": [
+                            "EC2: NAT Gateway - Running Hours",
+                            "EC2: NAT Gateway - Data Processed",
+                        ],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+            ]
+        },
         # Hub database storage
         {
             "And": [
