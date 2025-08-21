@@ -16,7 +16,7 @@ app = Flask(__name__)
 logger = get_logger(__name__)
 
 
-def _parse_from_to_in_query_params(api_provider: str = "prometheus" or "aws"):
+def _parse_from_to_in_query_params(api_provider: str = "prometheus"):
     """
     Parse "from" and "to" query parameters, expected to be passed as YYYY-MM-DD
     api_providerted strings or including time as well.
