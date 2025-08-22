@@ -17,7 +17,7 @@ prometheus_url = os.environ.get(
 )  # TODO: replace server URL definition
 
 
-@ttl_lru_cache
+@ttl_lru_cache(seconds_to_live=3600)
 def query_prometheus(
     query: str, from_date: str, to_date: str, step: str = TIME_RESOLUTION
 ) -> requests.Response:
@@ -38,7 +38,7 @@ def query_prometheus(
     return result
 
 
-@ttl_lru_cache
+@ttl_lru_cache(seconds_to_live=3600)
 def query_usage(
     from_date: str,
     to_date: str,
