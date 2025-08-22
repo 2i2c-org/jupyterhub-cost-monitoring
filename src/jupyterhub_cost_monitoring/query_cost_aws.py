@@ -60,7 +60,7 @@ def query_aws_cost_explorer(metrics, granularity, from_date, to_date, filter, gr
     return response
 
 
-@ttl_lru_cache(seconds_to_live=3600)
+@ttl_lru_cache
 def query_hub_names(from_date, to_date):
     # ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce/client/get_tags.html
     response = aws_ce_client.get_tags(
@@ -94,7 +94,7 @@ def query_hub_names(from_date, to_date):
     return hub_names
 
 
-@ttl_lru_cache(seconds_to_live=3600)
+@ttl_lru_cache
 def query_total_costs(from_date, to_date):
     """
     A query with processing of the response tailored to report both the total
@@ -120,7 +120,7 @@ def query_total_costs(from_date, to_date):
     return processed_response
 
 
-@ttl_lru_cache(seconds_to_live=3600)
+@ttl_lru_cache
 def _query_total_costs(from_date, to_date, add_attributable_costs_filter):
     """
     A query with processing of the response tailored to report total costs.
@@ -188,7 +188,7 @@ def _query_total_costs(from_date, to_date, add_attributable_costs_filter):
     return processed_response
 
 
-@ttl_lru_cache(seconds_to_live=3600)
+@ttl_lru_cache
 def query_total_costs_per_hub(from_date, to_date):
     """
     A query with processing of the response tailored to report total costs per
@@ -272,7 +272,7 @@ def query_total_costs_per_hub(from_date, to_date):
     return processed_response
 
 
-@ttl_lru_cache(seconds_to_live=3600)
+@ttl_lru_cache
 def query_total_costs_per_component(from_date, to_date, hub_name=None, component=None):
     """
     A query with processing of the response tailored to report total costs per

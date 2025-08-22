@@ -12,7 +12,7 @@ import time
 from functools import lru_cache
 
 
-def ttl_lru_cache(seconds_to_live: int, maxsize: int = 128):
+def ttl_lru_cache(seconds_to_live: int = 86400, maxsize: int = 128):
     """
     Time aware lru caching
     """
