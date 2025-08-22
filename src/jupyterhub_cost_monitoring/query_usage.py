@@ -38,6 +38,7 @@ def query_prometheus(
     return result
 
 
+@ttl_lru_cache
 def query_usage(
     from_date: str,
     to_date: str,

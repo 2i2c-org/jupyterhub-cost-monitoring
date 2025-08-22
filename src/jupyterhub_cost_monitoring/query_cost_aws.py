@@ -497,6 +497,7 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None, component
     return final_response
 
 
+@ttl_lru_cache
 def query_total_costs_per_user(
     from_date, to_date, hub: str = None, component: str = None, user: str = None
 ):
