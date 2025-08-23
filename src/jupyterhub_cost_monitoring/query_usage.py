@@ -116,7 +116,6 @@ def _process_response(
 
     if component_name == "home storage":
         for entry in processed_result:
-            print(f"{entry['user']}")
             if "shared" not in entry["user"]:
                 entry["user"] = escapism.unescape(entry["user"], escape_char="-")
     return processed_result
