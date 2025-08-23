@@ -9,17 +9,15 @@ from datetime import datetime, timezone
 import requests
 from yarl import URL
 
-from .cache import ttl_lru_cache
-from .const_usage import TIME_RESOLUTION, USAGE_MAP
+from .const_usage import USAGE_MAP
 
 prometheus_url = os.environ.get(
     "PROMETHEUS_HOST", "http://localhost:9090"
 )  # TODO: replace server URL definition
 
 
-@ttl_lru_cache(seconds_to_live=3600)
 def query_prometheus(
-    query: str, from_date: str, to_date: str, step: str = TIME_RESOLUTION
+    query: str, from_date: str, to_date: str, step: str
 ) -> requests.Response:
     """
     Query the Prometheus server with the given query.
@@ -38,7 +36,6 @@ def query_prometheus(
     return result
 
 
-@ttl_lru_cache(seconds_to_live=3600)
 def query_usage(
     from_date: str,
     to_date: str,
@@ -62,13 +59,20 @@ def query_usage(
     """
     result = []
     if component_name is None:
-        for component, query in USAGE_MAP.items():
-            response = query_prometheus(query, from_date, to_date)
+        for component, params in USAGE_MAP.items():
+            response = query_prometheus(
+                params["query"], from_date, to_date, step=params["step"]
+            )
             result.extend(_process_response(response, component))
     else:
-        response = query_prometheus(USAGE_MAP[component_name], from_date, to_date)
+        response = query_prometheus(
+            USAGE_MAP[component_name]["query"],
+            from_date,
+            to_date,
+            step=USAGE_MAP[component_name]["step"],
+        )
         result.extend(_process_response(response, component_name))
-    # Calculate daily cost factors from absolute usage totals
+    # Calculate daily cost factors from absolute usage totals)
     result = _calculate_daily_cost_factors(result, hub_name=hub_name)
     # sort the result by date
     result.sort(key=lambda x: (x["date"], x["component"], x["hub"], x["user"]))
@@ -205,5 +209,4 @@ def _calculate_daily_cost_factors(
             entry["value"] = entry["value"] / total
         else:
             entry["value"] = 0.0
-
     return result
