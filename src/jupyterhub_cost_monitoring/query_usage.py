@@ -6,6 +6,7 @@ import os
 from collections import defaultdict
 from datetime import datetime, timezone
 
+import escapism
 import requests
 from yarl import URL
 
@@ -89,6 +90,8 @@ def _process_response(
 
     Converts the time series data into a list of usage records, then pivots by date
     and sums the absolute usage values across time steps within each date.
+
+    If the component_name is home storage, then rename the escaped username used for the directory to the unescaped version.
     """
     result = []
     for data in response["data"]["result"]:
@@ -110,6 +113,12 @@ def _process_response(
         )
     pivoted_result = _pivot_response_dict(result)
     processed_result = _sum_absolute_usage_by_date(pivoted_result)
+
+    if component_name == "home storage":
+        for entry in processed_result:
+            print(f"{entry['user']}")
+            if "shared" not in entry["user"]:
+                entry["user"] = escapism.unescape(entry["user"], escape_char="-")
     return processed_result
 
 

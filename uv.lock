@@ -157,6 +157,11 @@ wheels = [
 ]
 
 [[package]]
+name = "escapism"
+version = "1.0.1"
+source = { git = "https://github.com/jupyterhub/escapism?tag=1.0.1#29e4604e1419d1b347ec1ada5d8a84af865953b0" }
+
+[[package]]
 name = "fastapi"
 version = "0.116.1"
 source = { registry = "https://pypi.org/simple" }
@@ -348,6 +353,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "boto3" },
+    { name = "escapism" },
     { name = "fastapi", extra = ["standard"] },
     { name = "flask" },
     { name = "pandas" },
@@ -365,6 +371,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "boto3", specifier = ">=1.39.12" },
+    { name = "escapism", git = "https://github.com/jupyterhub/escapism?tag=1.0.1" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.116.1" },
     { name = "flask", specifier = ">=3.1.1" },
     { name = "pandas", specifier = ">=2.3.1" },

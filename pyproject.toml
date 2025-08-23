@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "boto3>=1.39.12",
+    "escapism",
     "fastapi[standard]>=0.116.1",
     "flask>=3.1.1",
     "pandas>=2.3.1",
@@ -22,6 +23,9 @@ dev = [
 
 [tool.isort]
 profile = "black"
+
+[tool.uv.sources]
+escapism = { git = "https://github.com/jupyterhub/escapism", tag = "1.0.1" }
 
 [pytest]
 log_cli = true
