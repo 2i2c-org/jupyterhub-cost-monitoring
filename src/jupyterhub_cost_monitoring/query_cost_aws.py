@@ -60,7 +60,7 @@ def query_aws_cost_explorer(metrics, granularity, from_date, to_date, filter, gr
     return response
 
 
-# @ttl_lru_cache(seconds_to_live=3600)
+@ttl_lru_cache(seconds_to_live=3600)
 def query_hub_names(from_date, to_date):
     # ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce/client/get_tags.html
     response = aws_ce_client.get_tags(
@@ -148,35 +148,6 @@ def _query_total_costs(from_date, to_date, add_attributable_costs_filter):
         group_by=[],
     )
 
-    # response["ResultsByTime"] is a list with entries looking like this...
-    #
-    # [
-    #     {
-    #         "Estimated": false,
-    #         "Groups": [],
-    #         "TimePeriod": {
-    #             "End": "2024-07-28",
-    #             "Start": "2024-07-27",
-    #         },
-    #         "Total": {
-    #             "UnblendedCost": {
-    #                 "Amount": "23.3110299724",
-    #                 "Unit": "USD",
-    #             },
-    #         },
-    #     },
-    #     # ...
-    # ]
-    #
-    # processed_response is a list with entries looking like this...
-    #
-    # [
-    #     {
-    #         "date":"2024-08-30",
-    #         "cost":"12.19",
-    #     },
-    # ]
-    #
     processed_response = [
         {
             "date": e["TimePeriod"]["Start"],
@@ -210,52 +181,6 @@ def query_total_costs_per_hub(from_date, to_date):
         ],
     )
 
-    # response["ResultsByTime"] is a list with entries looking like this...
-    #
-    # [
-    #     {
-    #         "TimePeriod": {"Start": "2024-08-30", "End": "2024-08-31"},
-    #         "Total": {},
-    #         "Groups": [
-    #             {
-    #                 "Keys": ["2i2c:hub-name$"],
-    #                 "Metrics": {
-    #                     "UnblendedCost": {"Amount": "12.1930361882", "Unit": "USD"}
-    #                 },
-    #             },
-    #             {
-    #                 "Keys": ["2i2c:hub-name$prod"],
-    #                 "Metrics": {
-    #                     "UnblendedCost": {"Amount": "18.662514854", "Unit": "USD"}
-    #                 },
-    #             },
-    #             {
-    #                 "Keys": ["2i2c:hub-name$staging"],
-    #                 "Metrics": {
-    #                     "UnblendedCost": {"Amount": "0.000760628", "Unit": "USD"}
-    #                 },
-    #             },
-    #             {
-    #                 "Keys": ["2i2c:hub-name$workshop"],
-    #                 "Metrics": {
-    #                     "UnblendedCost": {"Amount": "0.1969903219", "Unit": "USD"}
-    #                 },
-    #             },
-    #         ],
-    #         "Estimated": False,
-    #     },
-    # ]
-    #
-    # processed_response is a list with entries looking like this...
-    #
-    # [
-    #     {
-    #         "date":"2024-08-30",
-    #         "cost":"12.19",
-    #         "name":"shared",
-    #     },
-    # ]
-    #
     processed_response = []
     for e in response["ResultsByTime"]:
         processed_response.extend(
@@ -318,70 +243,6 @@ def query_total_costs_per_component(from_date, to_date, hub_name=None, component
         filter=filter,
         group_by=[GROUP_BY_SERVICE_DIMENSION],
     )
-
-    # response["ResultsByTime"] is a list with entries looking like this...
-    #
-    # [
-    #     {
-    #         "TimePeriod": {"Start": "2024-08-30", "End": "2024-08-31"},
-    #         "Total": {},
-    #         "Groups": [
-    #             {
-    #                 "Keys": ["AWS Backup"],
-    #                 "Metrics": {
-    #                     "UnblendedCost": {"Amount": "2.4763369432", "Unit": "USD"}
-    #                 },
-    #             },
-    #             {
-    #                 "Keys": ["EC2 - Other"],
-    #                 "Metrics": {
-    #                     "UnblendedCost": {"Amount": "3.2334814259", "Unit": "USD"}
-    #                 },
-    #             },
-    #             {
-    #                 "Keys": ["Amazon Elastic Compute Cloud - Compute"],
-    #                 "Metrics": {
-    #                     "UnblendedCost": {"Amount": "12.5273401469", "Unit": "USD"}
-    #                 },
-    #             },
-    #             {
-    #                 "Keys": ["Amazon Elastic Container Service for Kubernetes"],
-    #                 "Metrics": {"UnblendedCost": {"Amount": "2.4", "Unit": "USD"}},
-    #             },
-    #             {
-    #                 "Keys": ["Amazon Elastic File System"],
-    #                 "Metrics": {
-    #                     "UnblendedCost": {"Amount": "9.4433542756", "Unit": "USD"}
-    #                 },
-    #             },
-    #             {
-    #                 "Keys": ["Amazon Elastic Load Balancing"],
-    #                 "Metrics": {
-    #                     "UnblendedCost": {"Amount": "0.6147035689", "Unit": "USD"}
-    #                 },
-    #             },
-    #             {
-    #                 "Keys": ["Amazon Simple Storage Service"],
-    #                 "Metrics": {
-    #                     "UnblendedCost": {"Amount": "0.1094078516", "Unit": "USD"}
-    #                 },
-    #             },
-    #             {
-    #                 "Keys": ["Amazon Virtual Private Cloud"],
-    #                 "Metrics": {
-    #                     "UnblendedCost": {"Amount": "0.24867778", "Unit": "USD"}
-    #                 },
-    #             },
-    #         ],
-    #         "Estimated": False,
-    #     },
-    # ]
-    #
-
-    # EC2 - Other is a service that can include costs for EBS volumes and snapshots
-    # By default, these costs are mapped to the compute component, but
-    # a part of the costs from EBS volumes and snapshots can be attributed to "home storage" too
-    # so we need to query those costs separately and adjust the compute costs
 
     filter["And"].append(FILTER_HOME_STORAGE_COSTS)
 
