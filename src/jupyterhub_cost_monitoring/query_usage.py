@@ -12,11 +12,10 @@ from yarl import URL
 
 from .const_usage import USAGE_MAP
 
-prometheus_url = (
-    os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_HOST", "http://localhost")
-    + ":"
-    + os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_PORT", "9090")
+prometheus_host = os.environ.get(
+    "SUPPORT_PROMETHEUS_SERVER_SERVICE_HOST", "http://localhost"
 )
+prometheus_port = int(os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_PORT", 8080))
 
 
 def query_prometheus(
@@ -25,7 +24,9 @@ def query_prometheus(
     """
     Query the Prometheus server with the given query.
     """
-    prometheus_api = URL(prometheus_url)
+    prometheus_api = URL.build(
+        scheme="http", host=prometheus_host, port=prometheus_port
+    )
     parameters = {
         "query": query,
         "start": from_date,
