@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "boto3>=1.39.12",
+    "fastapi[standard]>=0.116.1",
     "flask>=3.1.1",
     "pandas>=2.3.1",
     "requests>=2.32.4",

@@ -60,7 +60,7 @@ def query_aws_cost_explorer(metrics, granularity, from_date, to_date, filter, gr
     return response
 
 
-@ttl_lru_cache(seconds_to_live=3600)
+# @ttl_lru_cache(seconds_to_live=3600)
 def query_hub_names(from_date, to_date):
     # ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce/client/get_tags.html
     response = aws_ce_client.get_tags(
