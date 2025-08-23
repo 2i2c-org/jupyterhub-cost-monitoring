@@ -14,4 +14,4 @@ WORKDIR /opt/jupyterhub_cost_monitoring/src/jupyterhub_cost_monitoring
 USER 65534
 EXPOSE 8080
 ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["flask", "run", "--port", "8080", "--host", "0.0.0.0"]
+CMD ["fastapi", "run", "--port", "8080", "--host", "0.0.0.0"]
