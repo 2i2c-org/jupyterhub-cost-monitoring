@@ -11,6 +11,9 @@ import requests
 from yarl import URL
 
 from .const_usage import USAGE_MAP
+from .logs import get_logger
+
+logger = get_logger(__name__)
 
 prometheus_host = os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_HOST", "localhost")
 prometheus_port = int(os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_PORT", 9090))
@@ -33,6 +36,7 @@ def query_prometheus(
     }
     query_api = URL(prometheus_api.with_path("/api/v1/query_range"))
     response = requests.get(query_api, params=parameters)
+    logger.info(f"Querying Prometheus: {response.url}")
     response.raise_for_status()
     result = response.json()
     return result
