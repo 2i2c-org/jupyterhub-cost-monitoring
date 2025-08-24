@@ -67,30 +67,8 @@ def query_hub_names(from_date, to_date):
         TimePeriod={"Start": from_date, "End": to_date},
         TagKey="2i2c:hub-name",
     )
-    # response looks like...
-    #
-    # {
-    #     "Tags": ["", "prod", "staging", "workshop"],
-    #     "ReturnSize": 4,
-    #     "TotalSize": 4,
-    #     "ResponseMetadata": {
-    #         "RequestId": "23736d32-9929-4b6a-8c4f-d80b1487ed37",
-    #         "HTTPStatusCode": 200,
-    #         "HTTPHeaders": {
-    #             "date": "Fri, 20 Sep 2024 12:42:13 GMT",
-    #             "content-type": "application/x-amz-json-1.1",
-    #             "content-length": "70",
-    #             "connection": "keep-alive",
-    #             "x-amzn-requestid": "23736d32-9929-4b6a-8c4f-d80b1487ed37",
-    #             "cache-control": "no-cache",
-    #         },
-    #         "RetryAttempts": 0,
-    #     },
-    # }
-    #
-    # The empty string is replaced with "shared"
-    #
-    hub_names = [t or "shared" for t in response["Tags"]]
+
+    hub_names = [t or "support" for t in response["Tags"]]
     return hub_names
 
 
