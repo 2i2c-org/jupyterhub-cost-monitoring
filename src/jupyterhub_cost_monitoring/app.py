@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import FastAPI, Query
 
+from .const_usage import USAGE_MAP
 from .logs import get_logger
 from .query_cost_aws import (
     query_hub_names,
@@ -99,6 +100,14 @@ def hub_names(
     )
 
     return query_hub_names(from_date, to_date)
+
+
+@app.get("/component-names")
+def component_names():
+    """
+    Endpoint to serve component names.
+    """
+    return list(USAGE_MAP.keys())
 
 
 @app.get("/total-costs")
