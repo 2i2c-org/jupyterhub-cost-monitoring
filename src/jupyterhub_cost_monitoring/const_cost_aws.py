@@ -108,67 +108,11 @@ GROUP_BY_SERVICE_DIMENSION = {
 }
 
 FILTER_HOME_STORAGE_COSTS = {
-    "And": [
-        {
-            "Dimensions": {
-                "Key": "SERVICE",
-                "Values": ["EC2 - Other"],
-                "MatchOptions": ["EQUALS"],
-            },
-        },
-        {
-            "Tags": {
-                "Key": "2i2c.org/cluster-name",
-                "Values": [CLUSTER_NAME],
-                "MatchOptions": ["EQUALS"],
-            },
-        },
-        # node-purpose flag is set on k8s nodes.
-        # we can use it to filter out root EBS volumes attached to nodes that are not
-        # used for home directory storage.
-        {
-            "Tags": {
-                "Key": "2i2c:node-purpose",
-                "MatchOptions": ["ABSENT"],
-            },
-        },
-        {
-            "Dimensions": {
-                "Key": "USAGE_TYPE_GROUP",
-                "Values": [
-                    "EC2: EBS - Snapshots",
-                    "EC2: EBS - SSD(gp2)",
-                    "EC2: EBS - SSD(gp3)",
-                ],
-                "MatchOptions": ["EQUALS"],
-            },
-        },
-        # hub-db-dir is the name of the persistent volume claim used for the hub database.
-        # it's considered a fixed cost, and is not tied to any user.
-        {
-            "Not": {
-                "Tags": {
-                    "Key": "kubernetes.io/created-for/pvc/name",
-                    "Values": ["hub-db-dir"],
-                    "MatchOptions": ["EQUALS"],
-                },
-            },
-        },
-        # Support components (Prometheus, Grafana, Alertmanager) are not tied to any specific hub or user.
-        # We filter them out to avoid counting their costs towards home storage.
-        # They are considered fixed costs.
-        # See also: FILTER_FIXED_COSTS
-        {
-            "Not": {
-                # Support components (Prometheus, Grafana, Alertmanager)
-                "Tags": {
-                    "Key": "kubernetes.io/created-for/pvc/namespace",
-                    "Values": ["support"],
-                    "MatchOptions": ["EQUALS"],
-                },
-            }
-        },
-    ]
+    "Tags": {
+        "Key": "2i2c:volume-purpose",
+        "Values": ["home-nfs"],
+        "MatchOptions": ["EQUALS"],
+    }
 }
 
 
