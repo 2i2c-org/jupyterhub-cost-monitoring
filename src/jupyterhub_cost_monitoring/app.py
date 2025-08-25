@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from flask import Flask, render_template_string, request, url_for
+from fastapi import FastAPI, Query
 
 from .logs import get_logger
 from .query_cost_aws import (
@@ -12,11 +12,15 @@ from .query_cost_aws import (
 )
 from .query_usage import query_usage
 
-app = Flask(__name__)
+app = FastAPI()
 logger = get_logger(__name__)
 
 
-def _parse_from_to_in_query_params(api_provider: str = "prometheus"):
+def _parse_from_to_in_query_params(
+    from_date: str | None = None,
+    to_date: str | None = None,
+    api_provider: str = "prometheus" or "aws" or None,
+):
     """
     Parse "from" and "to" query parameters, expected to be passed as YYYY-MM-DD
     api_providerted strings or including time as well.
@@ -39,12 +43,12 @@ def _parse_from_to_in_query_params(api_provider: str = "prometheus"):
     now_date = datetime.now(timezone.utc).replace(
         hour=0, minute=0, second=0, microsecond=0
     )
-    if request.args.get("to"):
-        to_date = datetime.fromisoformat(request.args["to"])
+    if to_date:
+        to_date = datetime.fromisoformat(to_date)
     else:
         to_date = now_date
-    if request.args.get("from"):
-        from_date = datetime.fromisoformat(request.args["from"])
+    if from_date:
+        from_date = datetime.fromisoformat(from_date)
     else:
         from_date = to_date - timedelta(days=30)
 
@@ -65,33 +69,12 @@ def _parse_from_to_in_query_params(api_provider: str = "prometheus"):
         return from_date, to_date
 
 
-@app.route("/")
+@app.get("/")
 def index():
-    """
-    Index page that lists all available endpoints in the application.
-    """
-    links = []
-    for rule in app.url_map.iter_rules():
-        # Skip static routes and those requiring parameters
-        if rule.endpoint != "static" and len(rule.arguments) == 0:
-            url = url_for(rule.endpoint)
-            links.append((rule.endpoint, url))
-
-    # Render links using a simple HTML template
-    return render_template_string(
-        """
-        <h1>Available Endpoints</h1>
-        <ul>
-        {% for endpoint, url in links %}
-            <li><a href="{{ url }}">{{ endpoint }}</a></li>
-        {% endfor %}
-        </ul>
-    """,
-        links=links,
-    )
+    return {"message": "Welcome to the JupyterHub Cost Monitoring API"}
 
 
-@app.route("/health/ready")
+@app.get("/health/ready")
 def ready():
     """
     Readiness probe endpoint.
@@ -99,50 +82,100 @@ def ready():
     return ("200: OK", 200)
 
 
-@app.route("/hub-names")
-def hub_names():
+@app.get("/hub-names")
+def hub_names(
+    from_date: str | None = Query(
+        None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    to_date: str | None = Query(
+        None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
+    ),
+):
     """
     Endpoint to query hub names.
     """
-    from_date, to_date = _parse_from_to_in_query_params(api_provider="aws")
+    from_date, to_date = _parse_from_to_in_query_params(
+        from_date, to_date, api_provider="aws"
+    )
 
     return query_hub_names(from_date, to_date)
 
 
-@app.route("/total-costs")
-def total_costs():
+@app.get("/total-costs")
+def total_costs(
+    from_date: str | None = Query(
+        None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    to_date: str | None = Query(
+        None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
+    ),
+):
     """
     Endpoint to query total costs.
     """
-    from_date, to_date = _parse_from_to_in_query_params(api_provider="aws")
+    from_date, to_date = _parse_from_to_in_query_params(
+        from_date, to_date, api_provider="aws"
+    )
 
     return query_total_costs(from_date, to_date)
 
 
-@app.route("/total-costs-per-hub")
-def total_costs_per_hub():
+@app.get("/total-costs-per-hub")
+def total_costs_per_hub(
+    from_date: str | None = Query(
+        None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    to_date: str | None = Query(
+        None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
+    ),
+):
     """
     Endpoint to query total costs per hub.
     """
-    from_date, to_date = _parse_from_to_in_query_params(api_provider="aws")
+    from_date, to_date = _parse_from_to_in_query_params(
+        from_date, to_date, api_provider="aws"
+    )
 
     return query_total_costs_per_hub(from_date, to_date)
 
 
-@app.route("/total-costs-per-component")
-def total_costs_per_component():
+@app.get("/total-costs-per-component")
+def total_costs_per_component(
+    from_date: str | None = Query(
+        None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    to_date: str | None = Query(
+        None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    hub: str | None = Query(None, description="Name of the hub to filter results"),
+    component: str | None = Query(
+        None, description="Name of the component to filter results"
+    ),
+):
     """
     Endpoint to query total costs per component.
     """
-    from_date, to_date = _parse_from_to_in_query_params(api_provider="aws")
-    hub_name = request.args.get("hub")
-    component = request.args.get("component")
+    from_date, to_date = _parse_from_to_in_query_params(
+        from_date, to_date, api_provider="aws"
+    )
 
-    return query_total_costs_per_component(from_date, to_date, hub_name, component)
+    return query_total_costs_per_component(from_date, to_date, hub, component)
 
 
-@app.route("/costs-per-user")
-def costs_per_user():
+@app.get("/costs-per-user")
+def costs_per_user(
+    from_date: str | None = Query(
+        None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    to_date: str | None = Query(
+        None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    hub: str | None = Query(None, description="Name of the hub to filter results"),
+    component: str | None = Query(
+        None, description="Name of the component to filter results"
+    ),
+    user: str | None = Query(None, description="Name of the user to filter results"),
+):
     """
     Endpoint to query costs per user by combining AWS costs with Prometheus usage data.
 
@@ -162,14 +195,13 @@ def costs_per_user():
         List of dicts with keys: date, hub, component, user, value (cost in USD)
         Results are sorted by date, hub, component, then value (highest cost first)
     """
-    from_date, to_date = _parse_from_to_in_query_params(api_provider="aws")
-    hub_name = request.args.get("hub")
-    component = request.args.get("component")
-    user = request.args.get("user")
+    from_date, to_date = _parse_from_to_in_query_params(
+        from_date, to_date, api_provider="aws"
+    )
     # Grafana will pass empty string to get data for all hubs,
     # so we need to handle that case.
-    if not hub_name:
-        hub_name = None
+    if not hub:
+        hub = None
     if not component:
         component = None
     if not user:
@@ -177,22 +209,33 @@ def costs_per_user():
 
     # Get per-user costs by combining AWS costs with Prometheus usage data
     per_user_costs = query_total_costs_per_user(
-        from_date, to_date, hub_name, component, user
+        from_date, to_date, hub, component, user
     )
 
     return per_user_costs
 
 
-@app.route("/total-usage")
-def total_usage():
+@app.get("/total-usage")
+def total_usage(
+    from_date: str | None = Query(
+        None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    to_date: str | None = Query(
+        None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    hub: str | None = Query(None, description="Name of the hub to filter results"),
+    component: str | None = Query(
+        None, description="Name of the component to filter results"
+    ),
+    user: str | None = Query(None, description="Name of the user to filter results"),
+):
     """
     Endpoint to query total usage.
     Expects 'from' and 'to' query parameters in the api_provider YYYY-MM-DD.
     Optionally accepts 'hub', 'component' and 'user', query parameters.
     """
-    from_date, to_date = _parse_from_to_in_query_params(api_provider="prometheus")
-    hub_name = request.args.get("hub")
-    component_name = request.args.get("component")
-    user_name = request.args.get("user")
+    from_date, to_date = _parse_from_to_in_query_params(
+        from_date, to_date, api_provider="prometheus"
+    )
 
-    return query_usage(from_date, to_date, hub_name, component_name, user_name)
+    return query_usage(from_date, to_date, hub, component, user)

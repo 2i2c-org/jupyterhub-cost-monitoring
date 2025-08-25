@@ -6,25 +6,27 @@ import os
 from collections import defaultdict
 from datetime import datetime, timezone
 
+import escapism
 import requests
 from yarl import URL
 
-from .cache import ttl_lru_cache
-from .const_usage import TIME_RESOLUTION, USAGE_MAP
+from .const_usage import USAGE_MAP
 
-prometheus_url = os.environ.get(
-    "PROMETHEUS_HOST", "http://localhost:9090"
-)  # TODO: replace server URL definition
+prometheus_host = os.environ.get(
+    "SUPPORT_PROMETHEUS_SERVER_SERVICE_HOST", "http://localhost"
+)
+prometheus_port = int(os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_PORT", 8080))
 
 
-@ttl_lru_cache(seconds_to_live=3600)
 def query_prometheus(
-    query: str, from_date: str, to_date: str, step: str = TIME_RESOLUTION
+    query: str, from_date: str, to_date: str, step: str
 ) -> requests.Response:
     """
     Query the Prometheus server with the given query.
     """
-    prometheus_api = URL(prometheus_url)
+    prometheus_api = URL.build(
+        scheme="http", host=prometheus_host, port=prometheus_port
+    )
     parameters = {
         "query": query,
         "start": from_date,
@@ -61,13 +63,20 @@ def query_usage(
     """
     result = []
     if component_name is None:
-        for component, query in USAGE_MAP.items():
-            response = query_prometheus(query, from_date, to_date)
+        for component, params in USAGE_MAP.items():
+            response = query_prometheus(
+                params["query"], from_date, to_date, step=params["step"]
+            )
             result.extend(_process_response(response, component))
     else:
-        response = query_prometheus(USAGE_MAP[component_name], from_date, to_date)
+        response = query_prometheus(
+            USAGE_MAP[component_name]["query"],
+            from_date,
+            to_date,
+            step=USAGE_MAP[component_name]["step"],
+        )
         result.extend(_process_response(response, component_name))
-    # Calculate daily cost factors from absolute usage totals
+    # Calculate daily cost factors from absolute usage totals)
     result = _calculate_daily_cost_factors(result, hub_name=hub_name)
     # sort the result by date
     result.sort(key=lambda x: (x["date"], x["component"], x["hub"], x["user"]))
@@ -84,6 +93,8 @@ def _process_response(
 
     Converts the time series data into a list of usage records, then pivots by date
     and sums the absolute usage values across time steps within each date.
+
+    If the component_name is home storage, then rename the escaped username used for the directory to the unescaped version.
     """
     result = []
     for data in response["data"]["result"]:
@@ -105,6 +116,11 @@ def _process_response(
         )
     pivoted_result = _pivot_response_dict(result)
     processed_result = _sum_absolute_usage_by_date(pivoted_result)
+
+    if component_name == "home storage":
+        for entry in processed_result:
+            if "shared" not in entry["user"]:
+                entry["user"] = escapism.unescape(entry["user"], escape_char="-")
     return processed_result
 
 
@@ -204,5 +220,4 @@ def _calculate_daily_cost_factors(
             entry["value"] = entry["value"] / total
         else:
             entry["value"] = 0.0
-
     return result
