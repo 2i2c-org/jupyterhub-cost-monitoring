@@ -108,55 +108,116 @@ GROUP_BY_SERVICE_DIMENSION = {
 }
 
 FILTER_HOME_STORAGE_COSTS = {
-    "And": [
+    "Tags": {
+        "Key": "2i2c:volume-purpose",
+        "Values": ["home-nfs"],
+        "MatchOptions": ["EQUALS"],
+    }
+}
+
+
+# Some costs like costs associated with core nodes, hub database storage, and support components
+# (Prometheus, Grafana, Alertmanager) are not tied to any specific hub or user.
+# We consider these fixed costs and filter them out from compute costs before calculating user costs.
+FILTER_FIXED_COSTS = {
+    "Or": [
+        # Core node storage
         {
-            "Dimensions": {
-                "Key": "SERVICE",
-                "Values": ["EC2 - Other"],
-                "MatchOptions": ["EQUALS"],
-            },
-        },
-        {
-            "Tags": {
-                "Key": "2i2c.org/cluster-name",
-                "Values": [CLUSTER_NAME],
-                "MatchOptions": ["EQUALS"],
-            },
-        },
-        {
-            "Not": {
-                "Tags": {
-                    "Key": "2i2c:hub-name",
-                    "MatchOptions": ["ABSENT"],
+            "And": [
+                {
+                    "Dimensions": {
+                        "Key": "SERVICE",
+                        "Values": ["EC2 - Other"],
+                        "MatchOptions": ["EQUALS"],
+                    },
                 },
-            },
+                {
+                    "Tags": {
+                        "Key": "2i2c:node-purpose",
+                        "Values": ["core"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+            ]
         },
-        # node-purpose flag is set on k8s nodes.
-        # we can use it to filter out root EBS volumes attached to nodes that are not
-        # used for home directory storage.
+        # Core node compute
         {
-            "Tags": {
-                "Key": "2i2c:node-purpose",
-                "MatchOptions": ["ABSENT"],
-            },
+            "And": [
+                {
+                    "Dimensions": {
+                        "Key": "SERVICE",
+                        "Values": ["Amazon Elastic Compute Cloud - Compute"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+                {
+                    "Tags": {
+                        "Key": "2i2c:node-purpose",
+                        "Values": ["core"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+            ]
         },
+        # Cluster NAT gateway - common for all hubs
         {
-            "Dimensions": {
-                "Key": "RECORD_TYPE",
-                "Values": ["Usage"],
-                "MatchOptions": ["EQUALS"],
-            },
+            "And": [
+                {
+                    "Dimensions": {
+                        "Key": "SERVICE",
+                        "Values": ["EC2 - Other"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+                {
+                    "Dimensions": {
+                        "Key": "USAGE_TYPE_GROUP",
+                        "Values": [
+                            "EC2: NAT Gateway - Running Hours",
+                            "EC2: NAT Gateway - Data Processed",
+                        ],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+            ]
         },
+        # Hub database storage
         {
-            "Dimensions": {
-                "Key": "USAGE_TYPE_GROUP",
-                "Values": [
-                    "EC2: EBS - Snapshots",
-                    "EC2: EBS - SSD(gp2)",
-                    "EC2: EBS - SSD(gp3)",
-                ],
-                "MatchOptions": ["EQUALS"],
-            },
+            "And": [
+                {
+                    "Dimensions": {
+                        "Key": "SERVICE",
+                        "Values": ["EC2 - Other"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+                {
+                    "Tags": {
+                        "Key": "kubernetes.io/created-for/pvc/name",
+                        "Values": ["hub-db-dir"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+            ]
+        },
+        # Support components storage (Prometheus, Grafana, Alertmanager)
+        {
+            "And": [
+                {
+                    "Dimensions": {
+                        "Key": "SERVICE",
+                        "Values": ["EC2 - Other"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+                {
+                    "Tags": {
+                        "Key": "kubernetes.io/created-for/pvc/namespace",
+                        "Values": ["support"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+            ]
         },
     ]
 }
