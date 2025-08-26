@@ -207,9 +207,7 @@ def costs_per_user(
     from_date, to_date = _parse_from_to_in_query_params(
         from_date, to_date, api_provider="aws"
     )
-    # Grafana will pass empty string to get data for all hubs,
-    # so we need to handle that case.
-    if not hub:
+    if not hub or hub == "all":
         hub = None
     if not component:
         component = None
