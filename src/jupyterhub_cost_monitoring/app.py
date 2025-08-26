@@ -209,9 +209,9 @@ def costs_per_user(
     )
     if not hub or hub == "all":
         hub = None
-    if not component:
+    if not component or component == "all":
         component = None
-    if not user:
+    if not user or user == "all":
         user = None
 
     # Get per-user costs by combining AWS costs with Prometheus usage data
