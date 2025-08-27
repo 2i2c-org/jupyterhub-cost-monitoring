@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import FastAPI, Query
 
+from .const_usage import USAGE_MAP
 from .logs import get_logger
 from .query_cost_aws import (
     query_hub_names,
@@ -101,6 +102,14 @@ def hub_names(
     return query_hub_names(from_date, to_date)
 
 
+@app.get("/component-names")
+def component_names():
+    """
+    Endpoint to serve component names.
+    """
+    return list(USAGE_MAP.keys())
+
+
 @app.get("/total-costs")
 def total_costs(
     from_date: str | None = Query(
@@ -198,13 +207,11 @@ def costs_per_user(
     from_date, to_date = _parse_from_to_in_query_params(
         from_date, to_date, api_provider="aws"
     )
-    # Grafana will pass empty string to get data for all hubs,
-    # so we need to handle that case.
-    if not hub:
+    if not hub or hub == "all":
         hub = None
-    if not component:
+    if not component or component == "all":
         component = None
-    if not user:
+    if not user or user == "all":
         user = None
 
     # Get per-user costs by combining AWS costs with Prometheus usage data
