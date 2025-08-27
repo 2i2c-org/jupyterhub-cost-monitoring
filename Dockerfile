@@ -1,6 +1,6 @@
 FROM python:3.12-slim-bookworm
 
-RUN apt-get update && apt-get install -y tini
+RUN apt-get update && apt-get install -y tini git curl vim
 
 COPY --from=ghcr.io/astral-sh/uv:0.8.3 /uv /uvx /bin/
 
@@ -14,4 +14,4 @@ WORKDIR /opt/jupyterhub_cost_monitoring/src/jupyterhub_cost_monitoring
 USER 65534
 EXPOSE 8080
 ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["flask", "run", "--port", "8080", "--host", "0.0.0.0"]
+CMD ["fastapi", "run", "--port", "8080", "--host", "0.0.0.0"]
