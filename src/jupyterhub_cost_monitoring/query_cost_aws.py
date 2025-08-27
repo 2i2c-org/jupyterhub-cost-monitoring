@@ -90,9 +90,9 @@ def query_hub_names(from_date, to_date):
     #     },
     # }
     #
-    # The empty string is replaced with "shared"
+    # The empty string is replaced with "support"
     #
-    hub_names = [t or "shared" for t in response["Tags"]]
+    hub_names = [t or "support" for t in response["Tags"]]
     return hub_names
 
 
@@ -165,7 +165,7 @@ def _query_total_costs(from_date, to_date, add_attributable_costs_filter):
 def query_total_costs_per_hub(from_date, to_date):
     """
     A query with processing of the response tailored to report total costs per
-    hub, where costs not attributed to a specific hub is listed under 'shared'.
+    hub, where costs not attributed to a specific hub is listed under 'support'.
     """
     response = query_aws_cost_explorer(
         metrics=[METRICS_UNBLENDED_COST],
@@ -190,7 +190,7 @@ def query_total_costs_per_hub(from_date, to_date):
                 {
                     "date": e["TimePeriod"]["Start"],
                     "cost": f"{float(g['Metrics']['UnblendedCost']['Amount']):.2f}",
-                    "name": g["Keys"][0].split("$", maxsplit=1)[1] or "shared",
+                    "name": g["Keys"][0].split("$", maxsplit=1)[1] or "support",
                 }
                 for g in e["Groups"]
             ]
@@ -201,7 +201,9 @@ def query_total_costs_per_hub(from_date, to_date):
 
 def _process_home_storage_costs(entries_by_date, home_storage_ebs_cost_response):
     """
-    Helper function to process home storage costs and adjust compute costs accordingly.
+    Helper function to get home storage costs and deduct this from the compute component costs.
+    This is because EBS volumes are included in the EC2 - Other service, which is mapped to the
+    compute component by default.
 
     Args:
         entries_by_date: Dictionary indexed by date containing component entries
@@ -260,10 +262,10 @@ def _add_hub_filter(filter_dict: dict, hub_name: str = None) -> None:
 
     Args:
         filter_dict: The filter dictionary to modify (must have "And" key)
-        hub_name: The hub name to filter by. If "shared", filters for absent hub tags.
+        hub_name: The hub name to filter by. If "support", filters for absent hub tags.
                  If a specific name, filters for that hub. If None, no filter added.
     """
-    if hub_name == "shared":
+    if hub_name == "support":
         filter_dict["And"].append(
             {
                 "Tags": {
@@ -301,7 +303,11 @@ def _create_base_filter() -> dict:
 
 def _process_fixed_costs(entries_by_date, fixed_cost_response):
     """
-    Helper function to process fixed costs and adjust compute costs accordingly.
+    Helper function to get fixed costs and deduct this from compute costs.
+
+    This is because core node compute and root volumes, support EBS volumes
+    and NAT Gateway (if it exists), are mapped to compute by default under
+    the EC2 - Other service.
 
     Args:
         entries_by_date: Dictionary indexed by date containing component entries
@@ -365,8 +371,9 @@ def query_total_costs_per_component(
     Args:
         from_date: Start date for the query (YYYY-MM-DD format)
         to_date: End date for the query (YYYY-MM-DD format)
-        hub_name: The hub name to filter by. If "shared", filters for shared costs.
-                 If a specific name, filters for that hub. If None, queries all hubs.
+        hub_name: The hub name to filter by. If "support", filters for support costs
+                  not tied to any specific hub. If a specific name, filters for that hub.
+                  If None, queries all hubs.
         component: The component to filter by. If None, queries all components.
 
     Returns:
@@ -436,9 +443,7 @@ def query_total_costs_per_component(
             entries_by_date[date] = {}
         entries_by_date[date][entry["component"]] = entry
 
-    logger.debug(
-        f"Entries by date before deduplication: {entries_by_date}\n\n"
-    )  # Debugging output
+    logger.debug(f"Entries by date before deduplication: {entries_by_date}\n\n")
 
     # EC2 - Other is a service that can include costs for EBS volumes and snapshots
     # By default, these costs are mapped to the compute component, but
