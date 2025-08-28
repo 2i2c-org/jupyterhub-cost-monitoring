@@ -11,6 +11,7 @@ import requests
 from yarl import URL
 
 from .const_usage import USAGE_MAP
+from .date_utils import DateRange
 from .logs import get_logger
 
 logger = get_logger(__name__)
@@ -19,12 +20,21 @@ prometheus_host = os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_HOST", "loca
 prometheus_port = int(os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_PORT", 9090))
 
 
-def query_prometheus(
-    query: str, from_date: str, to_date: str, step: str
-) -> requests.Response:
+def query_prometheus(query: str, date_range: DateRange, step: str) -> requests.Response:
     """
-    Query the Prometheus server with the given query.
+    Query the Prometheus server with the given query over a date range.
+
+    Args:
+        query: The Prometheus query string
+        date_range: DateRange object containing the time period for the query
+        step: The query resolution step duration
+
+    Returns:
+        JSON response from Prometheus API
     """
+    # Use Prometheus-formatted dates (inclusive date range with ISO timestamps)
+    from_date, to_date = date_range.prometheus_range
+
     prometheus_api = URL.build(
         scheme="http", host=prometheus_host, port=prometheus_port
     )
@@ -43,8 +53,7 @@ def query_prometheus(
 
 
 def query_usage(
-    from_date: str,
-    to_date: str,
+    date_range: DateRange,
     hub_name: str | None,
     component_name: str | None,
     user_name: str | None,
@@ -57,24 +66,24 @@ def query_usage(
     within each date/hub/component combination.
 
     Args:
-        from_date: Start date in string ISO format (YYYY-MM-DD).
-        to_date: End date in string ISO format (YYYY-MM-DD).
+        date_range: DateRange object containing the time period for the query
         hub_name: Optional name of the hub to filter results.
         component_name: Optional name of the component to filter results.
         user_name: Optional name of the user to filter results.
     """
     result = []
     if component_name is None:
+        # Query all components defined in USAGE_MAP
         for component, params in USAGE_MAP.items():
             response = query_prometheus(
-                params["query"], from_date, to_date, step=params["step"]
+                params["query"], date_range, step=params["step"]
             )
             result.extend(_process_response(response, component))
     else:
+        # Query specific component only
         response = query_prometheus(
             USAGE_MAP[component_name]["query"],
-            from_date,
-            to_date,
+            date_range,
             step=USAGE_MAP[component_name]["step"],
         )
         result.extend(_process_response(response, component_name))

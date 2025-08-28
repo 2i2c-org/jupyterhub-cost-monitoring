@@ -3,7 +3,6 @@ Queries to AWS Cost Explorer to get different kinds of cost data.
 """
 
 import functools
-from datetime import datetime, timezone
 from pprint import pformat
 
 import boto3
@@ -20,6 +19,7 @@ from .const_cost_aws import (
     METRICS_UNBLENDED_COST,
     SERVICE_COMPONENT_MAP,
 )
+from .date_utils import DateRange
 from .logs import get_logger
 from .query_usage import query_usage
 
@@ -63,7 +63,19 @@ def query_aws_cost_explorer(metrics, granularity, from_date, to_date, filter, gr
 
 
 @ttl_lru_cache(seconds_to_live=3600)
-def query_hub_names(from_date, to_date):
+def query_hub_names(date_range: DateRange):
+    """
+    Query hub names from AWS Cost Explorer within the given date range.
+
+    Args:
+        date_range: DateRange object containing the time period for the query
+
+    Returns:
+        List of hub names, with empty/None values converted to "support"
+    """
+    # Use AWS-formatted dates (exclusive end date) for Cost Explorer API
+    from_date, to_date = date_range.aws_range
+
     # ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce/client/get_tags.html
     response = aws_ce_client.get_tags(
         TimePeriod={"Start": from_date, "End": to_date},
@@ -74,20 +86,26 @@ def query_hub_names(from_date, to_date):
 
 
 @ttl_lru_cache(seconds_to_live=3600)
-def query_total_costs(from_date, to_date):
+def query_total_costs(date_range: DateRange):
     """
-    A query with processing of the response tailored to report both the total
-    AWS account cost, and the total attributable cost.
+    Query total costs from AWS Cost Explorer for the given date range.
 
+    Reports both the total AWS account cost and the total attributable cost.
     Not all costs will be successfully attributed, such as the cost of accessing
     the AWS Cost Explorer API - its not something that can be attributed based
     on a tag.
+
+    Args:
+        date_range: DateRange object containing the time period for the query
+
+    Returns:
+        List of cost entries with 'date', 'cost', and 'name' fields, sorted by date
     """
     total_account_costs = _query_total_costs(
-        from_date, to_date, add_attributable_costs_filter=False
+        date_range, add_attributable_costs_filter=False
     )
     total_attributable_costs = _query_total_costs(
-        from_date, to_date, add_attributable_costs_filter=True
+        date_range, add_attributable_costs_filter=True
     )
 
     processed_response = total_account_costs + total_attributable_costs
@@ -100,11 +118,19 @@ def query_total_costs(from_date, to_date):
 
 
 @ttl_lru_cache(seconds_to_live=3600)
-def _query_total_costs(from_date, to_date, add_attributable_costs_filter):
+def _query_total_costs(date_range: DateRange, add_attributable_costs_filter):
     """
-    A query with processing of the response tailored to report total costs.
+    Internal function to query total costs from AWS Cost Explorer.
 
-    It can either be the total account costs, or only the attributable costs.
+    Can query either the total account costs or only the attributable costs
+    based on the add_attributable_costs_filter parameter.
+
+    Args:
+        date_range: DateRange object containing the time period for the query
+        add_attributable_costs_filter: If True, only include attributable costs
+
+    Returns:
+        List of cost entries with 'date', 'cost', and 'name' fields
     """
     if add_attributable_costs_filter:
         name = "attributable"
@@ -117,6 +143,9 @@ def _query_total_costs(from_date, to_date, add_attributable_costs_filter):
     else:
         name = "account"
         filter = FILTER_USAGE_COSTS
+
+    # Use AWS-formatted dates (exclusive end date) for Cost Explorer API
+    from_date, to_date = date_range.aws_range
 
     response = query_aws_cost_explorer(
         metrics=[METRICS_UNBLENDED_COST],
@@ -139,11 +168,21 @@ def _query_total_costs(from_date, to_date, add_attributable_costs_filter):
 
 
 @ttl_lru_cache(seconds_to_live=3600)
-def query_total_costs_per_hub(from_date, to_date):
+def query_total_costs_per_hub(date_range: DateRange):
     """
-    A query with processing of the response tailored to report total costs per
-    hub, where costs not attributed to a specific hub is listed under 'support'.
+    Query total costs per hub from AWS Cost Explorer for the given date range.
+
+    Costs not attributed to a specific hub are listed under 'support'.
+
+    Args:
+        date_range: DateRange object containing the time period for the query
+
+    Returns:
+        List of cost entries with 'date', 'cost', and 'name' (hub name) fields
     """
+    # Use AWS-formatted dates (exclusive end date) for Cost Explorer API
+    from_date, to_date = date_range.aws_range
+
     response = query_aws_cost_explorer(
         metrics=[METRICS_UNBLENDED_COST],
         granularity=GRANULARITY_DAILY,
@@ -339,15 +378,15 @@ def _process_fixed_costs(entries_by_date, fixed_cost_response):
 
 @ttl_lru_cache(seconds_to_live=3600)
 def query_total_costs_per_component(
-    from_date: str, to_date: str, hub_name: str = None, component: str = None
+    date_range: DateRange, hub_name: str = None, component: str = None
 ):
     """
-    A query with processing of the response tailored to report total costs per
-    component - a grouping of services.
+    Query total costs per component from AWS Cost Explorer for the given date range.
+
+    A component is a logical grouping of AWS services (e.g., compute, storage).
 
     Args:
-        from_date: Start date for the query (YYYY-MM-DD format)
-        to_date: End date for the query (YYYY-MM-DD format)
+        date_range: DateRange object containing the time period for the query
         hub_name: The hub name to filter by. If "support", filters for support costs
                   not tied to any specific hub. If a specific name, filters for that hub.
                   If None, queries all hubs.
@@ -359,6 +398,9 @@ def query_total_costs_per_component(
     # Create base filter and add hub-specific filtering
     base_filter = _create_base_filter()
     _add_hub_filter(base_filter, hub_name)
+
+    # Use AWS-formatted dates (exclusive end date) for Cost Explorer API
+    from_date, to_date = date_range.aws_range
 
     response = query_aws_cost_explorer(
         metrics=[METRICS_UNBLENDED_COST],
@@ -481,7 +523,7 @@ def query_total_costs_per_component(
 
 @ttl_lru_cache(seconds_to_live=3600)
 def query_total_costs_per_user(
-    from_date, to_date, hub: str = None, component: str = None, user: str = None
+    date_range: DateRange, hub: str = None, component: str = None, user: str = None
 ):
     """
     Query total costs per user by combining AWS costs with Prometheus usage data.
@@ -492,8 +534,7 @@ def query_total_costs_per_user(
     3. Multiplying total costs by each user's usage fraction
 
     Args:
-        from_date: Start date for the query (YYYY-MM-DD format)
-        to_date: End date for the query (YYYY-MM-DD format)
+        date_range: DateRange object containing the time period for the query
         hub: The hub namespace to query (optional, if None queries all hubs)
         component: The component to query (optional, if None queries all components)
         user: The user to query (optional, if None queries all users)
@@ -502,7 +543,8 @@ def query_total_costs_per_user(
         List of dicts with keys: date, hub, component, user, value (cost in USD)
         Results are sorted by date, hub, component, then value (highest cost first)
     """
-    costs_per_component = query_total_costs_per_component(from_date, to_date, hub)
+    # Get AWS cost data using the DateRange object
+    costs_per_component = query_total_costs_per_component(date_range, hub)
 
     costs_by_date = {}
     for entry in costs_per_component:
@@ -510,22 +552,11 @@ def query_total_costs_per_user(
             entry["cost"]
         )
 
-    # Convert dates to Unix timestamps for Prometheus query
-    # Treat from_date and to_date as UTC midnight
-    # TODO: double check timezone handling
-    start_dt = datetime.strptime(from_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-    end_dt = datetime.strptime(to_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-    prometheus_from = str(
-        int(start_dt.replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
-    )
-    prometheus_to = str(
-        int(end_dt.replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
-    )
-
-    # Get user usage percentages from Prometheus
+    # Get user usage percentages from Prometheus using the same DateRange object
+    # This ensures we query the same logical date range for both AWS and Prometheus,
+    # accounting for their different date range semantics (exclusive vs inclusive)
     usage_shares = query_usage(
-        prometheus_from,
-        prometheus_to,
+        date_range,
         hub_name=hub,
         component_name=component,
         user_name=user,
