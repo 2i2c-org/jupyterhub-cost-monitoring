@@ -10,6 +10,7 @@ import escapism
 import requests
 from yarl import URL
 
+from .cache import ttl_lru_cache
 from .const_usage import USAGE_MAP
 from .logs import get_logger
 
@@ -19,6 +20,7 @@ prometheus_host = os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_HOST", "loca
 prometheus_port = int(os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_PORT", 9090))
 
 
+@ttl_lru_cache(seconds_to_live=3600)
 def query_prometheus(
     query: str, from_date: str, to_date: str, step: str
 ) -> requests.Response:
