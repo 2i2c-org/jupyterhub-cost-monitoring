@@ -10,6 +10,7 @@ import escapism
 import requests
 from yarl import URL
 
+from .cache import ttl_lru_cache
 from .const_usage import USAGE_MAP
 from .date_utils import DateRange
 from .logs import get_logger

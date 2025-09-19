@@ -1,6 +1,6 @@
 # jupyterhub-cost-monitoring
 
-<img width="1900" height="1125" alt="Screenshot 2025-08-26 at 11 22 00" src="https://github.com/user-attachments/assets/a78b3ae9-ee6b-4ca9-9299-53b13636c927" />
+![Grafana dashboard with multiple panels showing stacked bar charts of user cloud costs over time.](./images/dashboard.png)
 
 Cloud cost monitoring is moving beyond just preventing runaway cost explosions – it’s about empowering JupyterHub administrators with the guardrails they need to run efficient, transparent, and sustainable infrastructures. A cloud cost bill can show a broad view of services and machines provisioned, but how can we provide granular insights into each user and the value they are deriving from the hub on an application level?  
 
