@@ -10,7 +10,7 @@ import boto3
 from .cache import ttl_lru_cache
 from .const_cost_aws import (
     FILTER_ATTRIBUTABLE_COSTS,
-    FILTER_FIXED_COSTS,
+    FILTER_CORE_COSTS,
     FILTER_HOME_STORAGE_COSTS,
     FILTER_USAGE_COSTS,
     GRANULARITY_DAILY,
@@ -71,7 +71,7 @@ def query_hub_names(date_range: DateRange):
         date_range: DateRange object containing the time period for the query
 
     Returns:
-        List of hub names, with empty/None values converted to "support"
+        List of hub names, with empty/None values converted to "core"
     """
     # Use AWS-formatted dates (exclusive end date) for Cost Explorer API
     from_date, to_date = date_range.aws_range
@@ -81,7 +81,7 @@ def query_hub_names(date_range: DateRange):
         TimePeriod={"Start": from_date, "End": to_date},
         TagKey="2i2c:hub-name",
     )
-    hub_names = [t or "support" for t in response["Tags"]]
+    hub_names = [t or "core" for t in response["Tags"]]
     return hub_names
 
 
@@ -317,9 +317,9 @@ def _create_base_filter() -> dict:
     }
 
 
-def _process_fixed_costs(entries_by_date, fixed_cost_response):
+def _process_core_costs(entries_by_date, core_cost_response):
     """
-    Helper function to get fixed costs and deduct this from compute costs.
+    Helper function to get core infrastructure costs and deduct this from compute costs.
 
     This is because core node compute and root volumes, support EBS volumes
     and NAT Gateway (if it exists), are mapped to compute by default under
@@ -327,53 +327,53 @@ def _process_fixed_costs(entries_by_date, fixed_cost_response):
 
     Args:
         entries_by_date: Dictionary indexed by date containing component entries
-        fixed_cost_response: AWS Cost Explorer response for fixed costs
+        core_cost_response: AWS Cost Explorer response for core costs
     """
     logger.debug(
-        f"Processing fixed costs: {pformat(fixed_cost_response['ResultsByTime'])}"
+        f"Processing core costs: {pformat(core_cost_response['ResultsByTime'])}"
     )
-    for fixed_e in fixed_cost_response["ResultsByTime"]:
-        date = fixed_e["TimePeriod"]["Start"]
+    for core_e in core_cost_response["ResultsByTime"]:
+        date = core_e["TimePeriod"]["Start"]
 
-        # Calculate total fixed cost for this date
-        fixed_cost = 0.0
-        for g in fixed_e["Groups"]:
-            fixed_cost += float(g["Metrics"]["UnblendedCost"]["Amount"])
+        # Calculate total core cost for this date
+        core_cost = 0.0
+        for g in core_e["Groups"]:
+            core_cost += float(g["Metrics"]["UnblendedCost"]["Amount"])
 
-        if fixed_cost > 0:
+        if core_cost > 0:
             date_entries = entries_by_date.get(date, {})
 
             # Subtract from compute component (EC2 - Other maps to compute)
             compute_entry = date_entries.get("compute")
             if compute_entry:
                 current_compute_cost = float(compute_entry["cost"])
-                new_compute_cost = max(0.0, current_compute_cost - fixed_cost)
+                new_compute_cost = max(0.0, current_compute_cost - core_cost)
                 compute_entry["cost"] = f"{new_compute_cost:.2f}"
                 logger.debug(
-                    f"Adjusted compute cost for {date} (fixed cost): {current_compute_cost:.2f} -> {new_compute_cost:.2f}"
+                    f"Adjusted compute cost for {date} (core cost): {current_compute_cost:.2f} -> {new_compute_cost:.2f}"
                 )
 
-            # Add to fixed component
-            fixed_entry = date_entries.get("fixed")
-            if fixed_entry:
-                current_fixed_cost = float(fixed_entry["cost"])
-                new_fixed_cost = current_fixed_cost + fixed_cost
-                fixed_entry["cost"] = f"{new_fixed_cost:.2f}"
+            # Add to core component
+            core_entry = date_entries.get("core")
+            if core_entry:
+                current_core_cost = float(core_entry["cost"])
+                new_core_cost = current_core_cost + core_cost
+                core_entry["cost"] = f"{new_core_cost:.2f}"
                 logger.debug(
-                    f"Updated fixed cost for {date}: {current_fixed_cost:.2f} -> {new_fixed_cost:.2f}"
+                    f"Updated core cost for {date}: {current_core_cost:.2f} -> {new_core_cost:.2f}"
                 )
             else:
-                # Create new fixed entry if it doesn't exist
+                # Create new core entry if it doesn't exist
                 new_entry = {
                     "date": date,
-                    "cost": f"{fixed_cost:.2f}",
-                    "component": "fixed",
+                    "cost": f"{core_cost:.2f}",
+                    "component": "core",
                 }
                 # Update index
                 if date not in entries_by_date:
                     entries_by_date[date] = {}
-                entries_by_date[date]["fixed"] = new_entry
-                logger.debug(f"Added new fixed entry for {date}: {fixed_cost:.2f}")
+                entries_by_date[date]["core"] = new_entry
+                logger.debug(f"Added new core entry for {date}: {core_cost:.2f}")
 
 
 @ttl_lru_cache(seconds_to_live=3600)
@@ -490,25 +490,25 @@ def query_total_costs_per_component(
         f"Entries by date after home storage processing: {entries_by_date}\n\n"
     )
 
-    # Query fixed costs (core nodes, hub databases, support components)
-    # These should be subtracted from compute and added to a "fixed" component
-    fixed_cost_filter = _create_base_filter()
-    _add_hub_filter(fixed_cost_filter, hub_name)
-    fixed_cost_filter["And"].append(FILTER_FIXED_COSTS)
+    # Query core costs (core nodes, hub databases, support components)
+    # These should be subtracted from compute and added to a "core" component
+    core_cost_filter = _create_base_filter()
+    _add_hub_filter(core_cost_filter, hub_name)
+    core_cost_filter["And"].append(FILTER_CORE_COSTS)
 
-    fixed_cost_response = query_aws_cost_explorer(
+    core_cost_response = query_aws_cost_explorer(
         metrics=[METRICS_UNBLENDED_COST],
         granularity=GRANULARITY_DAILY,
         from_date=from_date,
         to_date=to_date,
-        filter=fixed_cost_filter,
+        filter=core_cost_filter,
         group_by=[GROUP_BY_SERVICE_DIMENSION],
     )
 
-    # Process fixed costs and adjust compute costs accordingly
-    _process_fixed_costs(entries_by_date, fixed_cost_response)
+    # Process core costs and adjust compute costs accordingly
+    _process_core_costs(entries_by_date, core_cost_response)
 
-    logger.debug(f"Entries by date after fixed cost processing: {entries_by_date}\n\n")
+    logger.debug(f"Entries by date after core cost processing: {entries_by_date}\n\n")
 
     # Generate final response from index, sorted by date
     final_response = []

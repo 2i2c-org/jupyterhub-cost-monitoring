@@ -12,7 +12,7 @@ SERVICE_COMPONENT_MAP = {
     "AWS Backup": "backup",
     "EC2 - Other": "compute",  # Note: this can include EBS volumes and snapshots used for home storage as well
     "Amazon Elastic Compute Cloud - Compute": "compute",
-    "Amazon Elastic Container Service for Kubernetes": "fixed",
+    "Amazon Elastic Container Service for Kubernetes": "core",
     "Amazon Elastic File System": "home storage",
     "Amazon Elastic Load Balancing": "networking",
     "Amazon Simple Storage Service": "object storage",
@@ -118,8 +118,8 @@ FILTER_HOME_STORAGE_COSTS = {
 
 # Some costs like costs associated with core nodes, hub database storage, and support components
 # (Prometheus, Grafana, Alertmanager) are not tied to any specific hub or user.
-# We consider these fixed costs and filter them out from compute costs before calculating user costs.
-FILTER_FIXED_COSTS = {
+# We consider these core costs and filter them out from compute costs before calculating user costs.
+FILTER_CORE_COSTS = {
     "Or": [
         # Core node storage
         {
