@@ -533,6 +533,8 @@ def query_total_costs_per_user(
     2. Getting usage fractions per user from Prometheus metrics
     3. Multiplying total costs by each user's usage fraction
 
+    Excludes hubs with no users (e.g., binder hubs)
+
     Args:
         date_range: DateRange object containing the time period for the query
         hub: The hub namespace to query (optional, if None queries all hubs)
@@ -573,6 +575,7 @@ def query_total_costs_per_user(
                 usage_share * total_cost_for_component, 4
             )  # Adjust usage share to cost
             results.append(entry)
+    results = [x for x in results if x["hub"] != "binder"]  # Exclude binder hubs
     results.sort(
         key=lambda x: (x["date"], x["hub"], x["component"], -float(x["value"]))
     )
