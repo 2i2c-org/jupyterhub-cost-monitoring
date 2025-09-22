@@ -63,8 +63,8 @@ def sample_date_range():
     """Sample DateRange for testing."""
     from src.jupyterhub_cost_monitoring.date_utils import DateRange
 
-    start = datetime(2024, 1, 1, tzinfo=timezone.utc)
-    end = datetime(2024, 1, 31, tzinfo=timezone.utc)
+    start = datetime(2025, 8, 20, tzinfo=timezone.utc)
+    end = datetime(2025, 9, 19, tzinfo=timezone.utc)
     return DateRange(start_date=start, end_date=end)
 
 
