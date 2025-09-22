@@ -1,7 +1,10 @@
 import json
 from datetime import datetime, timezone
+from unittest.mock import MagicMock, patch
 
 import pytest
+
+# Usage and cost data fixtures for test_cost.py
 
 
 @pytest.fixture(scope="function")
@@ -30,6 +33,20 @@ def output_data_component():
     with open("tests/test_output_component.json") as f:
         data = json.load(f)
     return data
+
+
+# Usage and cost data for test_integration.py
+
+
+@pytest.fixture(scope="function", params=["compute", "home_storage"])
+def mock_usage_response(request):
+    with patch("requests.get") as mock_get:
+        mock_response = MagicMock()
+        with open(f"tests/test_data_usage_{request.param}.json") as f:
+            mock_response.json.return_value = json.load(f)
+        mock_get.return_value = mock_response
+        mock_get.test_param = request.param
+        yield mock_get
 
 
 # Date-specific fixtures for date_utils tests
