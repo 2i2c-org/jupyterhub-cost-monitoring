@@ -62,3 +62,11 @@ Helm charts are automatically published with [Chartpress](https://github.com/jup
 Images are hosted at [Quay.io](https://quay.io/repository/2i2c/jupyterhub-cost-monitoring).
 
 See the configuration in the [`chartpress.yaml`](https://github.com/2i2c-org/jupyterhub-cost-monitoring/blob/main/chartpress.yaml) file for more details.
+
+## Running tests
+
+To run tests, use `pytest`:
+
+```bash
+uv run pytest
+```
