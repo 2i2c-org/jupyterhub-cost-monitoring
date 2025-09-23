@@ -14,4 +14,20 @@ def test_get_usage_data(mock_usage_response, sample_date_range):
         date_range,
         step=USAGE_MAP[component_name]["step"],
     )
+    logger.debug(f"Usage response: {response}")
     assert response["status"] == "success"
+
+
+def test_get_cost_component(mock_ce, sample_date_range):
+    from_date, to_date = sample_date_range.aws_range
+    params = {
+        "TimePeriod": {"Start": "2025-01-01", "End": "2025-01-02"},
+        "Granularity": "DAILY",
+        "Metrics": ["UnblendedCost"],
+    }
+    response = mock_ce.get_cost_and_usage(
+        TimePeriod=params["TimePeriod"],
+        Granularity=params["Granularity"],
+        Metrics=params["Metrics"],
+    )
+    logger.debug(f"Cost response: {response}")

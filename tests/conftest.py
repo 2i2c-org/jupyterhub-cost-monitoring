@@ -2,7 +2,9 @@ import json
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
+import boto3
 import pytest
+from botocore.stub import Stubber
 
 # Usage and cost data fixtures for test_cost.py
 
@@ -40,6 +42,9 @@ def output_data_component():
 
 @pytest.fixture(scope="function", params=["compute", "home_storage"])
 def mock_usage_response(request):
+    """
+    Mock Prometheus response for compute and home storage components.
+    """
     with patch("requests.get") as mock_get:
         mock_response = MagicMock()
         with open(f"tests/test_data_usage_{request.param}.json") as f:
@@ -47,6 +52,31 @@ def mock_usage_response(request):
         mock_get.return_value = mock_response
         mock_get.test_param = request.param
         yield mock_get
+
+
+@pytest.fixture(scope="function")
+def mock_ce():
+    """
+    Mock total costs per component query from AWS Cost Explorer client.
+    """
+    aws_ce_client = boto3.client(
+        "ce",
+        region_name="us-west-2",
+        aws_access_key_id="fake-key",
+        aws_secret_access_key="fake-secret",
+        aws_session_token="fake-token",
+    )
+    stubber = Stubber(aws_ce_client)
+    with open("tests/test_data_cost_component.json") as f:
+        response = json.load(f)
+    params = {
+        "TimePeriod": {"Start": "2025-01-01", "End": "2025-01-02"},
+        "Granularity": "DAILY",
+        "Metrics": ["UnblendedCost"],
+    }
+    stubber.add_response("get_cost_and_usage", response, params)
+    with stubber:
+        yield aws_ce_client
 
 
 # Date-specific fixtures for date_utils tests
