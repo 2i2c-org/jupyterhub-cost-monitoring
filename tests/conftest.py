@@ -11,28 +11,28 @@ from botocore.stub import Stubber
 
 @pytest.fixture(scope="function")
 def input_data_usage():
-    with open("tests/test_data_usage.json") as f:
+    with open("tests/data/test_data_usage.json") as f:
         data = json.load(f)
     return data
 
 
 @pytest.fixture(scope="function")
 def input_data_cost():
-    with open("tests/test_data_cost.json") as f:
+    with open("tests/data/test_data_cost.json") as f:
         data = json.load(f)
     return data
 
 
 @pytest.fixture(scope="function")
 def output_data_hub():
-    with open("tests/test_output_hub.json") as f:
+    with open("tests/data/test_output_hub.json") as f:
         data = json.load(f)
     return data
 
 
 @pytest.fixture(scope="function")
 def output_data_component():
-    with open("tests/test_output_component.json") as f:
+    with open("tests/data/test_output_component.json") as f:
         data = json.load(f)
     return data
 
@@ -47,7 +47,7 @@ def mock_usage_response(request):
     """
     with patch("requests.get") as mock_get:
         mock_response = MagicMock()
-        with open(f"tests/test_data_usage_{request.param}.json") as f:
+        with open(f"tests/data/test_data_usage_{request.param}.json") as f:
             mock_response.json.return_value = json.load(f)
         mock_get.return_value = mock_response
         mock_get.test_param = request.param
@@ -57,7 +57,19 @@ def mock_usage_response(request):
 @pytest.fixture(scope="function")
 def mock_ce():
     """
-    Mock total costs per component query from AWS Cost Explorer client.
+    Mock multiple responses from the AWS Cost Explorer client to validate cost logic of `query_total_costs_per_user` function in `query_cost_aws` submodule.
+
+    Query parameters used to generate json test data files:
+
+    ```
+    {
+        "TimePeriod": {"Start": "2025-09-01", "End": "2025-09-03"},
+        "Granularity": "DAILY",
+        "Metrics": ["UnblendedCost"],
+        "GroupBy": [{"Type": "DIMENSION", "Key": "SERVICE"}],
+        "Filter": base_filter/home_storage_filter/core_filter,
+    }
+    ```
     """
     aws_ce_client = boto3.client(
         "ce",
@@ -65,16 +77,12 @@ def mock_ce():
         aws_access_key_id="fake-key",
         aws_secret_access_key="fake-secret",
         aws_session_token="fake-token",
-    )
+    )  # Use fake credentials, otherwise boto3 will use real ones from your environment
     stubber = Stubber(aws_ce_client)
-    with open("tests/test_data_cost_component.json") as f:
-        response = json.load(f)
-    params = {
-        "TimePeriod": {"Start": "2025-01-01", "End": "2025-01-02"},
-        "Granularity": "DAILY",
-        "Metrics": ["UnblendedCost"],
-    }
-    stubber.add_response("get_cost_and_usage", response, params)
+    for c in ["all", "home_storage", "core"]:
+        with open(f"tests/data/test_data_cost_component_{c}.json") as f:
+            response = json.load(f)
+        stubber.add_response("get_cost_and_usage", response)
     with stubber:
         yield aws_ce_client
 
@@ -93,8 +101,8 @@ def sample_date_range():
     """Sample DateRange for testing."""
     from src.jupyterhub_cost_monitoring.date_utils import DateRange
 
-    start = datetime(2025, 8, 20, tzinfo=timezone.utc)
-    end = datetime(2025, 9, 19, tzinfo=timezone.utc)
+    start = datetime(2025, 9, 1, tzinfo=timezone.utc)
+    end = datetime(2025, 9, 3, tzinfo=timezone.utc)
     return DateRange(start_date=start, end_date=end)
 
 
