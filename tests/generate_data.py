@@ -46,7 +46,7 @@ def generate_test_data(
                         "component": component,
                         "value": np.round(np.random.rand() * factor, 0),
                     }
-    with open(f"test_data_{data_type}.json", "w") as f:
+    with open(f"data/test_data_{data_type}.json", "w") as f:
         json.dump(data, f, indent=4)
 
 
@@ -54,9 +54,9 @@ def generate_test_output_hub():
     """
     Generate test output grouped by hub based on the test usage and test cost data.
     """
-    with open("test_data_usage.json") as f:
+    with open("data/test_data_usage.json") as f:
         data_usage = json.load(f)
-    with open("test_data_cost.json") as f:
+    with open("data/test_data_cost.json") as f:
         data_cost = json.load(f)
     df_usage = pd.DataFrame(data_usage)
     df_cost = pd.DataFrame(data_cost)
@@ -67,16 +67,16 @@ def generate_test_output_hub():
     merged = df_usage.merge(df_cost, on=["date", "component", "hub"], how="left")
     merged["cost"] = merged["cost_factor"] * merged["value_y"]
     df_usage["cost"] = merged["cost"]
-    df_usage.to_json("test_output_hub.json", orient="records", indent=4)
+    df_usage.to_json("data/test_output_hub.json", orient="records", indent=4)
 
 
 def generate_test_output_component():
     """
     Generate test output grouped by component based on the test usage and test cost data.
     """
-    with open("test_data_usage.json") as f:
+    with open("data/test_data_usage.json") as f:
         data_usage = json.load(f)
-    with open("test_data_cost.json") as f:
+    with open("data/test_data_cost.json") as f:
         data_cost = json.load(f)
     df_usage = pd.DataFrame(data_usage)
     df_usage = df_usage.groupby(["date", "component", "user"], as_index=False).sum()
@@ -99,4 +99,4 @@ def generate_test_output_component():
     merged["cost"] = merged["cost_factor"] * merged["value_y"]
     df_usage["cost"] = merged["cost"]
     df_usage = df_usage.drop(columns=["hub"])
-    df_usage.to_json("test_output_component.json", orient="records", indent=4)
+    df_usage.to_json("data/test_output_component.json", orient="records", indent=4)
