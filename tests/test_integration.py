@@ -13,6 +13,8 @@ logger = get_logger(__name__)
 
 date_range = parse_from_to_in_query_params("2025-09-01", "2025-09-01")
 
+date_range = parse_from_to_in_query_params("2025-09-01", "2025-09-01")
+
 
 def test_get_usage_data(mock_prometheus, env_vars):
     """
