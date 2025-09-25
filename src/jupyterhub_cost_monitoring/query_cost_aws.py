@@ -37,7 +37,9 @@ def _get_component_name(service_name):
         return "other"
 
 
-def query_aws_cost_explorer(metrics, granularity, from_date, to_date, filter, group_by):
+def query_aws_cost_explorer(
+    metrics, granularity, from_date, to_date, filter, group_by, aws_ce_client
+):
     """
     Function meant to be responsible for making the API call and handling
     pagination etc. Currently pagination isn't handled.
@@ -63,7 +65,7 @@ def query_aws_cost_explorer(metrics, granularity, from_date, to_date, filter, gr
 
 
 @ttl_lru_cache(seconds_to_live=3600)
-def query_hub_names(date_range: DateRange):
+def query_hub_names(date_range: DateRange, aws_ce_client):
     """
     Query hub names from AWS Cost Explorer within the given date range.
 
@@ -378,7 +380,10 @@ def _process_core_costs(entries_by_date, core_cost_response):
 
 @ttl_lru_cache(seconds_to_live=3600)
 def query_total_costs_per_component(
-    date_range: DateRange, hub_name: str = None, component: str = None
+    date_range: DateRange,
+    hub_name: str = None,
+    component: str = None,
+    aws_ce_client=aws_ce_client,
 ):
     """
     Query total costs per component from AWS Cost Explorer for the given date range.
@@ -409,18 +414,9 @@ def query_total_costs_per_component(
         to_date=to_date,
         filter=base_filter,
         group_by=[GROUP_BY_SERVICE_DIMENSION],
+        aws_ce_client=aws_ce_client,
     )
 
-    # processed_response is a list with entries looking like this...
-    #
-    # [
-    #     {
-    #         "date": "2024-08-30",
-    #         "cost": "12.19",
-    #         "name": "home storage",
-    #     },
-    # ]
-    #
     processed_response = []
 
     logger.debug(f"Processing response: {pformat(response['ResultsByTime'])}")
@@ -481,6 +477,7 @@ def query_total_costs_per_component(
         to_date=to_date,
         filter=home_storage_filter,
         group_by=[GROUP_BY_SERVICE_DIMENSION],
+        aws_ce_client=aws_ce_client,
     )
 
     # Process home storage costs and adjust compute costs accordingly
@@ -503,6 +500,7 @@ def query_total_costs_per_component(
         to_date=to_date,
         filter=core_cost_filter,
         group_by=[GROUP_BY_SERVICE_DIMENSION],
+        aws_ce_client=aws_ce_client,
     )
 
     # Process core costs and adjust compute costs accordingly
