@@ -73,7 +73,7 @@ def query_hub_names(date_range: DateRange, aws_ce_client):
         date_range: DateRange object containing the time period for the query
 
     Returns:
-        List of hub names, with empty/None values converted to "core"
+        List of hub names, with empty/None values converted to "support"
     """
     # Use AWS-formatted dates (exclusive end date) for Cost Explorer API
     from_date, to_date = date_range.aws_range
@@ -83,7 +83,7 @@ def query_hub_names(date_range: DateRange, aws_ce_client):
         TimePeriod={"Start": from_date, "End": to_date},
         TagKey="2i2c:hub-name",
     )
-    hub_names = [t or "core" for t in response["Tags"]]
+    hub_names = [t or "support" for t in response["Tags"]]
     return hub_names
 
 
@@ -392,9 +392,7 @@ def query_total_costs_per_component(
 
     Args:
         date_range: DateRange object containing the time period for the query
-        hub_name: The hub name to filter by. If "support", filters for support costs
-                  not tied to any specific hub. If a specific name, filters for that hub.
-                  If None, queries all hubs.
+        hub_name: The hub name to filter by. If "support", filters for support costs not tied to any specific hub. If a specific name, filters for that hub. If None, queries all hubs.
         component: The component to filter by. If None, queries all components.
 
     Returns:
