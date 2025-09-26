@@ -42,7 +42,6 @@ def output_data_component():
 
 # Usage and cost data for test_integration.py
 
-
 @pytest.fixture(autouse=True)
 def env_vars(monkeypatch):
     """
