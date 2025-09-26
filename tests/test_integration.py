@@ -15,12 +15,12 @@ logger = get_logger(__name__)
 date_range = parse_from_to_in_query_params("2025-09-01", "2025-09-01")
 
 
-def test_get_usage_data(mock_usage_response, env_vars):
+def test_get_usage_data(mock_prometheus):
     """
     Test mocked Prometheus compute and home storage json data retrieval.
     """
-    component_name = mock_usage_response.test_param.replace("_", " ")
-    logger.debug(f"Running with param: {component_name}")
+    component_name = mock_prometheus.test_param.replace("_", " ")
+    logger.info(f"Running with param: {component_name}")
     response = query_prometheus(
         USAGE_MAP[component_name]["query"],
         date_range,
@@ -30,7 +30,7 @@ def test_get_usage_data(mock_usage_response, env_vars):
     assert response["status"] == "success"
 
 
-def test_get_cost_component_data(mock_ce, env_vars):
+def test_get_cost_component_data(mock_ce):
     """
     Test mocked AWS Cost Explorer cost json data retrieval for all, home storage and core components.
     """
