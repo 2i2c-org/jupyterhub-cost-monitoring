@@ -51,7 +51,7 @@ def test_get_cost_component_data(mock_ce, env_vars):
         assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
 
 
-def test_total_costs_per_component(mock_ce, env_vars):
+def test_total_costs_per_component(mock_ce):
     """
     Test cost logic for compute, home storage and core components of the total costs per component endpoint.
     """
@@ -69,8 +69,19 @@ def test_total_costs_per_component(mock_ce, env_vars):
     assert result["core"] == 11.13
 
 
-def test_costs_per_user(mock_prometheus, mock_ce):
+def test_costs_per_user(mock_prometheus, mock_ce, output_cost_per_user):
+    """
+    Test cost logic for cost-per-user endpoint.
+    """
     from src.jupyterhub_cost_monitoring.query_cost_aws import query_total_costs_per_user
 
     result = query_total_costs_per_user(date_range)
-    logger.debug(f"Costs per user result: {result}")
+
+    lookup = {
+        (o["date"], o["user"], o["component"]): o["value"] for o in output_cost_per_user
+    }
+
+    for r in result:
+        key = (r["date"], r["user"], r["component"])
+        if key in lookup:
+            assert r["value"] == lookup[key]
