@@ -55,9 +55,7 @@ def test_total_costs_per_component(mock_ce, env_vars):
     """
     Test cost logic for compute, home storage and core components of the total costs per component endpoint.
     """
-    costs_per_component = query_total_costs_per_component(
-        date_range, aws_ce_client=mock_ce
-    )
+    costs_per_component = query_total_costs_per_component(date_range)
     components = {"compute", "home storage", "core"}
 
     result = {

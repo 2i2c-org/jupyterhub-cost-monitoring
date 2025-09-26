@@ -54,7 +54,7 @@ def mock_usage_response(request):
     """
     Mock Prometheus response for compute and home storage components.
     """
-    with patch("requests.get") as mock_get:
+    with patch("src.jupyterhub_cost_monitoring.query_usage.requests.get") as mock_get:
         mock_response = MagicMock()
         with open(f"tests/data/test_data_usage_{request.param}.json") as f:
             mock_response.json.return_value = json.load(f)
@@ -93,7 +93,10 @@ def mock_ce():
             response = json.load(f)
         stubber.add_response("get_cost_and_usage", response)
     with stubber:
-        yield aws_ce_client
+        with patch(
+            "src.jupyterhub_cost_monitoring.query_cost_aws.aws_ce_client", aws_ce_client
+        ):
+            yield aws_ce_client
 
 
 # Date-specific fixtures for date_utils tests
