@@ -99,6 +99,16 @@ def mock_ce():
     ):
         yield aws_ce_client
 
+
+@pytest.fixture(scope="function")
+def output_cost_per_user():
+    """
+    Output to assert against query_total_costs_per_user function.
+    """
+    with open("tests/data/test_output_cost_per_user.json") as f:
+        data = json.load(f)
+    return data
+
 # Date-specific fixtures for date_utils tests
 
 
