@@ -1,33 +1,110 @@
 import json
 from datetime import datetime, timezone
+from unittest.mock import MagicMock, patch
 
+import boto3
 import pytest
+from botocore.stub import Stubber
+
+# Usage and cost data fixtures for test_cost.py
 
 
 @pytest.fixture(scope="function")
 def input_data_usage():
-    with open("tests/test_data_usage.json") as f:
+    with open("tests/data/test_data_usage.json") as f:
         data = json.load(f)
     return data
 
 
 @pytest.fixture(scope="function")
 def input_data_cost():
-    with open("tests/test_data_cost.json") as f:
+    with open("tests/data/test_data_cost.json") as f:
         data = json.load(f)
     return data
 
 
 @pytest.fixture(scope="function")
 def output_data_hub():
-    with open("tests/test_output_hub.json") as f:
+    with open("tests/data/test_output_hub.json") as f:
         data = json.load(f)
     return data
 
 
 @pytest.fixture(scope="function")
 def output_data_component():
-    with open("tests/test_output_component.json") as f:
+    with open("tests/data/test_output_component.json") as f:
+        data = json.load(f)
+    return data
+
+
+# Usage and cost data for test_integration.py
+
+
+@pytest.fixture(autouse=True)
+def env_vars(monkeypatch):
+    """
+    Set environment variables for testing.
+    """
+    monkeypatch.setenv("CLUSTER_NAME", "test-cluster")
+    monkeypatch.setenv("AWS_EC2_METADATA_DISABLED", "true")
+    # Fake AWS credentials for boto3 client
+    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "fake-key")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "fake-secret")
+    monkeypatch.setenv("AWS_SESSION_TOKEN", "fake-token")
+
+
+@pytest.fixture(scope="function", params=["compute", "home_storage"])
+def mock_prometheus(request):
+    """
+    Mock Prometheus response for compute and home storage components.
+    """
+    with patch("src.jupyterhub_cost_monitoring.query_usage.requests.get") as mock:
+        mock_response = MagicMock()
+        with open(f"tests/data/test_data_usage_{request.param}.json") as f:
+            mock_response.json.return_value = json.load(f)
+        mock.return_value = mock_response
+        mock.test_param = request.param
+        yield mock
+
+
+@pytest.fixture(scope="function")
+def mock_ce():
+    """
+    Mock multiple responses from the AWS Cost Explorer client to validate cost logic of `query_total_costs_per_user` function in `query_cost_aws` submodule.
+
+    Query parameters used to generate json test data files:
+
+    ```
+    {
+        "TimePeriod": {"Start": "2025-09-01", "End": "2025-09-03"},
+        "Granularity": "DAILY",
+        "Metrics": ["UnblendedCost"],
+        "GroupBy": [{"Type": "DIMENSION", "Key": "SERVICE"}],
+        "Filter": base_filter/home_storage_filter/core_filter,
+    }
+    ```
+    """
+    aws_ce_client = boto3.client("ce")
+    stubber = Stubber(aws_ce_client)
+    for c in ["all", "home_storage", "core"]:
+        with open(f"tests/data/test_data_cost_component_{c}.json") as f:
+            response = json.load(f)
+        stubber.add_response("get_cost_and_usage", response)
+    with (
+        stubber,
+        patch(
+            "src.jupyterhub_cost_monitoring.query_cost_aws.aws_ce_client", aws_ce_client
+        ),
+    ):
+        yield aws_ce_client
+
+
+@pytest.fixture(scope="function")
+def output_cost_per_user():
+    """
+    Output to assert against query_total_costs_per_user function.
+    """
+    with open("tests/data/test_output_cost_per_user.json") as f:
         data = json.load(f)
     return data
 
@@ -46,8 +123,8 @@ def sample_date_range():
     """Sample DateRange for testing."""
     from src.jupyterhub_cost_monitoring.date_utils import DateRange
 
-    start = datetime(2024, 1, 1, tzinfo=timezone.utc)
-    end = datetime(2024, 1, 31, tzinfo=timezone.utc)
+    start = datetime(2025, 9, 1, tzinfo=timezone.utc)
+    end = datetime(2025, 9, 3, tzinfo=timezone.utc)
     return DateRange(start_date=start, end_date=end)
 
 

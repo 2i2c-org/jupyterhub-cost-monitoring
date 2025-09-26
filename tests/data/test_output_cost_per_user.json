@@ -1,0 +1,58 @@
+[
+    {
+        "component": "compute",
+        "date": "2025-09-01",
+        "hub": "prod",
+        "user": "user_1",
+        "value": 0.1416
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-01",
+        "hub": "prod",
+        "user": "user_2",
+        "value": 5.4389
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-01",
+        "hub": "prod",
+        "user": "user_3",
+        "value": 3.0594
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-01",
+        "hub": "prod",
+        "user": "user_4",
+        "value": 0.2101
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-01",
+        "hub": "prod",
+        "user": "user_1",
+        "value": 0.1156
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-01",
+        "hub": "prod",
+        "user": "user_2",
+        "value": 4.4372
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-01",
+        "hub": "prod",
+        "user": "user_3",
+        "value": 2.4959
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-01",
+        "hub": "prod",
+        "user": "user_4",
+        "value": 0.1714
+    }
+]
