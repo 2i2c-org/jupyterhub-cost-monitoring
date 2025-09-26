@@ -68,7 +68,7 @@ def mock_prometheus(request):
 
 
 @pytest.fixture(scope="function")
-def mock_ce(env_vars):
+def mock_ce():
     """
     Mock multiple responses from the AWS Cost Explorer client to validate cost logic of `query_total_costs_per_user` function in `query_cost_aws` submodule.
 
