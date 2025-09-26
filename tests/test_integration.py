@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 date_range = parse_from_to_in_query_params("2025-09-01", "2025-09-01")
 
 
-def test_get_usage_data(mock_usage_response):
+def test_get_usage_data(mock_usage_response, env_vars):
     """
     Test mocked Prometheus compute and home storage json data retrieval.
     """
@@ -30,7 +30,7 @@ def test_get_usage_data(mock_usage_response):
     assert response["status"] == "success"
 
 
-def test_get_cost_component_data(mock_ce):
+def test_get_cost_component_data(mock_ce, env_vars):
     """
     Test mocked AWS Cost Explorer cost json data retrieval for all, home storage and core components.
     """
@@ -51,7 +51,7 @@ def test_get_cost_component_data(mock_ce):
         assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
 
 
-def test_total_costs_per_component(mock_ce):
+def test_total_costs_per_component(mock_ce, env_vars):
     """
     Test cost logic for compute, home storage and core components of the total costs per component endpoint.
     """

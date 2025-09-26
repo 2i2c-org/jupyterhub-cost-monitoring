@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
@@ -38,6 +39,14 @@ def output_data_component():
 
 
 # Usage and cost data for test_integration.py
+
+
+@pytest.fixture(scope="function")
+def env_vars():
+    """
+    Set environment variables for testing.
+    """
+    os.environ["CLUSTER_NAME"] = "test-cluster"
 
 
 @pytest.fixture(scope="function", params=["compute", "home_storage"])
