@@ -3,9 +3,9 @@
         "result": [
             {
                 "metric": {
-                    "directory": "user-1",
+                    "directory": "user_1",
                     "namespace": "prod",
-                    "username": "user-1"
+                    "username": "user_1"
                 },
                 "values": [
                     [
@@ -20,9 +20,9 @@
             },
             {
                 "metric": {
-                    "directory": "user-1",
+                    "directory": "user_1",
                     "namespace": "staging",
-                    "username": "user-1"
+                    "username": "user_1"
                 },
                 "values": [
                     [
@@ -37,9 +37,9 @@
             },
             {
                 "metric": {
-                    "directory": "user-2",
+                    "directory": "user_2",
                     "namespace": "workshop",
-                    "username": "user-2"
+                    "username": "user_2"
                 },
                 "values": [
                     [
@@ -54,9 +54,9 @@
             },
             {
                 "metric": {
-                    "directory": "user-3",
+                    "directory": "user_3",
                     "namespace": "prod",
-                    "username": "user-3"
+                    "username": "user_3"
                 },
                 "values": [
                     [
@@ -71,9 +71,9 @@
             },
             {
                 "metric": {
-                    "directory": "user-4",
+                    "directory": "user_4",
                     "namespace": "prod",
-                    "username": "user-4"
+                    "username": "user_4"
                 },
                 "values": [
                     [
