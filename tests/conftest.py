@@ -1,5 +1,4 @@
 import json
-import os
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
@@ -41,16 +40,16 @@ def output_data_component():
 # Usage and cost data for test_integration.py
 
 
-@pytest.fixture(scope="function")
-def env_vars():
+@pytest.fixture(autouse=True)
+def env_vars(monkeypatch):
     """
     Set environment variables for testing.
     """
-    os.environ["CLUSTER_NAME"] = "test-cluster"
+    monkeypatch.setenv("CLUSTER_NAME", "test-cluster")
 
 
 @pytest.fixture(scope="function", params=["compute", "home_storage"])
-def mock_usage_response(request):
+def mock_usage_response(request, env_vars):
     """
     Mock Prometheus response for compute and home storage components.
     """
@@ -64,7 +63,7 @@ def mock_usage_response(request):
 
 
 @pytest.fixture(scope="function")
-def mock_ce():
+def mock_ce(env_vars):
     """
     Mock multiple responses from the AWS Cost Explorer client to validate cost logic of `query_total_costs_per_user` function in `query_cost_aws` submodule.
 
