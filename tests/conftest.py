@@ -46,24 +46,29 @@ def env_vars(monkeypatch):
     Set environment variables for testing.
     """
     monkeypatch.setenv("CLUSTER_NAME", "test-cluster")
+    monkeypatch.setenv("AWS_EC2_METADATA_DISABLED", "true")
+    # Fake AWS credentials for boto3 client
+    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "fake-key")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "fake-secret")
+    monkeypatch.setenv("AWS_SESSION_TOKEN", "fake-token")
 
 
 @pytest.fixture(scope="function", params=["compute", "home_storage"])
-def mock_usage_response(request, env_vars):
+def mock_prometheus(request):
     """
     Mock Prometheus response for compute and home storage components.
     """
-    with patch("src.jupyterhub_cost_monitoring.query_usage.requests.get") as mock_get:
+    with patch("src.jupyterhub_cost_monitoring.query_usage.requests.get") as mock:
         mock_response = MagicMock()
         with open(f"tests/data/test_data_usage_{request.param}.json") as f:
             mock_response.json.return_value = json.load(f)
-        mock_get.return_value = mock_response
-        mock_get.test_param = request.param
-        yield mock_get
+        mock.return_value = mock_response
+        mock.test_param = request.param
+        yield mock
 
 
 @pytest.fixture(scope="function")
-def mock_ce(env_vars):
+def mock_ce():
     """
     Mock multiple responses from the AWS Cost Explorer client to validate cost logic of `query_total_costs_per_user` function in `query_cost_aws` submodule.
 
@@ -79,23 +84,19 @@ def mock_ce(env_vars):
     }
     ```
     """
-    aws_ce_client = boto3.client(
-        "ce",
-        region_name="us-west-2",
-        aws_access_key_id="fake-key",
-        aws_secret_access_key="fake-secret",
-        aws_session_token="fake-token",
-    )  # Use fake credentials, otherwise boto3 will use real ones from your environment
+    aws_ce_client = boto3.client("ce")
     stubber = Stubber(aws_ce_client)
     for c in ["all", "home_storage", "core"]:
         with open(f"tests/data/test_data_cost_component_{c}.json") as f:
             response = json.load(f)
         stubber.add_response("get_cost_and_usage", response)
-    with stubber:
-        with patch(
+    with (
+        stubber,
+        patch(
             "src.jupyterhub_cost_monitoring.query_cost_aws.aws_ce_client", aws_ce_client
-        ):
-            yield aws_ce_client
+        ),
+    ):
+        yield aws_ce_client
 
 
 # Date-specific fixtures for date_utils tests
