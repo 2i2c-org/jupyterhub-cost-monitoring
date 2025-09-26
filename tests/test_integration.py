@@ -2,32 +2,32 @@ from src.jupyterhub_cost_monitoring.const_cost_aws import (
     GRANULARITY_DAILY,
     METRICS_UNBLENDED_COST,
 )
-from src.jupyterhub_cost_monitoring.const_usage import USAGE_MAP
 from src.jupyterhub_cost_monitoring.date_utils import parse_from_to_in_query_params
 from src.jupyterhub_cost_monitoring.logs import get_logger
 from src.jupyterhub_cost_monitoring.query_cost_aws import (
     query_total_costs_per_component,
 )
-from src.jupyterhub_cost_monitoring.query_usage import query_prometheus
 
 logger = get_logger(__name__)
 
-date_range = parse_from_to_in_query_params("2025-09-01", "2025-09-01")
+date_range = parse_from_to_in_query_params("2025-09-01", "2025-09-02")
 
 
 def test_get_usage_data(mock_prometheus, env_vars):
     """
     Test mocked Prometheus compute and home storage json data retrieval.
     """
+    from src.jupyterhub_cost_monitoring.query_usage import query_usage
+
     component_name = mock_prometheus.test_param.replace("_", " ")
-    logger.debug(f"Running with param: {component_name}")
-    response = query_prometheus(
-        USAGE_MAP[component_name]["query"],
+    response = query_usage(
         date_range,
-        step=USAGE_MAP[component_name]["step"],
+        hub_name=None,
+        component_name=component_name,
+        user_name=None,
     )
-    logger.debug(f"Usage response: {response}")
-    assert response["status"] == "success"
+    logger.info(f"{component_name} usage shares: {response}")
+    assert len(response) > 0
 
 
 def test_get_cost_component_data(mock_ce, env_vars):
@@ -67,3 +67,10 @@ def test_total_costs_per_component(mock_ce, env_vars):
     assert result["compute"] == 8.85
     assert result["home storage"] == 7.22
     assert result["core"] == 11.13
+
+
+def test_costs_per_user(mock_prometheus, mock_ce):
+    from src.jupyterhub_cost_monitoring.query_cost_aws import query_total_costs_per_user
+
+    result = query_total_costs_per_user(date_range)
+    logger.debug(f"Costs per user result: {result}")
