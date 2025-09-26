@@ -99,7 +99,6 @@ def mock_ce():
     ):
         yield aws_ce_client
 
-
 # Date-specific fixtures for date_utils tests
 
 

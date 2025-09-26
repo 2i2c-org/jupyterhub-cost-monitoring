@@ -37,9 +37,7 @@ def _get_component_name(service_name):
         return "other"
 
 
-def query_aws_cost_explorer(
-    metrics, granularity, from_date, to_date, filter, group_by, aws_ce_client
-):
+def query_aws_cost_explorer(metrics, granularity, from_date, to_date, filter, group_by):
     """
     Function meant to be responsible for making the API call and handling
     pagination etc. Currently pagination isn't handled.
@@ -65,7 +63,7 @@ def query_aws_cost_explorer(
 
 
 @ttl_lru_cache(seconds_to_live=3600)
-def query_hub_names(date_range: DateRange, aws_ce_client):
+def query_hub_names(date_range: DateRange):
     """
     Query hub names from AWS Cost Explorer within the given date range.
 
@@ -473,7 +471,6 @@ def query_total_costs_per_component(
         to_date=to_date,
         filter=home_storage_filter,
         group_by=[GROUP_BY_SERVICE_DIMENSION],
-        aws_ce_client=aws_ce_client,
     )
 
     # Process home storage costs and adjust compute costs accordingly
@@ -496,7 +493,6 @@ def query_total_costs_per_component(
         to_date=to_date,
         filter=core_cost_filter,
         group_by=[GROUP_BY_SERVICE_DIMENSION],
-        aws_ce_client=aws_ce_client,
     )
 
     # Process core costs and adjust compute costs accordingly
