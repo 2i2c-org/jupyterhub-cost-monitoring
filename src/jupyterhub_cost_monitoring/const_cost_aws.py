@@ -4,10 +4,6 @@ Constants used to compose queries against AWS Cost Explorer API.
 
 import os
 
-# Environment variables based config isn't great, see fixme comment in
-# values.yaml under the software configuration heading
-CLUSTER_NAME = os.environ.get("CLUSTER_NAME")
-
 SERVICE_COMPONENT_MAP = {
     "AWS Backup": "backup",
     "EC2 - Other": "compute",  # Note: this can include EBS volumes and snapshots used for home storage as well
@@ -49,53 +45,58 @@ FILTER_USAGE_COSTS = {
         "Values": ["Usage"],
     },
 }
-FILTER_ATTRIBUTABLE_COSTS = {
-    # ref: https://github.com/2i2c-org/infrastructure/issues/4787#issue-2519110356
-    "Or": [
-        {
-            "Tags": {
-                "Key": "alpha.eksctl.io/cluster-name",
-                "Values": [CLUSTER_NAME],
-                "MatchOptions": ["EQUALS"],
-            },
-        },
-        {
-            "Tags": {
-                "Key": f"kubernetes.io/cluster/{CLUSTER_NAME}",
-                "Values": ["owned"],
-                "MatchOptions": ["EQUALS"],
-            },
-        },
-        {
-            "Tags": {
-                "Key": "2i2c.org/cluster-name",
-                "Values": [CLUSTER_NAME],
-                "MatchOptions": ["EQUALS"],
-            },
-        },
-        # FIXME: The inclusion of tags 2i2c:hub-name and 2i2c:node-purpose below
-        #        in this filter is a patch to capture openscapes data from 1st
-        #        July and up to 24th September 2024, and can be removed once
-        #        that date range is considered irrelevant.
-        #
-        {
-            "Not": {
+
+
+def filter_attributable_costs():
+    FILTER_ATTRIBUTABLE_COSTS = {
+        # ref: https://github.com/2i2c-org/infrastructure/issues/4787#issue-2519110356
+        "Or": [
+            {
                 "Tags": {
-                    "Key": "2i2c:hub-name",
-                    "MatchOptions": ["ABSENT"],
+                    "Key": "alpha.eksctl.io/cluster-name",
+                    "Values": [os.environ.get("CLUSTER_NAME")],
+                    "MatchOptions": ["EQUALS"],
                 },
             },
-        },
-        {
-            "Not": {
+            {
                 "Tags": {
-                    "Key": "2i2c:node-purpose",
-                    "MatchOptions": ["ABSENT"],
+                    "Key": f"kubernetes.io/cluster/{os.environ.get('CLUSTER_NAME')}",
+                    "Values": ["owned"],
+                    "MatchOptions": ["EQUALS"],
                 },
             },
-        },
-    ]
-}
+            {
+                "Tags": {
+                    "Key": "2i2c.org/cluster-name",
+                    "Values": [os.environ.get("CLUSTER_NAME")],
+                    "MatchOptions": ["EQUALS"],
+                },
+            },
+            # FIXME: The inclusion of tags 2i2c:hub-name and 2i2c:node-purpose below
+            #        in this filter is a patch to capture openscapes data from 1st
+            #        July and up to 24th September 2024, and can be removed once
+            #        that date range is considered irrelevant.
+            #
+            {
+                "Not": {
+                    "Tags": {
+                        "Key": "2i2c:hub-name",
+                        "MatchOptions": ["ABSENT"],
+                    },
+                },
+            },
+            {
+                "Not": {
+                    "Tags": {
+                        "Key": "2i2c:node-purpose",
+                        "MatchOptions": ["ABSENT"],
+                    },
+                },
+            },
+        ]
+    }
+    return FILTER_ATTRIBUTABLE_COSTS
+
 
 GROUP_BY_HUB_TAG = {
     "Type": "TAG",
