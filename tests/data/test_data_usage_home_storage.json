@@ -1,0 +1,93 @@
+{
+    "data": {
+        "result": [
+            {
+                "metric": {
+                    "directory": "user-1",
+                    "namespace": "prod",
+                    "username": "user-1"
+                },
+                "values": [
+                    [
+                        1756684800,
+                        "3053228"
+                    ],
+                    [
+                        1756771200,
+                        "3053228"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "directory": "user-1",
+                    "namespace": "staging",
+                    "username": "user-1"
+                },
+                "values": [
+                    [
+                        1756684800,
+                        "6"
+                    ],
+                    [
+                        1756771200,
+                        "6"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "directory": "user-2",
+                    "namespace": "workshop",
+                    "username": "user-2"
+                },
+                "values": [
+                    [
+                        1756684800,
+                        "251132017"
+                    ],
+                    [
+                        1756771200,
+                        "251132017"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "directory": "user-3",
+                    "namespace": "prod",
+                    "username": "user-3"
+                },
+                "values": [
+                    [
+                        1756684800,
+                        "291224840"
+                    ],
+                    [
+                        1756771200,
+                        "291224840"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "directory": "user-4",
+                    "namespace": "prod",
+                    "username": "user-4"
+                },
+                "values": [
+                    [
+                        1756684800,
+                        "17466688"
+                    ],
+                    [
+                        1756771200,
+                        "17466688"
+                    ]
+                ]
+            }
+        ],
+        "resultType": "matrix"
+    },
+    "status": "success"
+}
