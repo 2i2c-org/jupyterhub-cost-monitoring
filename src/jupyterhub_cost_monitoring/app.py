@@ -110,6 +110,11 @@ def total_costs_per_component(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
+    if not hub or hub == "all":
+        hub = None
+    if not component or component == "all":
+        component = None
+
     return query_total_costs_per_component(date_range, hub, component)
 
 
@@ -183,5 +188,12 @@ def total_usage(
     """
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
+
+    if not hub or hub == "all":
+        hub = None
+    if not component or component == "all":
+        component = None
+    if not user or user == "all":
+        user = None
 
     return query_usage(date_range, hub, component, user)
