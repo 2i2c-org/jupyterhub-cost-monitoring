@@ -9,6 +9,7 @@ import boto3
 
 from .cache import ttl_lru_cache
 from .const_cost_aws import (
+    FILTER_ATTRIBUTABLE_COSTS,
     FILTER_CORE_COSTS,
     FILTER_HOME_STORAGE_COSTS,
     FILTER_USAGE_COSTS,
@@ -17,7 +18,6 @@ from .const_cost_aws import (
     GROUP_BY_SERVICE_DIMENSION,
     METRICS_UNBLENDED_COST,
     SERVICE_COMPONENT_MAP,
-    filter_attributable_costs,
 )
 from .date_utils import DateRange
 from .logs import get_logger
@@ -137,7 +137,7 @@ def _query_total_costs(date_range: DateRange, add_attributable_costs_filter):
         filter = {
             "And": [
                 FILTER_USAGE_COSTS,
-                filter_attributable_costs()(),
+                FILTER_ATTRIBUTABLE_COSTS,
             ]
         }
     else:
@@ -191,7 +191,7 @@ def query_total_costs_per_hub(date_range: DateRange):
         filter={
             "And": [
                 FILTER_USAGE_COSTS,
-                filter_attributable_costs()(),
+                FILTER_ATTRIBUTABLE_COSTS,
             ]
         },
         group_by=[
@@ -312,7 +312,7 @@ def _create_base_filter() -> dict:
     return {
         "And": [
             FILTER_USAGE_COSTS,
-            filter_attributable_costs(),
+            FILTER_ATTRIBUTABLE_COSTS,
         ]
     }
 
