@@ -30,7 +30,7 @@ def test_get_usage_data(mock_prometheus, env_vars):
     assert response["status"] == "success"
 
 
-def test_get_cost_component_data(mock_ce):
+def test_get_cost_component_data(mock_ce, env_vars):
     """
     Test mocked AWS Cost Explorer cost json data retrieval for all, home storage and core components.
     """
