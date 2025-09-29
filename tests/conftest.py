@@ -1,10 +1,13 @@
 import json
+import os
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
 import boto3
 import pytest
 from botocore.stub import Stubber
+
+os.environ["CLUSTER_NAME"] = "test-cluster"
 
 # Usage and cost data fixtures for test_cost.py
 
@@ -45,12 +48,11 @@ def env_vars(monkeypatch):
     """
     Set environment variables for testing.
     """
-    monkeypatch.setenv("CLUSTER_NAME", "test-cluster")
-    monkeypatch.setenv("AWS_EC2_METADATA_DISABLED", "true")
     # Fake AWS credentials for boto3 client
     monkeypatch.setenv("AWS_ACCESS_KEY_ID", "fake-key")
     monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "fake-secret")
     monkeypatch.setenv("AWS_SESSION_TOKEN", "fake-token")
+    monkeypatch.setenv("AWS_EC2_METADATA_DISABLED", "true")
 
 
 @pytest.fixture(scope="function", params=["compute", "home_storage"])
