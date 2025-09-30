@@ -42,6 +42,7 @@ def output_data_component():
 
 # Usage and cost data for test_integration.py
 
+
 @pytest.fixture(autouse=True)
 def env_vars(monkeypatch):
     """
@@ -108,6 +109,7 @@ def output_cost_per_user():
     with open("tests/data/test_output_cost_per_user.json") as f:
         data = json.load(f)
     return data
+
 
 # Date-specific fixtures for date_utils tests
 
