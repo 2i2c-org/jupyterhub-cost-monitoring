@@ -12,35 +12,9 @@ local bg = grafonnet.panel.barGauge;
       var.datasource.new('infinity_datasource', 'yesoreyeram-infinity-datasource')
       + var.datasource.generalOptions.showOnDashboard.withNothing()
     ,
-    hub:
+    hub_general:
       var.query.new(
-        'hub',
-        {
-          query: '',
-          queryType: 'infinity',
-          infinityQuery: {
-            format: 'table',
-            parser: 'backend',
-            refId: 'variable',
-            root_selector: '$append($filter($, function($v) {$v != "support" and $v != "binder"}) , "all")',
-            source: 'url',
-            type: 'json',
-            url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/hub-names?from=${__from:date}&to=${__to:date}',
-            url_options: {
-              data: '',
-              method: 'GET',
-            },
-          },
-        },
-      )
-      + var.query.withDatasourceFromVariable(self.infinity_datasource)
-      + var.query.generalOptions.withCurrent('all')
-      + var.query.selectionOptions.withIncludeAll(value=false)
-      + var.query.selectionOptions.withMulti(value=true)
-      + var.query.refresh.onTime(),
-    hub_all:
-      var.query.new(
-        'hub_all',
+        'hub_general',
         {
           query: '',
           queryType: 'infinity',
@@ -70,6 +44,33 @@ local bg = grafonnet.panel.barGauge;
       })
       + var.query.selectionOptions.withIncludeAll(value=true)
       + var.query.selectionOptions.withMulti(value=true)
+      + var.query.refresh.onTime(),    
+    hub_user:
+      var.query.new(
+        'hub_user',
+        {
+          query: '',
+          queryType: 'infinity',
+          infinityQuery: {
+            format: 'table',
+            parser: 'backend',
+            refId: 'variable',
+            root_selector: '$append($filter($, function($v) {$v != "support" and $v != "binder"}) , "all")',
+            source: 'url',
+            type: 'json',
+            url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/hub-names?from=${__from:date}&to=${__to:date}',
+            url_options: {
+              data: '',
+              method: 'GET',
+            },
+          },
+        },
+      )
+      + var.query.withDatasourceFromVariable(self.infinity_datasource)
+      + var.query.generalOptions.withLabel('hub')
+      + var.query.generalOptions.withCurrent('all')
+      + var.query.selectionOptions.withIncludeAll(value=false)
+      + var.query.selectionOptions.withMulti(value=true)
       + var.query.refresh.onTime(),
     component:
       var.query.new(
@@ -92,18 +93,9 @@ local bg = grafonnet.panel.barGauge;
         },
       )
       + var.query.withDatasourceFromVariable(self.infinity_datasource)
-      + var.query.generalOptions.withCurrent({
-        text: [
-          'compute',
-          'home storage',
-        ],
-        value: [
-          'compute',
-          'home storage',
-        ],
-      })
-      + var.query.selectionOptions.withIncludeAll(value=false)
-      + var.query.selectionOptions.withMulti(value=true)
+      + var.query.generalOptions.withCurrent('All')
+      + var.query.selectionOptions.withIncludeAll(value=true, customAllValue='all')
+      + var.query.selectionOptions.withMulti(value=false)
       + var.query.refresh.onTime(),
   },
 
