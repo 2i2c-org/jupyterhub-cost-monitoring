@@ -112,7 +112,7 @@ local dailyCostsPerComponent =
 
 local dailyCostsPerComponentAndHub =
   common.tsOptions
-  + ts.new('Daily costs per component, for ${hub}')
+  + ts.new('Daily costs per component, for ${hub_all}')
   + ts.panelOptions.withDescription(
     |||
       Components are human friendly groupings of AWS services, as [defined
@@ -126,12 +126,12 @@ local dailyCostsPerComponentAndHub =
       - All costs are pure usage costs, and doesn't consider credits etc.
     |||
   )
-  + ts.panelOptions.withRepeat('hub')
+  + ts.panelOptions.withRepeat('hub_all')
   + ts.panelOptions.withMaxPerRow(2)
   + ts.queryOptions.withTargets([
     common.queryComponentTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}&hub=$hub',
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}&hub=$hub_all',
     },
   ])
   + ts.queryOptions.withTransformations([
@@ -158,7 +158,7 @@ dashboard.new('Cloud cost attribution')
 + dashboard.withEditable(true)
 + dashboard.time.withFrom('now-30d')
 + dashboard.withVariables([
-  common.variables.hub,
+  common.variables.hub_all,
   common.variables.infinity_datasource,
 ])
 + dashboard.withPanels(

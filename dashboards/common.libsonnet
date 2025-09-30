@@ -38,6 +38,39 @@ local bg = grafonnet.panel.barGauge;
       + var.query.selectionOptions.withIncludeAll(value=false)
       + var.query.selectionOptions.withMulti(value=true)
       + var.query.refresh.onTime(),
+    hub_all:
+      var.query.new(
+        'hub_all',
+        {
+          query: '',
+          queryType: 'infinity',
+          infinityQuery: {
+            format: 'table',
+            parser: 'backend',
+            refId: 'variable',
+            source: 'url',
+            type: 'json',
+            url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/hub-names?from=${__from:date}&to=${__to:date}',
+            url_options: {
+              data: '',
+              method: 'GET',
+            },
+          },
+        },
+      )
+      + var.query.withDatasourceFromVariable(self.infinity_datasource)
+      + var.query.generalOptions.withLabel('hub')
+      + var.query.generalOptions.withCurrent({
+        text: [
+          'All',
+        ],
+        value: [
+          '$__all',
+        ],
+      })
+      + var.query.selectionOptions.withIncludeAll(value=true)
+      + var.query.selectionOptions.withMulti(value=true)
+      + var.query.refresh.onTime(),
     component:
       var.query.new(
         'component',
