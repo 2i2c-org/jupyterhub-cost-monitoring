@@ -99,7 +99,7 @@ local bg = grafonnet.panel.barGauge;
       + var.query.refresh.onTime(),
     n_users:
       var.textbox.new('n_users')
-      + var.textbox.generalOptions.withDescription('Truncate display to top N users. Leave empty to show all.')
+      + var.textbox.generalOptions.withDescription('Truncate to display top N users. Leave empty to show all.')
       + var.textbox.generalOptions.withLabel('Number of users')
   },
 
