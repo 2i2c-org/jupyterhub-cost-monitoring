@@ -39,10 +39,36 @@ class DateRange:
 
     This ensures consistent date ranges across different API calls while respecting
     each API's specific formatting requirements.
+
+    Note: For caching purposes, hashing is based only on the normalized date components
+    to ensure consistent caching regardless of input time precision.
     """
 
     start_date: datetime  # Original start date in UTC
     end_date: datetime  # Original end date in UTC
+
+    @property
+    def normalized_start_date(self) -> datetime:
+        """Return start date normalized to midnight UTC for consistent caching."""
+        return self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    @property
+    def normalized_end_date(self) -> datetime:
+        """Return end date normalized to end of day UTC for consistent caching."""
+        return self.end_date.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    def __hash__(self):
+        """Hash based on normalized dates for consistent caching."""
+        return hash((self.normalized_start_date, self.normalized_end_date))
+
+    def __eq__(self, other):
+        """Equality based on normalized dates for consistent caching."""
+        if not isinstance(other, DateRange):
+            return False
+        return (
+            self.normalized_start_date == other.normalized_start_date
+            and self.normalized_end_date == other.normalized_end_date
+        )
 
     @property
     def aws_range(self) -> tuple[str, str]:
@@ -57,8 +83,8 @@ class DateRange:
             Tuple of (start_date_str, end_date_str) formatted for AWS Cost Explorer
         """
         return (
-            self.start_date.strftime("%Y-%m-%d"),
-            (self.end_date + timedelta(days=1)).strftime("%Y-%m-%d"),
+            self.normalized_start_date.strftime("%Y-%m-%d"),
+            (self.normalized_end_date + timedelta(days=1)).strftime("%Y-%m-%d"),
         )
 
     @property
@@ -72,7 +98,10 @@ class DateRange:
         Returns:
             Tuple of (start_date_iso, end_date_iso) formatted for Prometheus
         """
-        return (self.start_date.isoformat(), self.end_date.isoformat())
+        return (
+            self.normalized_start_date.isoformat(),
+            self.normalized_end_date.isoformat(),
+        )
 
 
 def parse_from_to_in_query_params(

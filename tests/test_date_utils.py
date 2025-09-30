@@ -165,9 +165,9 @@ class TestDateRange:
 
         prom_from, prom_to = dr.prometheus_range
 
-        # Should be full ISO format, no +1 day adjustment
-        assert prom_from == "2025-01-15T12:30:45+00:00"
-        assert prom_to == "2025-01-31T08:15:30+00:00"
+        # Should be full ISO format with normalized times, no +1 day adjustment
+        assert prom_from == "2025-01-15T00:00:00+00:00"  # Normalized to start of day
+        assert prom_to == "2025-01-31T23:59:59.999999+00:00"  # Normalized to end of day
 
     def test_same_logical_range_different_formats(self):
         """Test that AWS and Prometheus formats represent the same logical date range."""
@@ -183,9 +183,9 @@ class TestDateRange:
         assert aws_from == "2025-01-01"
         assert aws_to == "2025-02-01"  # +1 day for exclusive end
 
-        # Prometheus: inclusive range should preserve exact timestamps
+        # Prometheus: inclusive range should preserve normalized timestamps
         assert prom_from == "2025-01-01T00:00:00+00:00"
-        assert prom_to == "2025-01-31T23:59:59+00:00"
+        assert prom_to == "2025-01-31T23:59:59.999999+00:00"
 
 
 class TestParseDateRangeParams:
@@ -269,15 +269,86 @@ class TestCacheIntegration:
 
         start1 = datetime(2025, 1, 1, tzinfo=timezone.utc)
         end1 = datetime(2025, 1, 31, tzinfo=timezone.utc)
-        dr1 = DateRange(start_date=start1, end_date=end1)
+        january_range = DateRange(start_date=start1, end_date=end1)
 
         start2 = datetime(2025, 2, 1, tzinfo=timezone.utc)
         end2 = datetime(2025, 2, 28, tzinfo=timezone.utc)
-        dr2 = DateRange(start_date=start2, end_date=end2)
+        february_range = DateRange(start_date=start2, end_date=end2)
 
-        result1 = cached_function(dr1)
-        result2 = cached_function(dr2)
+        result1 = cached_function(january_range)
+        result2 = cached_function(february_range)
 
         # Should be different results (cache miss)
         assert result1 != result2
         assert call_count == 2  # Function called twice
+
+    def test_cache_hit_with_same_dates_different_times(self):
+        """Test that DateRange objects with same dates but different times result in cache hits."""
+        call_count = 0
+
+        @ttl_lru_cache(seconds_to_live=300)
+        def cached_function(date_range: DateRange) -> str:
+            nonlocal call_count
+            call_count += 1
+            return f"Call #{call_count} for {date_range.start_date.date()}"
+
+        # Same dates but different times
+        start1 = datetime(2025, 1, 1, 8, 30, 15, tzinfo=timezone.utc)
+        end1 = datetime(2025, 1, 31, 14, 45, 22, tzinfo=timezone.utc)
+        morning_range = DateRange(start_date=start1, end_date=end1)
+
+        start2 = datetime(2025, 1, 1, 16, 20, 55, tzinfo=timezone.utc)
+        end2 = datetime(2025, 1, 31, 9, 12, 8, tzinfo=timezone.utc)
+        evening_range = DateRange(start_date=start2, end_date=end2)
+
+        result1 = cached_function(morning_range)
+        result2 = cached_function(evening_range)
+
+        # Should be same results (cache hit) because dates are the same
+        assert result1 == result2
+        assert call_count == 1  # Function should be called only once
+
+    def test_daterange_normalization(self):
+        """Test that DateRange normalizes times for consistent caching."""
+        # Test start date normalization to 00:00:00
+        start_with_time = datetime(2025, 1, 1, 15, 30, 45, tzinfo=timezone.utc)
+        end_with_time = datetime(2025, 1, 31, 8, 15, 30, tzinfo=timezone.utc)
+        time_specific_range = DateRange(
+            start_date=start_with_time, end_date=end_with_time
+        )
+
+        # Original dates should be preserved
+        assert time_specific_range.start_date.hour == 15
+        assert time_specific_range.end_date.hour == 8
+
+        # Normalized start date should be normalized to midnight
+        assert time_specific_range.normalized_start_date.hour == 0
+        assert time_specific_range.normalized_start_date.minute == 0
+        assert time_specific_range.normalized_start_date.second == 0
+        assert time_specific_range.normalized_start_date.microsecond == 0
+
+        # Normalized end date should be normalized to end of day
+        assert time_specific_range.normalized_end_date.hour == 23
+        assert time_specific_range.normalized_end_date.minute == 59
+        assert time_specific_range.normalized_end_date.second == 59
+        assert time_specific_range.normalized_end_date.microsecond == 999999
+
+    def test_daterange_hash_consistency_across_times(self):
+        """Test that DateRange objects with same dates but different times have same hash."""
+        # Same dates, different times
+        start1 = datetime(2025, 1, 1, 2, 30, tzinfo=timezone.utc)
+        end1 = datetime(2025, 1, 31, 18, 45, tzinfo=timezone.utc)
+        early_range = DateRange(start_date=start1, end_date=end1)
+
+        start2 = datetime(2025, 1, 1, 22, 15, tzinfo=timezone.utc)
+        end2 = datetime(2025, 1, 31, 6, 20, tzinfo=timezone.utc)
+        late_range = DateRange(start_date=start2, end_date=end2)
+
+        # Should have same hash despite different input times
+        assert hash(early_range) == hash(late_range)
+
+        # Should be usable as same dict key
+        test_dict = {early_range: "value1"}
+        test_dict[late_range] = "value2"
+        assert len(test_dict) == 1  # Only one key because they hash the same
+        assert test_dict[early_range] == "value2"  # Second assignment overwrote first
