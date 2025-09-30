@@ -212,27 +212,6 @@ local Hub =
   + bc.panelOptions.withRepeatDirection('v')
 ;
 
-local Component =
-  common.bcOptions
-  + bc.new('Component – $component')
-  + bc.panelOptions.withDescription(
-    |||
-      Shows daily user costs grouped by component.
-
-      `compute` and `home storage` costs are user-dependent, whereas other components, not shown, are user-independent (find out more in the General cloud costs dashboard instead). 
-    |||
-  )
-  + bg.panelOptions.withGridPos(h=8, w=24, x=0, y=20)
-  + bc.queryOptions.withTargets([
-    common.queryUsersTarget
-    {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/costs-per-user?from=${__from:date}&to=${__to:date}&component=$component',
-    },
-  ])
-  + bc.panelOptions.withRepeat('component')
-  + bc.panelOptions.withRepeatDirection('h')
-;
-
 dashboard.new('User cloud costs')
 + dashboard.withUid('cloud-cost-users')
 + dashboard.withTimezone('utc')
@@ -241,6 +220,7 @@ dashboard.new('User cloud costs')
 + dashboard.withVariables([
   common.variables.hub_user,
   common.variables.component,
+  common.variables.n_users,
   common.variables.infinity_datasource,
 ])
 + dashboard.withPanels(

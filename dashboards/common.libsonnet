@@ -97,6 +97,10 @@ local bg = grafonnet.panel.barGauge;
       + var.query.selectionOptions.withIncludeAll(value=true, customAllValue='all')
       + var.query.selectionOptions.withMulti(value=false)
       + var.query.refresh.onTime(),
+    n_users:
+      var.textbox.new('n_users')
+      + var.textbox.generalOptions.withDescription('Truncate display to top N users. Leave empty to show all.')
+      + var.textbox.generalOptions.withLabel('Number of users')
   },
 
   // grafonnet ref: https://grafana.github.io/grafonnet/API/panel/timeSeries/index.html#obj-queryoptions
@@ -255,11 +259,16 @@ local bg = grafonnet.panel.barGauge;
       }),
       bc.queryOptions.transformation.withId('groupingToMatrix')
       + bc.queryOptions.transformation.withOptions({
-        columnField: 'User',
+        columnField: 'Date',
         emptyValue: 'zero',
-        rowField: 'Date',
+        rowField: 'User',
         valueField: 'Cost (sum)',
       }),
+      bc.queryOptions.transformation.withId('limit')
+      + bc.queryOptions.transformation.withOptions({
+        limitField: '$n_users',
+      }),
+      bc.queryOptions.transformation.withId('transpose')
     ]),
 
   bgOptions:
