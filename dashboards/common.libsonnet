@@ -55,7 +55,7 @@ local bg = grafonnet.panel.barGauge;
             format: 'table',
             parser: 'backend',
             refId: 'variable',
-            root_selector: '$append($filter($, function($v) {$v != "support" and $v != "binder"}) , "all")',
+            root_selector: '$append($filter($, function($v) {$v != "support" and $v != "binder"}) , "All")',
             source: 'url',
             type: 'json',
             url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/hub-names?from=${__from:date}&to=${__to:date}',
@@ -68,7 +68,7 @@ local bg = grafonnet.panel.barGauge;
       )
       + var.query.withDatasourceFromVariable(self.infinity_datasource)
       + var.query.generalOptions.withLabel('hub')
-      + var.query.generalOptions.withCurrent('all')
+      + var.query.generalOptions.withCurrent('All')
       + var.query.selectionOptions.withIncludeAll(value=false)
       + var.query.selectionOptions.withMulti(value=true)
       + var.query.refresh.onTime(),
@@ -94,7 +94,7 @@ local bg = grafonnet.panel.barGauge;
       )
       + var.query.withDatasourceFromVariable(self.infinity_datasource)
       + var.query.generalOptions.withCurrent('All')
-      + var.query.selectionOptions.withIncludeAll(value=true, customAllValue='all')
+      + var.query.selectionOptions.withIncludeAll(value=true)
       + var.query.selectionOptions.withMulti(value=false)
       + var.query.refresh.onTime(),
     n_users:
