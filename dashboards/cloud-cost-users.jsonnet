@@ -131,7 +131,7 @@ local Top5 =
   + bg.queryOptions.withTargets([
     common.queryUsersTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/costs-per-user?from=${__from:date}&to=${__to:date}',
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/costs-per-user?from=${__from:date}&to=${__to:date}&limit=5',
     },
   ])
   + bg.options.reduceOptions.withValues(true)
@@ -205,7 +205,7 @@ local Hub =
   + bc.queryOptions.withTargets([
     common.queryUsersTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/costs-per-user?from=${__from:date}&to=${__to:date}&hub=$hub_user&component=$component',
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/costs-per-user?from=${__from:date}&to=${__to:date}&hub=$hub_user&component=$component&limit=$limit',
     },
   ])
   + bc.panelOptions.withRepeat('hub_user')
@@ -220,7 +220,7 @@ dashboard.new('User cloud costs')
 + dashboard.withVariables([
   common.variables.hub_user,
   common.variables.component,
-  common.variables.n_users,
+  common.variables.limit,
   common.variables.infinity_datasource,
 ])
 + dashboard.withPanels(
