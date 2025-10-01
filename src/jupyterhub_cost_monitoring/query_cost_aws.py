@@ -513,7 +513,11 @@ def query_total_costs_per_component(
 
 @ttl_lru_cache(seconds_to_live=3600)
 def query_total_costs_per_user(
-    date_range: DateRange, hub: str = None, component: str = None, user: str = None
+    date_range: DateRange,
+    hub: str = None,
+    component: str = None,
+    user: str = None,
+    limit: str = None,
 ):
     """
     Query total costs per user by combining AWS costs with Prometheus usage data.
@@ -530,6 +534,7 @@ def query_total_costs_per_user(
         hub: The hub namespace to query (optional, if None queries all hubs)
         component: The component to query (optional, if None queries all components)
         user: The user to query (optional, if None queries all users)
+        limit: Limit number of results to top N users by total cost (optional, if None returns all users)
 
     Returns:
         List of dicts with keys: date, hub, component, user, value (cost in USD)
@@ -566,6 +571,17 @@ def query_total_costs_per_user(
             )  # Adjust usage share to cost
             results.append(entry)
     results = [x for x in results if x["hub"] != "binder"]  # Exclude binder hubs
+    if limit:
+        limit = int(limit)
+        user_costs = {}
+        for entry in results:
+            user_key = (entry["hub"], entry["user"])
+            user_costs[user_key] = user_costs.get(user_key, 0) + entry["value"]
+        top_users = sorted(user_costs.items(), key=lambda x: -x[1])[:limit]
+        top_user_set = {user for user, _ in top_users}
+        results = [
+            entry for entry in results if (entry["hub"], entry["user"]) in top_user_set
+        ]
     results.sort(
         key=lambda x: (x["date"], x["hub"], x["component"], -float(x["value"]))
     )
