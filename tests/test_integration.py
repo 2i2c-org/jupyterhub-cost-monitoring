@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from src.jupyterhub_cost_monitoring.const_cost_aws import (
     GRANULARITY_DAILY,
     METRICS_UNBLENDED_COST,
@@ -85,3 +87,24 @@ def test_costs_per_user(mock_prometheus, mock_ce, output_cost_per_user):
         key = (r["date"], r["user"], r["component"])
         if key in lookup:
             assert r["value"] == lookup[key]
+
+
+def test_costs_per_user_limit(mock_prometheus, mock_ce, output_cost_per_user):
+    """
+    Test cost logic for cost-per-user endpoint with limit parameter.
+    """
+    from src.jupyterhub_cost_monitoring.query_cost_aws import query_total_costs_per_user
+
+    limit = 2
+    result = query_total_costs_per_user(date_range, limit=limit)
+    users = {r["user"] for r in result}
+
+    assert len(users) == limit
+
+    per_user = defaultdict(float)
+    for row in result:
+        per_user[row["user"]] += row["value"]
+    sorted_users = sorted(per_user.items(), key=lambda x: x[1], reverse=True)
+    top_sum = sum(v for _, v in sorted_users[:limit])
+
+    assert top_sum == 35.6106
