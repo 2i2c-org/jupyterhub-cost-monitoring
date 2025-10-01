@@ -131,7 +131,7 @@ def costs_per_user(
         None, description="Name of the component to filter results"
     ),
     user: str | None = Query(None, description="Name of the user to filter results"),
-    limit: int | str | None = Query(
+    limit: str | None = Query(
         None, description="Limit number of results to top N users by total cost."
     ),
 ):
