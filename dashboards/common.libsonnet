@@ -94,7 +94,7 @@ local bg = grafonnet.panel.barGauge;
       )
       + var.query.withDatasourceFromVariable(self.infinity_datasource)
       + var.query.generalOptions.withCurrent('All')
-      + var.query.selectionOptions.withIncludeAll(value=true)
+      + var.query.selectionOptions.withIncludeAll(value=true, customAllValue='all')
       + var.query.selectionOptions.withMulti(value=false)
       + var.query.refresh.onTime(),
     n_users:
