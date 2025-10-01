@@ -110,9 +110,9 @@ def total_costs_per_component(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    if not hub or hub == "all":
+    if not hub or hub.lower() == "all":
         hub = None
-    if not component or component == "all":
+    if not component or component.lower() == "all":
         component = None
 
     return query_total_costs_per_component(date_range, hub, component)
@@ -154,11 +154,11 @@ def costs_per_user(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    if not hub or hub == "all":
+    if not hub or hub.lower() == "all":
         hub = None
-    if not component or component == "all":
+    if not component or component.lower() == "all":
         component = None
-    if not user or user == "all":
+    if not user or user.lower() == "all":
         user = None
 
     # Get per-user costs by combining AWS costs with Prometheus usage data
@@ -189,11 +189,11 @@ def total_usage(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    if not hub or hub == "all":
+    if not hub or hub.lower() == "all":
         hub = None
-    if not component or component == "all":
+    if not component or component.lower() == "all":
         component = None
-    if not user or user == "all":
+    if not user or user.lower() == "all":
         user = None
 
     return query_usage(date_range, hub, component, user)
