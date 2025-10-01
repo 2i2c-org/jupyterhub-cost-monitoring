@@ -131,7 +131,7 @@ local Top5 =
   + bg.queryOptions.withTargets([
     common.queryUsersTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/costs-per-user?from=${__from:date}&to=${__to:date}&limit=5',
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/costs-per-user?from=${__from:date}&to=${__to:date}',
     },
   ])
   + bg.options.reduceOptions.withValues(true)
