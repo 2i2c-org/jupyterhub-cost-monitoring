@@ -131,6 +131,9 @@ def costs_per_user(
         None, description="Name of the component to filter results"
     ),
     user: str | None = Query(None, description="Name of the user to filter results"),
+    limit: int | str | None = Query(
+        None, description="Limit number of results to top N users by total cost."
+    ),
 ):
     """
     Endpoint to query costs per user by combining AWS costs with Prometheus usage data.
@@ -146,6 +149,7 @@ def costs_per_user(
         hub (str, optional): Filter to specific hub namespace
         component (str, optional): Filter to specific component (compute, home storage)
         user (str, optional): Filter to specific user
+        limit (int, optional): Limit number of results to top N users by total cost.
 
     Returns:
         List of dicts with keys: date, hub, component, user, value (cost in USD)
@@ -160,9 +164,13 @@ def costs_per_user(
         component = None
     if not user or user.lower() == "all":
         user = None
+    if not limit or (str(limit).lower() == "all"):
+        limit = None
+
+    logger.info(f"Limit parameter: {limit}")
 
     # Get per-user costs by combining AWS costs with Prometheus usage data
-    per_user_costs = query_total_costs_per_user(date_range, hub, component, user)
+    per_user_costs = query_total_costs_per_user(date_range, hub, component, user, limit)
 
     return per_user_costs
 
