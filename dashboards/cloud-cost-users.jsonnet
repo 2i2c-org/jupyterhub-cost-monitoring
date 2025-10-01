@@ -193,54 +193,34 @@ local Top5 =
 
 local Hub =
   common.bcOptions
-  + bc.new('Hub – $hub')
+  + bc.new('Hub – $hub_user, Component – $component')
   + bc.panelOptions.withDescription(
     |||
-      Shows daily user costs by hub, with a total across `all` hubs shown by default.
+      Shows daily user costs by hub, with a total across all hubs and components shown by default.
 
-      Try toggling the *hub* variable dropdown above to drill down per user costs by hub.
+      Try toggling the *hub* and *component* variable dropdown above to drill down per user costs.
     |||
   )
-  + bg.panelOptions.withGridPos(h=8, w=24, x=0, y=8)
+  + bg.panelOptions.withGridPos(h=12, w=24, x=0, y=8)
   + bc.queryOptions.withTargets([
     common.queryUsersTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/costs-per-user?from=${__from:date}&to=${__to:date}&hub=$hub',
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/costs-per-user?from=${__from:date}&to=${__to:date}&hub=$hub_user&component=$component',
     },
   ])
-  + bc.panelOptions.withRepeat('hub')
+  + bc.panelOptions.withRepeat('hub_user')
   + bc.panelOptions.withRepeatDirection('v')
 ;
 
-local Component =
-  common.bcOptions
-  + bc.new('Component – $component')
-  + bc.panelOptions.withDescription(
-    |||
-      Shows daily user costs grouped by component.
-
-      `compute` and `home storage` costs are user-dependent, whereas other components, not shown, are user-independent (find out more in the Cloud cost attribution dashboard instead). 
-    |||
-  )
-  + bg.panelOptions.withGridPos(h=8, w=24, x=0, y=20)
-  + bc.queryOptions.withTargets([
-    common.queryUsersTarget
-    {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/costs-per-user?from=${__from:date}&to=${__to:date}&component=$component',
-    },
-  ])
-  + bc.panelOptions.withRepeat('component')
-  + bc.panelOptions.withRepeatDirection('h')
-;
-
-dashboard.new('Cloud costs per user')
+dashboard.new('User cloud costs')
 + dashboard.withUid('cloud-cost-users')
 + dashboard.withTimezone('utc')
 + dashboard.withEditable(true)
 + dashboard.time.withFrom('now-30d')
 + dashboard.withVariables([
-  common.variables.hub,
+  common.variables.hub_user,
   common.variables.component,
+  common.variables.n_users,
   common.variables.infinity_datasource,
 ])
 + dashboard.withPanels(
@@ -249,6 +229,5 @@ dashboard.new('Cloud costs per user')
     TotalComponent,
     Top5,
     Hub,
-    Component,
   ],
 )

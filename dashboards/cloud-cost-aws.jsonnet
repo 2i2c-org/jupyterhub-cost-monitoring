@@ -112,7 +112,7 @@ local dailyCostsPerComponent =
 
 local dailyCostsPerComponentAndHub =
   common.tsOptions
-  + ts.new('Daily costs per component, for ${hub}')
+  + ts.new('Daily costs per component, for ${hub_general}')
   + ts.panelOptions.withDescription(
     |||
       Components are human friendly groupings of AWS services, as [defined
@@ -126,12 +126,12 @@ local dailyCostsPerComponentAndHub =
       - All costs are pure usage costs, and doesn't consider credits etc.
     |||
   )
-  + ts.panelOptions.withRepeat('hub')
+  + ts.panelOptions.withRepeat('hub_general')
   + ts.panelOptions.withMaxPerRow(2)
   + ts.queryOptions.withTargets([
     common.queryComponentTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}&hub=$hub',
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}&hub=$hub_general',
     },
   ])
   + ts.queryOptions.withTransformations([
@@ -152,13 +152,13 @@ local dailyCostsPerComponentAndHub =
 // that we aren't providing one atm.
 // See https://community.grafana.com/t/dashboard-description-is-it-used-anywhere/53273.
 //
-dashboard.new('Cloud cost attribution')
+dashboard.new('General cloud costs')
 + dashboard.withUid('cloud-cost-aws')
 + dashboard.withTimezone('utc')
 + dashboard.withEditable(true)
 + dashboard.time.withFrom('now-30d')
 + dashboard.withVariables([
-  common.variables.hub,
+  common.variables.hub_general,
   common.variables.infinity_datasource,
 ])
 + dashboard.withPanels(
