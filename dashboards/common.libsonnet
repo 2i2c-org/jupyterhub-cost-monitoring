@@ -97,9 +97,9 @@ local bg = grafonnet.panel.barGauge;
       + var.query.selectionOptions.withIncludeAll(value=true, customAllValue='all')
       + var.query.selectionOptions.withMulti(value=false)
       + var.query.refresh.onTime(),
-    n_users:
-      var.textbox.new('n_users')
-      + var.textbox.generalOptions.withDescription('Truncate to display top N users. Leave empty to show all.')
+    limit:
+      var.textbox.new('limit')
+      + var.textbox.generalOptions.withDescription('Limit display to top N users. Leave empty to show all.')
       + var.textbox.generalOptions.withLabel('Number of users')
   },
 
@@ -259,16 +259,11 @@ local bg = grafonnet.panel.barGauge;
       }),
       bc.queryOptions.transformation.withId('groupingToMatrix')
       + bc.queryOptions.transformation.withOptions({
-        columnField: 'Date',
+        columnField: 'User',
         emptyValue: 'zero',
-        rowField: 'User',
+        rowField: 'Date',
         valueField: 'Cost (sum)',
-      }),
-      bc.queryOptions.transformation.withId('limit')
-      + bc.queryOptions.transformation.withOptions({
-        limitField: '$n_users',
-      }),
-      bc.queryOptions.transformation.withId('transpose')
+      })
     ]),
 
   bgOptions:
