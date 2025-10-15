@@ -1,0 +1,11 @@
+{
+    "name": "jupyterhub-cost-monitoring-documentation",
+    "version": "0.0.0",
+    "scripts": {
+      "myst": "myst",
+      "test": "myst build --html --check-links --strict"
+    },
+    "dependencies": {
+      "mystmd": "^1.6.3"
+    }
+  }
