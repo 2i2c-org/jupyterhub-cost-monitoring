@@ -270,18 +270,21 @@ def _process_user_groups(
             user = data["metric"]["username"]
             user_escaped = data["metric"]["username_escaped"]
             group = data["metric"]["usergroup"]
-            if (
-                (hub_name is None or hub == hub_name)
-                and (user_name is None or user == user_name)
-                and (group_name is None or group == group_name)
-            ):
-                result.append(
-                    {
-                        "date": date,
-                        "hub": hub,
-                        "username": user,
-                        "username_escaped": user_escaped,
-                        "usergroup": group,
-                    }
-                )
+            # if (
+            #     (hub_name is None or hub == hub_name)
+            #     and (user_name is None or user == user_name)
+            #     and (group_name is None or group == group_name)
+            # ):
+            result.append(
+                {
+                    "date": date,
+                    "hub": hub,
+                    "username": user,
+                    "username_escaped": user_escaped,
+                    "usergroup": group,
+                }
+            )
+            result = _filter_json(
+                result, hub=hub_name, username=user_name, usergroup=group_name
+            )
     return result
