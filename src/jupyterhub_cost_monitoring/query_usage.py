@@ -10,7 +10,7 @@ import escapism
 import requests
 from yarl import URL
 
-from .const_usage import USAGE_MAP
+from .const_usage import USAGE_MAP, USER_GROUP_INFO
 from .date_utils import DateRange
 from .logs import get_logger
 
@@ -237,4 +237,51 @@ def _calculate_daily_cost_factors(
             entry["value"] = entry["value"] / total
         else:
             entry["value"] = 0.0
+    return result
+
+
+def query_user_groups(
+    date_range: DateRange,
+    hub_name: str | None = None,
+    user_name: str | None = None,
+    group_name: str | None = None,
+) -> list[dict]:
+    response = query_prometheus(USER_GROUP_INFO, date_range, step="1d")
+    result = _process_user_groups(response, hub_name, user_name, group_name)
+    return result
+
+
+def _process_user_groups(
+    response: requests.Response,
+    hub_name: str | None = None,
+    user_name: str | None = None,
+    group_name: str | None = None,
+) -> list[dict]:
+    """
+    Process the response from the Prometheus server to extract user group information.
+    """
+    result = []
+    for data in response["data"]["result"]:
+        for value in data["values"]:
+            date = datetime.fromtimestamp(value[0], tz=timezone.utc).strftime(
+                "%Y-%m-%d"
+            )
+            hub = data["metric"]["namespace"]
+            user = data["metric"]["username"]
+            user_escaped = data["metric"]["username_escaped"]
+            group = data["metric"]["usergroup"]
+            if (
+                (hub_name is None or hub == hub_name)
+                and (user_name is None or user == user_name)
+                and (group_name is None or group == group_name)
+            ):
+                result.append(
+                    {
+                        "date": date,
+                        "hub": hub,
+                        "username": user,
+                        "username_escaped": user_escaped,
+                        "usergroup": group,
+                    }
+                )
     return result

@@ -10,7 +10,7 @@ from .query_cost_aws import (
     query_total_costs_per_hub,
     query_total_costs_per_user,
 )
-from .query_usage import query_usage
+from .query_usage import query_usage, query_user_groups
 
 app = FastAPI()
 logger = get_logger(__name__)
@@ -71,6 +71,30 @@ def total_costs(
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
     return query_total_costs(date_range)
+
+
+@app.get("/user-groups")
+def user_groups(
+    from_date: str | None = Query(
+        None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    to_date: str | None = Query(
+        None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    hub: str | None = Query(None, description="Name of the hub to filter results"),
+    username: str | None = Query(
+        None, description="Name of the user to filter results"
+    ),
+    usergroup: str | None = Query(
+        None, description="Name of the group to filter results"
+    ),
+):
+    """
+    Endpoint to serve user group memberships.
+    """
+    date_range = parse_from_to_in_query_params(from_date, to_date)
+
+    return query_user_groups(date_range, hub, username, usergroup)
 
 
 @app.get("/total-costs-per-hub")

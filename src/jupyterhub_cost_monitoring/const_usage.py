@@ -32,3 +32,7 @@ USAGE_MAP = {
         "step": "1d",
     },
 }
+
+USER_GROUP_INFO = """
+    group(jupyterhub_user_group_info) by (namespace, username, username_escaped, usergroup)
+    """
