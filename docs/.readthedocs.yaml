@@ -8,6 +8,6 @@ build:
   - npm ci
   - mkdir -p $READTHEDOCS_OUTPUT/html/
   - BASE_URL="/$READTHEDOCS_LANGUAGE/$READTHEDOCS_VERSION"
-  - env -C docs -- myst build -d --html
+  - env -C docs -- npm run myst build -d --html
   - cp -a _build/html/. "$READTHEDOCS_OUTPUT/html"
   - rm -r _build
