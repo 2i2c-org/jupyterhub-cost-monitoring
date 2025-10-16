@@ -22,7 +22,7 @@ from .const_cost_aws import (
 )
 from .date_utils import DateRange
 from .logs import get_logger
-from .query_usage import query_usage, query_user_groups
+from .query_usage import _filter_json, query_usage, query_user_groups
 
 logger = get_logger(__name__)
 aws_ce_client = boto3.client("ce")
@@ -518,6 +518,7 @@ def query_total_costs_per_user(
     hub: str = None,
     component: str = None,
     user: str = None,
+    usergroup: str = None,
     limit: str = None,
 ):
     """
@@ -535,6 +536,7 @@ def query_total_costs_per_user(
         hub: The hub namespace to query (optional, if None queries all hubs)
         component: The component to query (optional, if None queries all components)
         user: The user to query (optional, if None queries all users)
+        usergroup: The user group to query (optional, if None queries all user groups)
         limit: Limit number of results to top N users by total cost (optional, if None returns all users)
 
     Returns:
@@ -583,6 +585,7 @@ def query_total_costs_per_user(
                     r_copy = copy.deepcopy(r)
                     r_copy["usergroup"] = entry["usergroup"]
                     list_groups.append(r_copy)
+    logger.debug(f"List groups: {list_groups}")
     results.extend(list_groups)
     if limit:
         limit = int(limit)
@@ -595,6 +598,9 @@ def query_total_costs_per_user(
         results = [
             entry for entry in results if (entry["hub"], entry["user"]) in top_user_set
         ]
+    results = _filter_json(
+        results, hub=hub, component=component, user=user, usergroup=usergroup
+    )
     results.sort(
         key=lambda x: (x["date"], x["hub"], x["component"], -float(x["value"]))
     )
