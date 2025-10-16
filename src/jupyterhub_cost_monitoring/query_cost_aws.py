@@ -2,6 +2,7 @@
 Queries to AWS Cost Explorer to get different kinds of cost data.
 """
 
+import copy
 import functools
 from pprint import pformat
 
@@ -21,7 +22,7 @@ from .const_cost_aws import (
 )
 from .date_utils import DateRange
 from .logs import get_logger
-from .query_usage import query_usage
+from .query_usage import query_usage, query_user_groups
 
 logger = get_logger(__name__)
 aws_ce_client = boto3.client("ce")
@@ -571,6 +572,18 @@ def query_total_costs_per_user(
             )  # Adjust usage share to cost
             results.append(entry)
     results = [x for x in results if x["hub"] != "binder"]  # Exclude binder hubs
+    user_groups = query_user_groups(date_range, hub, user)
+    list_groups = []
+    for r in results:
+        for entry in user_groups:
+            if (r["date"] == entry["date"]) and (r["hub"] == entry["hub"]):
+                if "usergroup" not in r.keys():
+                    r["usergroup"] = entry["usergroup"]
+                else:
+                    r_copy = copy.deepcopy(r)
+                    r_copy["usergroup"] = entry["usergroup"]
+                    list_groups.append(r_copy)
+    results.extend(list_groups)
     if limit:
         limit = int(limit)
         user_costs = {}
