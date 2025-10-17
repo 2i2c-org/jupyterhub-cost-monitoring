@@ -14,6 +14,8 @@ This tool provides a per-user cost reporting system for JupyterHubs running on A
 
 ## Installation
 
+[Helm Chart Repository](https://2i2c.org/jupyterhub-cost-monitoring/)
+
 This project is designed to be compatible with Zero to JupyterHub distributions, making it easy to deploy in the cloud with Kubernetes.
 
 Add this project as a subchart of the z2jh `Chart.yaml` file with
