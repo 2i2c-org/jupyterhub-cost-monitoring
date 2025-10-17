@@ -10,7 +10,7 @@ def generate_test_data(
     from_date: str = "2025-01-01",
     to_date: str = "2025-01-02",
     hubs: list[str] = ["staging", "prod"],
-    components: list[str] = ["compute", "home-directory"],
+    components: list[str] = ["compute", "home storage"],
     n_users: int | None = 3,
 ) -> None:
     """
