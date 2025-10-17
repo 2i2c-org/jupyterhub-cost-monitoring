@@ -1,5 +1,7 @@
 from collections import defaultdict
 
+import pytest
+
 from src.jupyterhub_cost_monitoring.const_cost_aws import (
     GRANULARITY_DAILY,
     METRICS_UNBLENDED_COST,
@@ -15,20 +17,39 @@ logger = get_logger(__name__)
 date_range = parse_from_to_in_query_params("2025-09-01", "2025-09-02")
 
 
-def test_get_usage_data(mock_prometheus, env_vars):
+@pytest.mark.parametrize(
+    "mock_prometheus_usage", [["compute", "home_storage"]], indirect=True
+)
+def test_get_usage_data(mock_prometheus_usage, env_vars):
     """
     Test mocked Prometheus compute and home storage json data retrieval.
     """
     from src.jupyterhub_cost_monitoring.query_usage import query_usage
 
-    component_name = mock_prometheus.test_param.replace("_", " ")
-    response = query_usage(
+    for component_name in ["compute", "home_storage"]:
+        response = query_usage(
+            date_range,
+            hub_name=None,
+            component_name=component_name,
+            user_name=None,
+        )
+        logger.info(f"{component_name} usage shares: {response}")
+        assert len(response) > 0
+
+
+def test_get_user_group_info(mock_prometheus_user_group_info, env_vars):
+    """
+    Test mocked Prometheus user group info json data retrieval.
+    """
+    from src.jupyterhub_cost_monitoring.query_usage import query_user_groups
+
+    response = query_user_groups(
         date_range,
         hub_name=None,
-        component_name=component_name,
         user_name=None,
+        group_name=None,
     )
-    logger.info(f"{component_name} usage shares: {response}")
+    logger.info(f"User group info: {response}")
     assert len(response) > 0
 
 
@@ -59,6 +80,7 @@ def test_total_costs_per_component(mock_ce):
     """
     costs_per_component = query_total_costs_per_component(date_range)
     components = {"compute", "home storage", "core"}
+    logger.info(f"Costs per component: {costs_per_component}")
 
     result = {
         item["component"]: float(item["cost"])
@@ -71,25 +93,41 @@ def test_total_costs_per_component(mock_ce):
     assert result["core"] == 11.13
 
 
-def test_costs_per_user(mock_prometheus, mock_ce, output_cost_per_user):
+@pytest.mark.parametrize("mock_prometheus_usage", [None], indirect=True)
+def test_costs_per_user(
+    mock_prometheus_usage,
+    mock_prometheus_usage_share,
+    mock_prometheus_user_group_info,
+    mock_ce,
+    output_cost_per_user,
+):
     """
     Test cost logic for cost-per-user endpoint.
     """
     from src.jupyterhub_cost_monitoring.query_cost_aws import query_total_costs_per_user
 
     result = query_total_costs_per_user(date_range)
+    logger.info(f"Cost per user: {result}")
 
     lookup = {
-        (o["date"], o["user"], o["component"]): o["value"] for o in output_cost_per_user
+        (o["date"], o["user"], o["component"], o["hub"]): o["value"]
+        for o in output_cost_per_user
     }
 
     for r in result:
-        key = (r["date"], r["user"], r["component"])
+        key = (r["date"], r["user"], r["component"], r["hub"])
         if key in lookup:
             assert r["value"] == lookup[key]
 
 
-def test_costs_per_user_limit(mock_prometheus, mock_ce, output_cost_per_user):
+@pytest.mark.parametrize("mock_prometheus_usage", [None], indirect=True)
+def test_costs_per_user_limit(
+    mock_ce,
+    mock_prometheus_usage,
+    mock_prometheus_usage_share,
+    mock_prometheus_user_group_info,
+    output_cost_per_user,
+):
     """
     Test cost logic for cost-per-user endpoint with limit parameter.
     """
@@ -107,4 +145,4 @@ def test_costs_per_user_limit(mock_prometheus, mock_ce, output_cost_per_user):
     sorted_users = sorted(per_user.items(), key=lambda x: x[1], reverse=True)
     top_sum = sum(v for _, v in sorted_users[:limit])
 
-    assert top_sum == 35.6106
+    assert round(top_sum, 2) == 20.50
