@@ -11,3 +11,10 @@ build:
   - env -C docs -- myst build --html
   - cp -a docs/_build/html/. "$READTHEDOCS_OUTPUT/html"
   - rm -r docs/_build
+  jobs:
+    post_checkout:
+    - |-
+      if [ "$READTHEDOCS_VERSION_TYPE" = "external" ] && git diff --quiet origin/main -- docs/ .readthedocs.yaml;
+      then
+        exit 183;
+      fi
