@@ -1,281 +1,281 @@
 [
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "staging",
         "component": "compute",
         "value": 6.0,
         "user": "user_0"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "staging",
         "component": "compute",
         "value": 9.0,
         "user": "user_1"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "staging",
         "component": "compute",
         "value": 9.0,
         "user": "user_2"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "staging",
         "component": "compute",
         "value": 7.0,
         "user": "user_3"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "staging",
         "component": "compute",
         "value": 2.0,
         "user": "user_4"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "staging",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 6.0,
         "user": "user_0"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "staging",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 2.0,
         "user": "user_1"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "staging",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 9.0,
         "user": "user_2"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "staging",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 2.0,
         "user": "user_3"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "staging",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 4.0,
         "user": "user_4"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "prod",
         "component": "compute",
         "value": 2.0,
         "user": "user_0"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "prod",
         "component": "compute",
         "value": 0.0,
         "user": "user_1"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "prod",
         "component": "compute",
         "value": 3.0,
         "user": "user_2"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "prod",
         "component": "compute",
         "value": 1.0,
         "user": "user_3"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "prod",
         "component": "compute",
         "value": 1.0,
         "user": "user_4"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "prod",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 3.0,
         "user": "user_0"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "prod",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 7.0,
         "user": "user_1"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "prod",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 9.0,
         "user": "user_2"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "prod",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 5.0,
         "user": "user_3"
     },
     {
-        "date": "2025-01-01",
+        "date": "2025-09-01",
         "hub": "prod",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 3.0,
         "user": "user_4"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "staging",
         "component": "compute",
         "value": 8.0,
         "user": "user_0"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "staging",
         "component": "compute",
         "value": 1.0,
         "user": "user_1"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "staging",
         "component": "compute",
         "value": 4.0,
         "user": "user_2"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "staging",
         "component": "compute",
         "value": 3.0,
         "user": "user_3"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "staging",
         "component": "compute",
         "value": 1.0,
         "user": "user_4"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "staging",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 7.0,
         "user": "user_0"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "staging",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 6.0,
         "user": "user_1"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "staging",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 1.0,
         "user": "user_2"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "staging",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 3.0,
         "user": "user_3"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "staging",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 5.0,
         "user": "user_4"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "prod",
         "component": "compute",
         "value": 8.0,
         "user": "user_0"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "prod",
         "component": "compute",
         "value": 3.0,
         "user": "user_1"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "prod",
         "component": "compute",
         "value": 7.0,
         "user": "user_2"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "prod",
         "component": "compute",
         "value": 2.0,
         "user": "user_3"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "prod",
         "component": "compute",
         "value": 3.0,
         "user": "user_4"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "prod",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 9.0,
         "user": "user_0"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "prod",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 6.0,
         "user": "user_1"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "prod",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 2.0,
         "user": "user_2"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "prod",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 8.0,
         "user": "user_3"
     },
     {
-        "date": "2025-01-02",
+        "date": "2025-09-02",
         "hub": "prod",
-        "component": "home-directory",
+        "component": "home storage",
         "value": 1.0,
         "user": "user_4"
     }

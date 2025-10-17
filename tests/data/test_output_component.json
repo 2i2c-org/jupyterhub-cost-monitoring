@@ -1,6 +1,7 @@
 [
+
     {
-        "date":"2025-01-01",
+        "date":"2025-09-01",
         "component":"compute",
         "user":"user_0",
         "value":8.0,
@@ -8,7 +9,7 @@
         "cost":156.8
     },
     {
-        "date":"2025-01-01",
+        "date":"2025-09-01",
         "component":"compute",
         "user":"user_1",
         "value":9.0,
@@ -16,7 +17,7 @@
         "cost":176.4
     },
     {
-        "date":"2025-01-01",
+        "date":"2025-09-01",
         "component":"compute",
         "user":"user_2",
         "value":12.0,
@@ -24,7 +25,7 @@
         "cost":235.2
     },
     {
-        "date":"2025-01-01",
+        "date":"2025-09-01",
         "component":"compute",
         "user":"user_3",
         "value":8.0,
@@ -32,7 +33,7 @@
         "cost":156.8
     },
     {
-        "date":"2025-01-01",
+        "date":"2025-09-01",
         "component":"compute",
         "user":"user_4",
         "value":3.0,
@@ -40,47 +41,47 @@
         "cost":58.8
     },
     {
-        "date":"2025-01-01",
-        "component":"home-directory",
+        "date":"2025-09-01",
+        "component":"home storage",
         "user":"user_0",
         "value":9.0,
         "cost_factor":0.18,
         "cost":16.92
     },
     {
-        "date":"2025-01-01",
-        "component":"home-directory",
+        "date":"2025-09-01",
+        "component":"home storage",
         "user":"user_1",
         "value":9.0,
         "cost_factor":0.18,
         "cost":16.92
     },
     {
-        "date":"2025-01-01",
-        "component":"home-directory",
+        "date":"2025-09-01",
+        "component":"home storage",
         "user":"user_2",
         "value":18.0,
         "cost_factor":0.36,
         "cost":33.84
     },
     {
-        "date":"2025-01-01",
-        "component":"home-directory",
+        "date":"2025-09-01",
+        "component":"home storage",
         "user":"user_3",
         "value":7.0,
         "cost_factor":0.14,
         "cost":13.16
     },
     {
-        "date":"2025-01-01",
-        "component":"home-directory",
+        "date":"2025-09-01",
+        "component":"home storage",
         "user":"user_4",
         "value":7.0,
         "cost_factor":0.14,
         "cost":13.16
     },
     {
-        "date":"2025-01-02",
+        "date":"2025-09-02",
         "component":"compute",
         "user":"user_0",
         "value":16.0,
@@ -88,7 +89,7 @@
         "cost":431.6
     },
     {
-        "date":"2025-01-02",
+        "date":"2025-09-02",
         "component":"compute",
         "user":"user_1",
         "value":4.0,
@@ -96,7 +97,7 @@
         "cost":107.9
     },
     {
-        "date":"2025-01-02",
+        "date":"2025-09-02",
         "component":"compute",
         "user":"user_2",
         "value":11.0,
@@ -104,7 +105,7 @@
         "cost":296.725
     },
     {
-        "date":"2025-01-02",
+        "date":"2025-09-02",
         "component":"compute",
         "user":"user_3",
         "value":5.0,
@@ -112,7 +113,7 @@
         "cost":134.875
     },
     {
-        "date":"2025-01-02",
+        "date":"2025-09-02",
         "component":"compute",
         "user":"user_4",
         "value":4.0,
@@ -120,40 +121,40 @@
         "cost":107.9
     },
     {
-        "date":"2025-01-02",
-        "component":"home-directory",
+        "date":"2025-09-02",
+        "component":"home storage",
         "user":"user_0",
         "value":16.0,
         "cost_factor":0.3333333333,
         "cost":193.6666666667
     },
     {
-        "date":"2025-01-02",
-        "component":"home-directory",
+        "date":"2025-09-02",
+        "component":"home storage",
         "user":"user_1",
         "value":12.0,
         "cost_factor":0.25,
         "cost":145.25
     },
     {
-        "date":"2025-01-02",
-        "component":"home-directory",
+        "date":"2025-09-02",
+        "component":"home storage",
         "user":"user_2",
         "value":3.0,
         "cost_factor":0.0625,
         "cost":36.3125
     },
     {
-        "date":"2025-01-02",
-        "component":"home-directory",
+        "date":"2025-09-02",
+        "component":"home storage",
         "user":"user_3",
         "value":11.0,
         "cost_factor":0.2291666667,
         "cost":133.1458333333
     },
     {
-        "date":"2025-01-02",
-        "component":"home-directory",
+        "date":"2025-09-02",
+        "component":"home storage",
         "user":"user_4",
         "value":6.0,
         "cost_factor":0.125,

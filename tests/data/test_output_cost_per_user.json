@@ -3,56 +3,296 @@
         "component": "compute",
         "date": "2025-09-01",
         "hub": "prod",
-        "user": "user_1",
-        "value": 0.1416
+        "user": "user_2",
+        "value": 0.6637
     },
     {
         "component": "compute",
         "date": "2025-09-01",
         "hub": "prod",
-        "user": "user_2",
-        "value": 5.4389
+        "user": "user_0",
+        "value": 0.4425
     },
     {
         "component": "compute",
         "date": "2025-09-01",
         "hub": "prod",
         "user": "user_3",
-        "value": 3.0594
+        "usergroup": "group_1",
+        "value": 0.2213
     },
     {
         "component": "compute",
         "date": "2025-09-01",
         "hub": "prod",
         "user": "user_4",
-        "value": 0.2101
+        "value": 0.2213
     },
     {
-        "component": "home storage",
+        "component": "compute",
         "date": "2025-09-01",
         "hub": "prod",
         "user": "user_1",
-        "value": 0.1156
+        "usergroup": "group_1",
+        "value": 0.0
     },
     {
         "component": "home storage",
         "date": "2025-09-01",
         "hub": "prod",
         "user": "user_2",
-        "value": 4.4372
+        "value": 1.2996
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-01",
+        "hub": "prod",
+        "user": "user_1",
+        "usergroup": "group_1",
+        "value": 1.0108
     },
     {
         "component": "home storage",
         "date": "2025-09-01",
         "hub": "prod",
         "user": "user_3",
-        "value": 2.4959
+        "usergroup": "group_1",
+        "value": 0.722
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-01",
+        "hub": "prod",
+        "user": "user_0",
+        "value": 0.4332
     },
     {
         "component": "home storage",
         "date": "2025-09-01",
         "hub": "prod",
         "user": "user_4",
-        "value": 0.1714
+        "value": 0.4332
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-01",
+        "hub": "staging",
+        "user": "user_1",
+        "value": 1.9912
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-01",
+        "hub": "staging",
+        "user": "user_2",
+        "usergroup": "group_2",
+        "value": 1.9912
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-01",
+        "hub": "staging",
+        "user": "user_3",
+        "value": 1.5487
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-01",
+        "hub": "staging",
+        "user": "user_0",
+        "value": 1.3275
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-01",
+        "hub": "staging",
+        "user": "user_4",
+        "usergroup": "group_2",
+        "value": 0.4425
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-01",
+        "hub": "staging",
+        "user": "user_2",
+        "usergroup": "group_2",
+        "value": 1.2996
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-01",
+        "hub": "staging",
+        "user": "user_0",
+        "value": 0.8664
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-01",
+        "hub": "staging",
+        "user": "user_4",
+        "usergroup": "group_2",
+        "value": 0.5776
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-01",
+        "hub": "staging",
+        "user": "user_1",
+        "value": 0.2888
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-01",
+        "hub": "staging",
+        "user": "user_3",
+        "value": 0.2888
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-02",
+        "hub": "prod",
+        "user": "user_0",
+        "value": 2.764
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-02",
+        "hub": "prod",
+        "user": "user_2",
+        "value": 2.4185
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-02",
+        "hub": "prod",
+        "user": "user_1",
+        "usergroup": "group_1",
+        "value": 1.0365
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-02",
+        "hub": "prod",
+        "user": "user_4",
+        "value": 1.0365
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-02",
+        "hub": "prod",
+        "user": "user_3",
+        "usergroup": "group_1",
+        "value": 0.691
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-02",
+        "hub": "prod",
+        "user": "user_0",
+        "value": 1.35
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-02",
+        "hub": "prod",
+        "user": "user_3",
+        "usergroup": "group_1",
+        "value": 1.2
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-02",
+        "hub": "prod",
+        "user": "user_1",
+        "usergroup": "group_1",
+        "value": 0.9
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-02",
+        "hub": "prod",
+        "user": "user_2",
+        "value": 0.3
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-02",
+        "hub": "prod",
+        "user": "user_4",
+        "value": 0.15
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-02",
+        "hub": "staging",
+        "user": "user_0",
+        "value": 2.764
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-02",
+        "hub": "staging",
+        "user": "user_2",
+        "usergroup": "group_2",
+        "value": 1.382
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-02",
+        "hub": "staging",
+        "user": "user_3",
+        "value": 1.0365
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-02",
+        "hub": "staging",
+        "user": "user_1",
+        "value": 0.3455
+    },
+    {
+        "component": "compute",
+        "date": "2025-09-02",
+        "hub": "staging",
+        "user": "user_4",
+        "usergroup": "group_2",
+        "value": 0.3455
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-02",
+        "hub": "staging",
+        "user": "user_0",
+        "value": 1.05
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-02",
+        "hub": "staging",
+        "user": "user_1",
+        "value": 0.9
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-02",
+        "hub": "staging",
+        "user": "user_4",
+        "usergroup": "group_2",
+        "value": 0.75
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-02",
+        "hub": "staging",
+        "user": "user_3",
+        "value": 0.45
+    },
+    {
+        "component": "home storage",
+        "date": "2025-09-02",
+        "hub": "staging",
+        "user": "user_2",
+        "usergroup": "group_2",
+        "value": 0.15
     }
 ]
