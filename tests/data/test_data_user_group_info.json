@@ -1,0 +1,56 @@
+{
+    "data": {
+      "result": [
+        {
+          "metric": {
+            "namespace": "prod",
+            "username": "user_1",
+            "username_escaped": "user_1",
+            "usergroup": "group_1"
+          },
+          "values": [
+            [1756684800, "1"],
+            [1756771200, "1"]
+          ]
+        },
+        {
+          "metric": {
+            "namespace": "staging",
+            "username": "user_2",
+            "username_escaped": "user_2",
+            "usergroup": "group_2"
+          },
+          "values": [
+            [1756684800, "1"],
+            [1756771200, "1"]
+          ]
+        },
+        {
+          "metric": {
+            "namespace": "prod",
+            "username": "user_3",
+            "username_escaped": "user_3",
+            "usergroup": "group_1"
+          },
+          "values": [
+            [1756684800, "1"],
+            [1756771200, "1"]
+          ]
+        },
+        {
+          "metric": {
+            "namespace": "staging",
+            "username": "user_4",
+            "username_escaped": "user_4",
+            "usergroup": "group_2"
+          },
+          "values": [
+            [1756684800, "1"],
+            [1756771200, "1"]
+          ]
+        }
+      ],
+      "resultType": "matrix"
+    },
+    "status": "success"
+  }
