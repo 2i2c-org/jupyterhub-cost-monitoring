@@ -1,13 +1,15 @@
 import json
 import os
 from datetime import datetime, timezone
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import boto3
 import pytest
 from botocore.stub import Stubber
 
 os.environ["CLUSTER_NAME"] = "test-cluster"
+
+from src.jupyterhub_cost_monitoring.query_usage import _calculate_daily_cost_factors
 
 # Usage and cost data fixtures for test_cost.py
 
@@ -43,6 +45,16 @@ def output_data_component():
 # Usage and cost data for test_integration.py
 
 
+@pytest.fixture(scope="function")
+def output_cost_per_user():
+    """
+    Output to assert against query_total_costs_per_user function.
+    """
+    with open("tests/data/test_output_cost_per_user.json") as f:
+        data = json.load(f)
+    return data
+
+
 @pytest.fixture(autouse=True)
 def env_vars(monkeypatch):
     """
@@ -55,18 +67,82 @@ def env_vars(monkeypatch):
     monkeypatch.setenv("AWS_EC2_METADATA_DISABLED", "true")
 
 
-@pytest.fixture(scope="function", params=["compute", "home_storage"])
-def mock_prometheus(request):
+@pytest.fixture(scope="function")
+def mock_prometheus_usage(request):
     """
-    Mock Prometheus response for compute and home storage components.
+    Mock Prometheus usage data for compute and home storage components.
     """
-    with patch("src.jupyterhub_cost_monitoring.query_usage.requests.get") as mock:
-        mock_response = MagicMock()
-        with open(f"tests/data/test_data_usage_{request.param}.json") as f:
-            mock_response.json.return_value = json.load(f)
-        mock.return_value = mock_response
-        mock.test_param = request.param
-        yield mock
+    patch_target = "src.jupyterhub_cost_monitoring.query_usage.query_usage"
+
+    param = getattr(request, "param", None)
+    if param is not None:
+        components = request.param if isinstance(param, list) else [param]
+
+        json_data_map = {}
+        for comp in components:
+            filename = f"tests/data/test_data_usage_{comp}.json"
+            try:
+                with open(filename) as f:
+                    json_data_map[comp] = json.load(f)
+            except FileNotFoundError:
+                raise RuntimeError(f"Test data file not found: {filename}")
+
+    def side_effect_func(*args, **kwargs):
+        component_name = kwargs.get("component_name")
+        if component_name is None:
+            all_data = []
+            for comp_data in json_data_map.values():
+                if isinstance(comp_data, list):
+                    all_data.extend(comp_data)
+                else:
+                    all_data.append(comp_data)
+            return all_data
+        if component_name not in json_data_map:
+            raise ValueError(f"No mock data for component: {component_name}")
+        return json_data_map.get(component_name, {})
+
+    with patch(patch_target) as mock_func:
+        mock_func.side_effect = side_effect_func
+        yield mock_func
+
+
+@pytest.fixture(scope="function")
+def mock_prometheus_usage_share(request):
+    """
+    Mock Prometheus response for calculating usage shares.
+    """
+    patch_target = "src.jupyterhub_cost_monitoring.query_cost_aws.query_usage"
+    filename = "tests/data/test_data_usage.json"
+    try:
+        with open(f"{filename}") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        raise RuntimeError(f"Test data file not found: {filename}")
+
+    usage_shares = _calculate_daily_cost_factors(data)
+
+    with patch(patch_target) as mock_func:
+        mock_func.return_value = usage_shares
+        yield mock_func
+
+
+@pytest.fixture(scope="function")
+def mock_prometheus_user_group_info(request):
+    """
+    Mock Prometheus response for getting user group info.
+    """
+    targets = [
+        "src.jupyterhub_cost_monitoring.query_usage.query_user_groups",
+        "src.jupyterhub_cost_monitoring.query_cost_aws.query_user_groups",
+    ]
+    patches = [patch(t) for t in targets]
+    mocks = [p.start() for p in patches]
+    for m in mocks:
+        with open("tests/data/test_output_user_group_info.json") as f:
+            m.return_value = json.load(f)
+    yield mocks
+    for p in patches:
+        p.stop()
 
 
 @pytest.fixture(scope="function")
@@ -99,16 +175,6 @@ def mock_ce():
         ),
     ):
         yield aws_ce_client
-
-
-@pytest.fixture(scope="function")
-def output_cost_per_user():
-    """
-    Output to assert against query_total_costs_per_user function.
-    """
-    with open("tests/data/test_output_cost_per_user.json") as f:
-        data = json.load(f)
-    return data
 
 
 # Date-specific fixtures for date_utils tests
