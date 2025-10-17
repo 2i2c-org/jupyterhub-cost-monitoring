@@ -185,6 +185,7 @@ def costs_per_user(
     """
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
+    usergroup = usergroup.strip("{}").split(",")
 
     if not hub or hub.lower() == "all":
         hub = None
@@ -192,19 +193,22 @@ def costs_per_user(
         component = None
     if not user or user.lower() == "all":
         user = None
-    if not usergroup or usergroup.lower() == "all":
-        usergroup = None
     if not limit or (str(limit).lower() == "all"):
         limit = None
+    if not usergroup or ("all" in [u.lower() for u in usergroup]):
+        usergroup = [None]
 
     logger.info(f"Limit parameter: {limit}")
 
     # Get per-user costs by combining AWS costs with Prometheus usage data
-    per_user_costs = query_total_costs_per_user(
-        date_range, hub, component, user, usergroup, limit
-    )
+    results = []
+    for ug in usergroup:
+        per_user_costs = query_total_costs_per_user(
+            date_range, hub, component, user, ug, limit
+        )
+        results.extend(per_user_costs)
 
-    return per_user_costs
+    return results
 
 
 @app.get("/total-usage")
