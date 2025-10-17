@@ -185,7 +185,8 @@ def costs_per_user(
     """
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
-    usergroup = usergroup.strip("{}").split(",")
+    if usergroup:
+        usergroup = usergroup.strip("{}").split(",")
 
     if not hub or hub.lower() == "all":
         hub = None
