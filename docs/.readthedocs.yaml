@@ -4,13 +4,6 @@ build:
   os: ubuntu-24.04
   tools:
     nodejs: '22'
-  commands:
-  - npm install -g mystmd
-  - mkdir -p $READTHEDOCS_OUTPUT/html/
-  - BASE_URL="/$READTHEDOCS_LANGUAGE/$READTHEDOCS_VERSION"
-  - env -C docs -- myst build --html
-  - cp -a docs/_build/html/. "$READTHEDOCS_OUTPUT/html"
-  - rm -r docs/_build
   jobs:
     post_checkout:
     - |-
@@ -18,3 +11,12 @@ build:
       then
         exit 183;
       fi
+    install:
+    - npm install -g mystmd
+    - mkdir -p $READTHEDOCS_OUTPUT/html/
+    - BASE_URL="/$READTHEDOCS_LANGUAGE/$READTHEDOCS_VERSION"
+    build:
+      html:
+      - env -C docs -- myst build --html
+      - cp -a docs/_build/html/. "$READTHEDOCS_OUTPUT/html"
+      - rm -r docs/_build
