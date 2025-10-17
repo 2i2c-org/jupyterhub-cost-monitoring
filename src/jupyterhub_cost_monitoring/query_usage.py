@@ -10,6 +10,7 @@ import escapism
 import requests
 from yarl import URL
 
+from .cache import ttl_lru_cache
 from .const_usage import USAGE_MAP, USER_GROUP_INFO
 from .date_utils import DateRange
 from .logs import get_logger
@@ -240,6 +241,7 @@ def _calculate_daily_cost_factors(
     return result
 
 
+@ttl_lru_cache(seconds_to_live=3600)
 def query_user_groups(
     date_range: DateRange,
     hub_name: str | None = None,
