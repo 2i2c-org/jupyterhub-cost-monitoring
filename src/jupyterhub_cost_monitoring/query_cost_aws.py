@@ -608,3 +608,39 @@ def query_total_costs_per_user(
         key=lambda x: (x["date"], x["hub"], x["component"], -float(x["value"]))
     )
     return results
+
+
+@ttl_lru_cache(seconds_to_live=3600)
+def query_total_costs_per_group(
+    date_range: DateRange,
+):
+    """
+    Query total costs per group for the given date range.
+
+    Args:
+        date_range: DateRange object containing the time period for the query.
+
+    Returns:
+        List of dicts with keys: date, usergroup and cost.
+    """
+
+    results = query_total_costs_per_user(date_range=date_range)
+
+    user_groups = query_user_groups(date_range)
+
+    response = {}
+    for ug in user_groups:
+        for r in results:
+            if (
+                r["date"] == ug["date"]
+                and "usergroup" in r
+                and r["usergroup"] == ug["usergroup"]
+            ):
+                key = (r["date"], r["usergroup"])
+                response[key] = response.get(key, 0) + float(r["value"])
+
+    final_response = [
+        {"date": k[0], "usergroup": k[1], "cost": v} for k, v in response.items()
+    ]
+
+    return final_response

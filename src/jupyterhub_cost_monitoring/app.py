@@ -7,6 +7,7 @@ from .query_cost_aws import (
     query_hub_names,
     query_total_costs,
     query_total_costs_per_component,
+    query_total_costs_per_group,
     query_total_costs_per_hub,
     query_total_costs_per_user,
 )
@@ -140,6 +141,33 @@ def total_costs_per_component(
         component = None
 
     return query_total_costs_per_component(date_range, hub, component)
+
+
+@app.get("/total-costs-per-group")
+def total_costs_per_group(
+    from_date: str | None = Query(
+        None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    to_date: str | None = Query(
+        None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    hub: str | None = Query(None, description="Name of the hub to filter results"),
+    component: str | None = Query(
+        None, description="Name of the component to filter results"
+    ),
+):
+    """
+    Endpoint to query total costs per user group.
+    """
+    # Parse and validate date parameters into DateRange object
+    date_range = parse_from_to_in_query_params(from_date, to_date)
+
+    if not hub or hub.lower() == "all":
+        hub = None
+    if not component or component.lower() == "all":
+        component = None
+
+    return query_total_costs_per_group(date_range, hub, component)
 
 
 @app.get("/costs-per-user")
