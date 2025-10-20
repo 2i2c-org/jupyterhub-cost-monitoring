@@ -97,6 +97,19 @@ local bg = grafonnet.panel.barGauge;
       + var.query.selectionOptions.withIncludeAll(value=true, customAllValue='all')
       + var.query.selectionOptions.withMulti(value=false)
       + var.query.refresh.onTime(),
+    user_groups:
+      var.query.new(
+        'user_groups', 
+        query='label_values(jupyterhub_user_group_info,usergroup)')
+      + var.query.withDatasource(
+        type='prometheus',
+        uid='P1809F7CD0C75ACF3',
+      )
+      + var.query.generalOptions.withLabel('group')
+      + var.query.generalOptions.withCurrent('All')
+      + var.query.selectionOptions.withIncludeAll(value=true, customAllValue='all')
+      + var.query.selectionOptions.withMulti(value=true)
+      + var.query.refresh.onTime(),
     limit:
       var.textbox.new('limit')
       + var.textbox.generalOptions.withDescription('Limit display to top N users. Leave empty to show all.')
