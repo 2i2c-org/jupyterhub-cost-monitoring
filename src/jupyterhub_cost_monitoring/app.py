@@ -151,10 +151,6 @@ def total_costs_per_group(
     to_date: str | None = Query(
         None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
     ),
-    hub: str | None = Query(None, description="Name of the hub to filter results"),
-    component: str | None = Query(
-        None, description="Name of the component to filter results"
-    ),
 ):
     """
     Endpoint to query total costs per user group.
@@ -162,12 +158,7 @@ def total_costs_per_group(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    if not hub or hub.lower() == "all":
-        hub = None
-    if not component or component.lower() == "all":
-        component = None
-
-    return query_total_costs_per_group(date_range, hub, component)
+    return query_total_costs_per_group(date_range)
 
 
 @app.get("/costs-per-user")
