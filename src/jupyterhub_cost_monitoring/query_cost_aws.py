@@ -626,7 +626,11 @@ def query_total_costs_per_group(
 
     results = query_total_costs_per_user(date_range=date_range)
 
-    user_groups = query_user_groups(date_range)
+    user_group_info = query_user_groups(date_range)
+    user_groups = [
+        {"date": d, "usergroup": g}
+        for d, g in {(item["date"], item["usergroup"]) for item in user_group_info}
+    ]
 
     response = {}
     for ug in user_groups:
@@ -637,6 +641,7 @@ def query_total_costs_per_group(
                 and r["usergroup"] == ug["usergroup"]
             ):
                 key = (r["date"], r["usergroup"])
+                logger.info(f"Key: {key}, Value: {r['value']}")
                 response[key] = response.get(key, 0) + float(r["value"])
 
     final_response = [
