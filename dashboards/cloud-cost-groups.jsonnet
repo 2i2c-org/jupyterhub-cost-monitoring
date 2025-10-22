@@ -4,7 +4,9 @@ local dashboard = grafonnet.dashboard;
 local bc = grafonnet.panel.barChart;
 local bg = grafonnet.panel.barGauge;
 local tb = grafonnet.panel.table;
+local tb = grafonnet.panel.table;
 local var = grafonnet.dashboard.variable;
+local link = grafonnet.dashboard.link;
 
 local common = import './common.libsonnet';
 
@@ -20,6 +22,7 @@ local TotalHub =
       - workshop: a hub for events such as workshops and tutorials, e.g. workshop.<your-community>.2i2c.cloud
     |||
   )
+  + bg.panelOptions.withGridPos(h=7, w=8, x=0, y=0)
   + bg.panelOptions.withGridPos(h=7, w=8, x=0, y=0)
   + bg.queryOptions.withTargets([
     common.queryHubTarget
@@ -78,7 +81,7 @@ local TotalComponent =
       - home storage: storage disks for user directories
       - networking: load balancing and virtual private cloud
       - object storage: cloud storage, e.g. AWS S3
-      - support: compute and storage for support functions
+      - core: resources to operate core infrastructure
     |||
   )
   + bg.panelOptions.withGridPos(h=7, w=8, x=8, y=0)
@@ -239,14 +242,112 @@ local Top5 =
   ])
 ;
 
+local TotalGroup =
+  common.bgOptions
+  + bg.new('Total by Group')
+  + bg.panelOptions.withDescription(
+    |||
+      Total costs by group are summed across all hubs and components over the time period selected.
+
+      Note: Users with multiple group memberships are double-counted. E.g. if user 1 is a member of group 1 and group 2, then the user's individual costs are included in the total sums of each group.
+    |||
+  )
+  + bg.panelOptions.withGridPos(h=7, w=12, x=0, y=8)
+  + bg.queryOptions.withTargets([
+    common.queryGroupTarget
+    {
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-group?from=${__from:date}&to=${__to:date}',
+    },
+  ])
+  + bg.queryOptions.withTransformations([
+    bg.queryOptions.transformation.withId('groupBy')
+    + bg.queryOptions.transformation.withOptions({
+      fields: {
+        Cost: {
+          aggregations: [
+            'sum',
+          ],
+          operation: 'aggregate',
+        },
+        Group: {
+          aggregations: [],
+          operation: 'groupby',
+        },
+      },
+    }),
+    bg.queryOptions.transformation.withId('sortBy')
+    + bg.queryOptions.transformation.withOptions({
+      sort: [
+        {
+          asc: true,
+          field: 'Group',
+        },
+      ],
+    }),    
+    bg.queryOptions.transformation.withId('transpose')
+  ])
+  + bg.standardOptions.color.withMode('continuous-BlYlRd')
+;
+
+local MultipleGroup =
+  tb.new('Users with multiple group memberships')
+  + tb.panelOptions.withDescription(
+    |||
+      List of users with multiple group memberships.
+
+      Note: Users with multiple group memberships are double-counted. E.g. if user 1 is a member of group 1 and group 2, then the user's individual costs are included in the total sums of each group.
+    |||
+  )
+  + tb.panelOptions.withGridPos(h=7, w=12, x=12, y=7)
+  + tb.queryOptions.withTargets([
+    common.queryMultipleGroupTarget
+    {
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/user-groups?from=${__from:date}&to=${__to:date}',
+    },
+  ])
+  + tb.queryOptions.withTransformations([
+    tb.queryOptions.transformation.withId('groupBy')
+    + tb.queryOptions.transformation.withOptions({
+      fields: {
+        usergroup: {
+          aggregations: [],
+          operation: 'aggregate',
+        },
+        username_escaped: {
+          aggregations: [],
+          operation: 'groupby',
+        },
+      },
+    }),
+    tb.queryOptions.transformation.withId('groupToNestedTable')
+    + tb.queryOptions.transformation.withOptions({
+      fields: {
+        "usergroup": {
+          "aggregations": []
+        },
+        "username_escaped": {
+          "aggregations": [],
+          "operation": "groupby"
+        }
+      }
+    }),    
+    tb.queryOptions.transformation.withId('organize')
+    + tb.queryOptions.transformation.withOptions({
+      renameByName: {
+        username_escaped: 'User',
+      },
+    }),
+  ])
+;
+
 local Hub =
   common.bcOptions
   + bc.new('Hub – $hub_user, Component – $component')
   + bc.panelOptions.withDescription(
     |||
-      Shows daily user costs by hub, with a total across all hubs and components shown by default.
+      Shows daily user costs by hub, with a total across all hubs, components and groups shown by default.
 
-      Try toggling the *hub* and *component* variable dropdown above to drill down per user costs.
+      Try toggling the *hub*, *component* and *group* variable dropdown above to filter per user costs.
     |||
   )
   + bg.panelOptions.withGridPos(h=12, w=24, x=0, y=8)
@@ -272,11 +373,11 @@ dashboard.new('Group cloud costs')
   common.variables.user_groups,
   common.variables.limit,
 ])
++ dashboard.withLinks([
+  link.link.new('Community Hub Guide', 'https://docs.2i2c.org/admin/monitoring/'),
+])
 + dashboard.withPanels(
   [
-    TotalHub,
-    TotalComponent,
-    Top5,
     TotalGroup,
     Hub,
   ],
