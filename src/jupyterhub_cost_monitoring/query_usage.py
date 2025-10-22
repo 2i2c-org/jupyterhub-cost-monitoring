@@ -248,7 +248,7 @@ def query_user_groups(
     user_name: str | None = None,
     group_name: str | None = None,
 ) -> list[dict]:
-    response = query_prometheus(USER_GROUP_INFO, date_range, step="1d")
+    response = query_prometheus(USER_GROUP_INFO, date_range, step="12h")
     result = _process_user_groups(response, hub_name, user_name, group_name)
     return result
 
@@ -263,6 +263,7 @@ def _process_user_groups(
     Process the response from the Prometheus server to extract user group information.
     """
     result = []
+    unique_keys = set()
     for data in response["data"]["result"]:
         for value in data["values"]:
             date = datetime.fromtimestamp(value[0], tz=timezone.utc).strftime(
@@ -272,15 +273,18 @@ def _process_user_groups(
             user = data["metric"]["username"]
             user_escaped = data["metric"]["username_escaped"]
             group = data["metric"]["usergroup"]
-            result.append(
-                {
-                    "date": date,
-                    "hub": hub,
-                    "username": user,
-                    "username_escaped": user_escaped,
-                    "usergroup": group,
-                }
-            )
+            key = (date, hub, user, user_escaped, group)
+            if key not in unique_keys:
+                unique_keys.add(key)
+                result.append(
+                    {
+                        "date": date,
+                        "hub": hub,
+                        "username": user,
+                        "username_escaped": user_escaped,
+                        "usergroup": group,
+                    }
+                )
             result = _filter_json(
                 result, hub=hub_name, username=user_name, usergroup=group_name
             )
