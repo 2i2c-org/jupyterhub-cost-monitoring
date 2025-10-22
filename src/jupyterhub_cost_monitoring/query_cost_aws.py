@@ -587,7 +587,7 @@ def query_total_costs_per_user(
                     r_copy["usergroup"] = entry["usergroup"]
                     list_groups.append(r_copy)
         if r.get("usergroup") is None:
-            logger.info(f"No username match for group membership: {r}")
+            logger.debug(f"No username match for group membership: {r}")
             r["usergroup"] = "none"
     results.extend(list_groups)
     if limit:
@@ -631,14 +631,11 @@ def query_total_costs_per_group(
         {"date": d, "usergroup": g}
         for d, g in {(item["date"], item["usergroup"]) for item in user_group_info}
     ]
-
     response = {}
     for ug in user_groups:
         for r in results:
-            if (
-                r["date"] == ug["date"]
-                and "usergroup" in r
-                and r["usergroup"] == ug["usergroup"]
+            if r["date"] == ug["date"] and (
+                r["usergroup"] == ug["usergroup"] or r["usergroup"] == "none"
             ):
                 key = (r["date"], r["usergroup"])
                 logger.debug(f"Key: {key}, Value: {r['value']}")
