@@ -586,10 +586,9 @@ def query_total_costs_per_user(
                     r_copy = copy.deepcopy(r)
                     r_copy["usergroup"] = entry["usergroup"]
                     list_groups.append(r_copy)
-            else:
-                logger.debug(f"No username match for group membership: {r['user']}")
-                r["usergroup"] = "none"
-    logger.debug(f"List groups: {list_groups}")
+        if r.get("usergroup") is None:
+            logger.info(f"No username match for group membership: {r}")
+            r["usergroup"] = "none"
     results.extend(list_groups)
     if limit:
         limit = int(limit)
