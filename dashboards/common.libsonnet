@@ -202,6 +202,44 @@ local bg = grafonnet.panel.barGauge;
     refId: 'A',
   },
 
+  queryGroupTarget: {
+    datasource: {
+      type: 'yesoreyeram-infinity-datasource',
+      uid: '${infinity_datasource}',
+    },
+    columns: [
+      { selector: 'date', text: 'Date', type: 'timestamp' },
+      { selector: 'cost', text: 'Cost', type: 'number' },
+      { selector: 'usergroup', text: 'Group', type: 'string' },
+    ],
+    parser: 'backend',
+    type: 'json',
+    source: 'url',
+    url_options: {
+      method: 'GET',
+      data: '',
+    },
+    format: 'table',
+    refId: 'A',
+  },
+
+  queryMultipleGroupTarget: {
+    datasource: {
+      type: 'yesoreyeram-infinity-datasource',
+      uid: '${infinity_datasource}',
+    },
+    parser: 'backend',
+    root_selector: '$filter($, function($v, $i, $a) {\n  $v.username in $distinct(($a[usergroup="multiple"].username))\n})\n',
+    type: 'json',
+    source: 'url',
+    url_options: {
+      method: 'GET',
+      data: '',
+    },
+    format: 'table',
+    refId: 'A',
+  },  
+
   // grafana ref:   https://grafana.com/docs/grafana/v11.1/panels-visualizations/visualizations/time-series/
   // grafonnet ref: https://grafana.github.io/grafonnet/API/panel/timeSeries/index.html
   tsOptions:
