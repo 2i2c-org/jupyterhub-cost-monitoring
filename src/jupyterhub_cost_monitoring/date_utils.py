@@ -136,10 +136,7 @@ def parse_from_to_in_query_params(
     with a 'Z' suffix. Grafana's `${__from:date}` variable outputs UTC-based dates,
     but custom formatting may not preserve timezone info, so we handle both cases.
     """
-    # Get current date at midnight UTC for consistent date boundaries
-    now_date = datetime.now(timezone.utc).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
+    now_date = get_now_date()
 
     # Parse and set defaults for date parameters
     if to_date:
@@ -164,3 +161,11 @@ def parse_from_to_in_query_params(
         from_date = to_date - timedelta(days=1)
 
     return DateRange(start_date=from_date, end_date=to_date)
+
+
+def get_now_date():
+    """Get current date at midnight UTC for consistent date boundaries"""
+    now_date = datetime.now(timezone.utc).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    return now_date
