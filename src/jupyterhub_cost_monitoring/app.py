@@ -1,7 +1,9 @@
+from datetime import timedelta
+
 from fastapi import FastAPI, Query
 
 from .const_usage import USAGE_MAP
-from .date_utils import parse_from_to_in_query_params
+from .date_utils import get_now_date, parse_from_to_in_query_params
 from .logs import get_logger
 from .query_cost_aws import (
     query_hub_names,
@@ -11,7 +13,12 @@ from .query_cost_aws import (
     query_total_costs_per_hub,
     query_total_costs_per_user,
 )
-from .query_usage import query_usage, query_user_groups
+from .query_usage import (
+    query_usage,
+    query_user_groups,
+    query_users_with_multiple_groups,
+    query_users_with_no_groups,
+)
 
 app = FastAPI()
 logger = get_logger(__name__)
@@ -96,6 +103,50 @@ def user_groups(
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
     return query_user_groups(date_range, hub, username, usergroup)
+
+
+@app.get("/users-with-multiple-groups")
+def users_with_multiple_groups(
+    hub_name: str | None = Query(None, description="Name of the hub to filter results"),
+    user_name: str | None = Query(
+        None, description="Name of the user to filter results"
+    ),
+):
+    """
+    Endpoint to serve users with multiple groups.
+    """
+    now_date = get_now_date() - timedelta(
+        days=1
+    )  # Use most recent complete day for group information
+    from_date = now_date
+    to_date = now_date
+    date_range = parse_from_to_in_query_params(
+        from_date.isoformat(), to_date.isoformat()
+    )
+
+    return query_users_with_multiple_groups(date_range, hub_name, user_name)
+
+
+@app.get("/users-with-no-groups")
+def users_with_no_groups(
+    hub_name: str | None = Query(None, description="Name of the hub to filter results"),
+    user_name: str | None = Query(
+        None, description="Name of the user to filter results"
+    ),
+):
+    """
+    Endpoint to serve users with no groups.
+    """
+    now_date = get_now_date() - timedelta(
+        days=1
+    )  # Use most recent complete day for group information
+    from_date = now_date
+    to_date = now_date
+    date_range = parse_from_to_in_query_params(
+        from_date.isoformat(), to_date.isoformat()
+    )
+
+    return query_users_with_no_groups(date_range, hub_name, user_name)
 
 
 @app.get("/total-costs-per-hub")
