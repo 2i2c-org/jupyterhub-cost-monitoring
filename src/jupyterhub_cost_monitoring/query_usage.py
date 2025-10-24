@@ -298,25 +298,26 @@ def query_users_with_multiple_groups(
     user_name: str | None = None,
 ) -> list[dict]:
     response = query_user_groups(date_range, hub_name=hub_name, user_name=user_name)
-    grouped = defaultdict(lambda: {"username": None, "hub": None, "usergroup": set()})
+    grouped = defaultdict(
+        lambda: {"username": None, "hub": None, "usergroups": [], "has_multiple": False}
+    )
     for entry in response:
-        logger.debug(f"Processing entry: {entry}")
-        key = (entry["username"], entry["hub"])
-        if grouped[key]["username"] is None:
-            grouped[key]["username"] = entry["username"]
-            grouped[key]["hub"] = entry["hub"]
+        k = (entry["username"], entry["hub"])
+        g = grouped[k]
+        g["username"] = entry["username"]
+        g["hub"] = entry["hub"]
         if entry["usergroup"] == "multiple":
-            grouped[key]["has_multiple"] = True
+            g["has_multiple"] = True
             continue
-        else:
-            grouped[key]["has_multiple"] = False
-        grouped[key]["usergroup"].add(entry["usergroup"])
-        logger.debug(f"entry usergroup: {entry['usergroup']}")
-    result = [
-        {"username": v["username"], "hub": v["hub"], "usergroup": v["usergroup"]}
-        for v in grouped.values()
-        if v["has_multiple"]
-    ]
+        g["usergroups"].append(entry["usergroup"])
+    result = []
+    for v in grouped.values():
+        if v["has_multiple"]:
+            for group in v["usergroups"]:
+                result.append(
+                    {"username": v["username"], "hub": v["hub"], "usergroup": group}
+                )
+
     return result
 
 
