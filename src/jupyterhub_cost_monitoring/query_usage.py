@@ -289,3 +289,60 @@ def _process_user_groups(
                 result, hub=hub_name, username=user_name, usergroup=group_name
             )
     return result
+
+
+@ttl_lru_cache(seconds_to_live=3600)
+def query_users_with_multiple_groups(
+    date_range: DateRange,
+    hub_name: str | None = None,
+    user_name: str | None = None,
+) -> list[dict]:
+    response = query_user_groups(date_range, hub_name=hub_name, user_name=user_name)
+    grouped = defaultdict(lambda: {"username": None, "hub": None, "usergroup": set()})
+    for entry in response:
+        logger.debug(f"Processing entry: {entry}")
+        key = (entry["username"], entry["hub"])
+        if grouped[key]["username"] is None:
+            grouped[key]["username"] = entry["username"]
+            grouped[key]["hub"] = entry["hub"]
+        if entry["usergroup"] == "multiple":
+            grouped[key]["has_multiple"] = True
+            continue
+        else:
+            grouped[key]["has_multiple"] = False
+        grouped[key]["usergroup"].add(entry["usergroup"])
+        logger.debug(f"entry usergroup: {entry['usergroup']}")
+    result = [
+        {"username": v["username"], "hub": v["hub"], "usergroup": v["usergroup"]}
+        for v in grouped.values()
+        if v["has_multiple"]
+    ]
+    return result
+
+
+@ttl_lru_cache(seconds_to_live=3600)
+def query_users_with_no_groups(
+    date_range: DateRange,
+    hub_name: str | None = None,
+    user_name: str | None = None,
+) -> list[dict]:
+    response = query_user_groups(date_range, hub_name=hub_name, user_name=user_name)
+    grouped = defaultdict(lambda: {"username": None, "hub": None})
+    for entry in response:
+        key = (entry["username"], entry["hub"])
+        if grouped[key]["username"] is None:
+            grouped[key]["username"] = entry["username"]
+            grouped[key]["hub"] = entry["hub"]
+            if entry["usergroup"] == "none":
+                logger.debug(
+                    f"User {entry['username']} in hub {entry['hub']} has no groups."
+                )
+                grouped[key]["has_none"] = True
+            else:
+                grouped[key]["has_none"] = False
+    result = [
+        {"username": v["username"], "hub": v["hub"]}
+        for v in grouped.values()
+        if v["has_none"]
+    ]
+    return result
