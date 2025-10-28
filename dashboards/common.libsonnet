@@ -127,7 +127,7 @@ local bg = grafonnet.panel.barGauge;
       { selector: 'name', text: 'Name', type: 'string' },
       { selector: 'cost', text: 'Cost', type: 'number' },
     ],
-    parser: 'backend',
+    parser: 'simple',
     type: 'json',
     source: 'url',
     url_options: {
@@ -148,7 +148,7 @@ local bg = grafonnet.panel.barGauge;
       { selector: 'cost', text: 'Cost', type: 'number' },
       { selector: 'name', text: 'Hub', type: 'string' },
     ],
-    parser: 'backend',
+    parser: 'simple',
     type: 'json',
     source: 'url',
     url_options: {
@@ -169,7 +169,7 @@ local bg = grafonnet.panel.barGauge;
       { selector: 'cost', text: 'Cost', type: 'number' },
       { selector: 'component', text: 'Component', type: 'string' },
     ],
-    parser: 'backend',
+    parser: 'simple',
     type: 'json',
     source: 'url',
     url_options: {
@@ -191,7 +191,7 @@ local bg = grafonnet.panel.barGauge;
       { selector: 'user', text: 'User', type: 'string' },
       { selector: 'component', text: 'Component', type: 'string' },
     ],
-    parser: 'backend',
+    parser: 'simple',
     type: 'json',
     source: 'url',
     url_options: {
