@@ -4,6 +4,7 @@ local dashboard = grafonnet.dashboard;
 local bc = grafonnet.panel.barChart;
 local bg = grafonnet.panel.barGauge;
 local var = grafonnet.dashboard.variable;
+local link = grafonnet.dashboard.link;
 
 local common = import './common.libsonnet';
 
@@ -71,13 +72,13 @@ local TotalComponent =
   + bg.new('Total by Component')
   + bg.panelOptions.withDescription(
     |||
-      Total costs by component are summed over the time period selected.
+      Total of all user-dependent and user-independent component costs are summed over the time period selected.
 
       - compute: CPU and memory of user nodes
       - home storage: storage disks for user directories
       - networking: load balancing and virtual private cloud
       - object storage: cloud storage, e.g. AWS S3
-      - support: compute and storage for support functions
+      - core: always on compute and storage for core infrastructure
     |||
   )
   + bg.panelOptions.withGridPos(h=8, w=8, x=8, y=0)
@@ -198,7 +199,7 @@ local Hub =
     |||
       Shows daily user costs by hub, with a total across all hubs and components shown by default.
 
-      Try toggling the *hub* and *component* variable dropdown above to drill down per user costs.
+      Try toggling the *hub* and *component* variable dropdown above to drill down per user costs. Note that user-independent components are excluded, and only user-dependent components such as compute and home storage are shown.
     |||
   )
   + bg.panelOptions.withGridPos(h=12, w=24, x=0, y=8)
@@ -222,6 +223,9 @@ dashboard.new('User cloud costs')
   common.variables.component,
   common.variables.limit,
   common.variables.infinity_datasource,
+])
++ dashboard.withLinks([
+  link.link.new('Community Hub Guide', 'https://docs.2i2c.org/admin/monitoring/'),
 ])
 + dashboard.withPanels(
   [
