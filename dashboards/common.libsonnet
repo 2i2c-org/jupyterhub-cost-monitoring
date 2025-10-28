@@ -97,9 +97,9 @@ local bg = grafonnet.panel.barGauge;
       + var.query.selectionOptions.withIncludeAll(value=true, customAllValue='all')
       + var.query.selectionOptions.withMulti(value=false)
       + var.query.refresh.onTime(),
-    user_groups:
+    usergroup:
       var.query.new(
-        'user_groups', 
+        'usergroup', 
         query='label_values(jupyterhub_user_group_info,usergroup)')
       + var.query.withDatasource(
         type='prometheus',
@@ -189,9 +189,48 @@ local bg = grafonnet.panel.barGauge;
       { selector: 'date', text: 'Date', type: 'timestamp' },
       { selector: 'value', text: 'Cost', type: 'number' },
       { selector: 'user', text: 'User', type: 'string' },
+      { selector: 'usergroup', text: 'Group', type: 'string' },
       { selector: 'component', text: 'Component', type: 'string' },
     ],
     parser: 'simple',
+    type: 'json',
+    source: 'url',
+    url_options: {
+      method: 'GET',
+      data: '',
+    },
+    format: 'table',
+    refId: 'A',
+  },
+
+  queryGroupTarget: {
+    datasource: {
+      type: 'yesoreyeram-infinity-datasource',
+      uid: '${infinity_datasource}',
+    },
+    columns: [
+      { selector: 'date', text: 'Date', type: 'timestamp' },
+      { selector: 'cost', text: 'Cost', type: 'number' },
+      { selector: 'usergroup', text: 'Group', type: 'string' },
+    ],
+    parser: 'simple',
+    type: 'json',
+    source: 'url',
+    url_options: {
+      method: 'GET',
+      data: '',
+    },
+    format: 'table',
+    refId: 'A',
+  },
+
+  queryGroupMembershipTarget: {
+    datasource: {
+      type: 'yesoreyeram-infinity-datasource',
+      uid: '${infinity_datasource}',
+    },
+    parser: 'simple',
+    root_selector: '',
     type: 'json',
     source: 'url',
     url_options: {
