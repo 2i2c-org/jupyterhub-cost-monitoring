@@ -10,8 +10,11 @@ local bg = grafonnet.panel.barGauge;
   variables: {
     infinity_datasource:
       var.datasource.new('infinity_datasource', 'yesoreyeram-infinity-datasource')
-      + var.datasource.generalOptions.showOnDashboard.withNothing()
-    ,
+      + var.datasource.generalOptions.showOnDashboard.withNothing(),
+    prometheus_datasource:
+      var.datasource.new('prometheus_datasource',
+      'prometheus')
+      + var.datasource.generalOptions.showOnDashboard.withNothing(),
     hub_general:
       var.query.new(
         'hub_general',
@@ -103,7 +106,7 @@ local bg = grafonnet.panel.barGauge;
         query='label_values(jupyterhub_user_group_info,usergroup)')
       + var.query.withDatasource(
         type='prometheus',
-        uid='P1809F7CD0C75ACF3',
+        uid='${prometheus_datasource}',
       )
       + var.query.generalOptions.withLabel('group')
       + var.query.generalOptions.withCurrent('All')

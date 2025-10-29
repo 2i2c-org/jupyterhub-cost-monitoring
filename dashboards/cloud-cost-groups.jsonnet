@@ -193,6 +193,7 @@ dashboard.new('Group cloud costs')
 + dashboard.time.withFrom('now-30d')
 + dashboard.withVariables([
   common.variables.infinity_datasource,
+  common.variables.prometheus_datasource,
   common.variables.hub_user,
   common.variables.component,
   common.variables.usergroup,
