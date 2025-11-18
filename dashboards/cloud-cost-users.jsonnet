@@ -232,7 +232,7 @@ local Hub =
             "aggregations": [],
             "operation": "groupby"
           },
-          Group: {
+          User: {
             "aggregations": [],
             "operation": "groupby"
           },
