@@ -55,6 +55,16 @@ def output_cost_per_user():
     return data
 
 
+@pytest.fixture(scope="function")
+def output_cost_per_group():
+    """
+    Output to assert against query_total_costs_per_group function.
+    """
+    with open("tests/data/test_output_cost_per_group.json") as f:
+        data = json.load(f)
+    return data
+
+
 @pytest.fixture(autouse=True)
 def env_vars(monkeypatch):
     """

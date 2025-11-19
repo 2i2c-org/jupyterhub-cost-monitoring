@@ -121,6 +121,32 @@ def test_costs_per_user(
 
 
 @pytest.mark.parametrize("mock_prometheus_usage", [None], indirect=True)
+def test_costs_per_group(
+    mock_prometheus_usage,
+    mock_prometheus_usage_share,
+    mock_prometheus_user_group_info,
+    mock_ce,
+    output_cost_per_group,
+):
+    """
+    Test cost logic for costs per group.
+    """
+    from src.jupyterhub_cost_monitoring.query_cost_aws import (
+        query_total_costs_per_group,
+    )
+
+    result = query_total_costs_per_group(date_range)
+    logger.info(f"Cost per group: {result}")
+
+    lookup = {(o["date"], o["usergroup"]): o["cost"] for o in output_cost_per_group}
+
+    for r in result:
+        key = (r["date"], r["usergroup"])
+        if key in lookup:
+            assert r["cost"] == lookup[key]
+
+
+@pytest.mark.parametrize("mock_prometheus_usage", [None], indirect=True)
 def test_costs_per_user_limit(
     mock_ce,
     mock_prometheus_usage,

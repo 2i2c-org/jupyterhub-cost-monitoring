@@ -211,6 +211,41 @@ local Hub =
   ])
   + bc.panelOptions.withRepeat('hub_user')
   + bc.panelOptions.withRepeatDirection('v')
+  + bc.queryOptions.withTransformations([
+      bc.queryOptions.transformation.withId('formatTime')
+      + bc.queryOptions.transformation.withOptions({
+        "outputFormat": "MMM DD",
+        "timeField": "Date",
+        "timezone": "utc",
+        "useTimezone": true        
+      }),
+      bc.queryOptions.transformation.withId('groupBy')
+      + bc.queryOptions.transformation.withOptions({
+        fields: {
+          Cost: {
+            aggregations: [
+              'firstNotNull',
+            ],
+            operation: 'aggregate',
+          },
+          Date: {
+            "aggregations": [],
+            "operation": "groupby"
+          },
+          User: {
+            "aggregations": [],
+            "operation": "groupby"
+          },
+        },
+      }),
+      bc.queryOptions.transformation.withId('groupingToMatrix')
+      + bc.queryOptions.transformation.withOptions({
+        "columnField": "User",
+        "emptyValue": "zero",
+        "rowField": "Date",
+        "valueField": "Cost (firstNotNull)"
+      })
+  ])  
 ;
 
 dashboard.new('User cloud costs')
