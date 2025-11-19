@@ -1,0 +1,32 @@
+[
+    {
+        "cost": 9.804900000000002,
+        "date": "2025-09-01",
+        "usergroup": "none"
+    },
+    {
+        "cost": 1.9541,
+        "date": "2025-09-01",
+        "usergroup": "group_1"
+    },
+    {
+        "cost": 4.3109,
+        "date": "2025-09-01",
+        "usergroup": "group_2"
+    },
+    {
+        "cost": 14.564999999999998,
+        "date": "2025-09-02",
+        "usergroup": "none"
+    },
+    {
+        "cost": 3.8275,
+        "date": "2025-09-02",
+        "usergroup": "group_1"
+    },
+    {
+        "cost": 2.6275,
+        "date": "2025-09-02",
+        "usergroup": "group_2"
+    }
+]
