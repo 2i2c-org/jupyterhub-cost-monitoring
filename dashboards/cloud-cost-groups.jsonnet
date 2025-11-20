@@ -1,6 +1,7 @@
 #!/usr/bin/env -S jsonnet -J ../../vendor
 local grafonnet = import '../../vendor/gen/grafonnet-v11.4.0/main.libsonnet';
 local dashboard = grafonnet.dashboard;
+local ts = grafonnet.panel.timeSeries;
 local bc = grafonnet.panel.barChart;
 local bg = grafonnet.panel.barGauge;
 local tb = grafonnet.panel.table;
@@ -132,33 +133,28 @@ local NoGroup =
 
 local Hub =
   common.bcOptions
-  + bc.new('Hub – $hub_user, Component – $component')
-  + bc.panelOptions.withDescription(
+  + ts.new('Hub – $hub_user, Component – $component')
+  + ts.panelOptions.withDescription(
     |||
       Shows daily group costs by hub, with a total across all hubs, components and groups shown by default.
 
       Try toggling the *hub*, *component* and *group* variable dropdown above to filter per group costs.
     |||
   )
-  + bg.panelOptions.withGridPos(h=12, w=24, x=0, y=8)
-  + bc.queryOptions.withTargets([
+  + ts.panelOptions.withGridPos(h=12, w=24, x=0, y=8)
+  + ts.queryOptions.withTargets([
     common.queryUsersTarget
     {
       url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/costs-per-user?from=${__from:date}&to=${__to:date}&hub=$hub_user&component=$component&usergroup=$usergroup',
     },
   ])
-  + bc.panelOptions.withRepeat('hub_user')
-  + bc.panelOptions.withRepeatDirection('v')
-  + bc.queryOptions.withTransformations([
-      bc.queryOptions.transformation.withId('formatTime')
-      + bc.queryOptions.transformation.withOptions({
-        "outputFormat": "MMM DD",
-        "timeField": "Date",
-        "timezone": "utc",
-        "useTimezone": true        
-      }),
-      bc.queryOptions.transformation.withId('groupBy')
-      + bc.queryOptions.transformation.withOptions({
+  + ts.panelOptions.withRepeat('hub_user')
+  + ts.panelOptions.withRepeatDirection('v')
+  + ts.fieldConfig.defaults.custom.withLineInterpolation('stepAfter')
+  + ts.fieldConfig.defaults.custom.withFillOpacity(10)
+  + ts.queryOptions.withTransformations([
+      ts.queryOptions.transformation.withId('groupBy')
+      + ts.queryOptions.transformation.withOptions({
         fields: {
           Cost: {
             aggregations: [
@@ -176,13 +172,15 @@ local Hub =
           },
         },
       }),
-      bc.queryOptions.transformation.withId('groupingToMatrix')
-      + bc.queryOptions.transformation.withOptions({
-        "columnField": "Group",
-        "emptyValue": "zero",
-        "rowField": "Date",
-        "valueField": "Cost (sum)"
-      })
+      ts.queryOptions.transformation.withId('prepareTimeSeries')
+      + ts.queryOptions.transformation.withOptions({
+        "format": "multi"
+      }),
+      ts.queryOptions.transformation.withId('renameByRegex')
+      + ts.queryOptions.transformation.withOptions({
+        "regex": "^Cost \\(sum\\)\\s*(.*)$",
+        "renamePattern": "$1"
+      }),
   ])
 ;
 
