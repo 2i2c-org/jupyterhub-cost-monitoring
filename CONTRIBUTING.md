@@ -34,11 +34,11 @@ This project uses the Python package manager `uv`. Below are the steps to set up
   aws sts get-session-token --serial-number $MFA_DEVICE_ID --profile $AWS_PROFILE --token-code ******
   ```
 
-1. Run the Flask web server
+1. Run the FastAPI web server
 
    ```bash
    cd src/jupyterhub_cost_monitoring
-   flask run --port=8080 --reload
+   fastapi dev app.py --port 8080
    ```
 
 1. Visit [http://127.0.0.1:8080](http://127.0.0.1:8080) to view the application.
@@ -70,3 +70,25 @@ To run tests, use `pytest`:
 ```bash
 uv run pytest
 ```
+
+## Documentation
+
+The documentation is built using [MySTMD](https://mystmd.org/) and hosted at [jupyterhub-cost-monitoring.readthedocs.io](https://jupyterhub-cost-monitoring.readthedocs.io/).
+
+To build the documentation locally, run:
+
+```bash
+cd docs
+uv run myst start
+```
+
+To build the API documentation, download the OpenAPI specification from the FastAPI server default URL `/openapi.json` and place it in the `docs/reference` directory.
+
+Install [`widdershins`](https://github.com/Mermade/widdershins) to convert this to a Markdown and name this `docs/reference/api.md`:
+
+```bash
+npm install -g widdershins
+widdershins --code --summary true --user_templates api_templates openapi.json -o api.md
+```
+
+There are custom templates in `docs/reference/api_templates` to style the output.
