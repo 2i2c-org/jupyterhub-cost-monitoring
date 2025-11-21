@@ -21,7 +21,9 @@ project:
     - file: topics/cost-calculations.md
   - title: Reference
     children:
+    - file: reference/api.md
     - file: reference/License.md
+    - file: reference/CODE-OF-CONDUCT.md
   - file: CONTRIBUTING.md
 
 site:
