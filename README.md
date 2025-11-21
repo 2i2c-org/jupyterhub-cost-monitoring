@@ -38,7 +38,13 @@ jupyterhub-cost-monitoring:
       value: "<name-of-cluster>"
 ```
 
+### AWS IAM Role Configuration
+
 An example of configuring an AWS IAM role to talk to the AWS Cost Explorer API can be found in the [2i2c Infrastructure Guide](https://infrastructure.2i2c.org/topic/billing/cost-monitoring-system/).
+
+### Groups Exporter
+
+For group costs, [`jupyterhub-groups-exporter](https://github.com/2i2c-org/jupyterhub-groups-exporter) needs to be installed. This is an exporter that exposes JupyterHub user group information to Prometheus.
 
 ## Documentation
 
