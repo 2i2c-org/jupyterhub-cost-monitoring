@@ -56,13 +56,16 @@ Cost data is exposed with `jupyterhub-cost-monitoring` via FastAPI that can be c
 - `/ready`: Returns a 200 OK response if the application is ready to serve requests.
 - `/hub-names`: Returns a list of all JupyterHub names in the cluster.
 - `/component-names`: Returns a list of all JupyterHub names in the cluster.
-- `/total_costs`: Returns daily total costs and divided into two types:
+- `/total-costs`: Returns daily total costs and divided into two types:
   - *Account*: The total costs as reported by the cloud provider.
   - *Attributable*: The total costs that can be attributed by the `jupyterhub-cost-monitoring` application. For example, the act of querying the totals costs reported by cloud provider incurs a cost and is not included in *attributable* costs but is included in *account* costs.
 - `/total-costs-per-hub`: Returns the daily total costs per hub listed in `hub_names`.
 - `/total-costs-per-component`: Returns the daily total costs per cloud component
+- `/total-costs-per-group`: Returns the daily total costs per user group.
 - `/costs-per-user`: Returns the daily costs per user, hub, and component. This endpoint supports filtering by `hub_name` and `component_name` via query parameters.
 - `/total-usage`: User-level costs are apportioned based on a cost factor that is derived from the component usage of each user.
+- `/users-with-multiple-groups`: Returns a list of users who belong to multiple groups.
+- `/users-with-no-groups`: Returns a list of users who do not belong to any group.
 
 Reference documentation is available at the `/docs` FastAPI endpoint.
 
