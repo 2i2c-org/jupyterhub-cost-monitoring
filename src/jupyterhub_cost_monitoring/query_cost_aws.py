@@ -577,9 +577,7 @@ def query_total_costs_per_user(
     list_groups = []
     for r in results:
         for entry in user_groups:
-            if (r["date"] == entry["date"]) and (
-                r["hub"] == entry["hub"] and (r["user"] == entry["username"])
-            ):
+            if r["hub"] == entry["hub"] and (r["user"] == entry["username"]):
                 if "usergroup" not in r.keys():
                     r["usergroup"] = entry["usergroup"]
                 else:

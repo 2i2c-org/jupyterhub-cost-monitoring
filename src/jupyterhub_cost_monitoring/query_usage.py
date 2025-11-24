@@ -4,7 +4,7 @@ Query the Prometheus server to get usage of JupyterHub resources.
 
 import os
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import escapism
 import requests
@@ -12,7 +12,7 @@ from yarl import URL
 
 from .cache import ttl_lru_cache
 from .const_usage import USAGE_MAP, USER_GROUP_INFO
-from .date_utils import DateRange
+from .date_utils import DateRange, get_now_date
 from .logs import get_logger
 
 logger = get_logger(__name__)
@@ -243,11 +243,15 @@ def _calculate_daily_cost_factors(
 
 @ttl_lru_cache(seconds_to_live=3600)
 def query_user_groups(
-    date_range: DateRange,
     hub_name: str | None = None,
     user_name: str | None = None,
     group_name: str | None = None,
 ) -> list[dict]:
+    """
+    Get user group information from the Prometheus server for the most recent day.
+    """
+    now_date = get_now_date() - timedelta(days=1)
+    date_range = DateRange(start_date=now_date, end_date=now_date)
     response = query_prometheus(USER_GROUP_INFO, date_range, step="1d")
     result = _process_user_groups(response, hub_name, user_name, group_name)
     return result
@@ -260,33 +264,25 @@ def _process_user_groups(
     group_name: str | None = None,
 ) -> list[dict]:
     """
-    Process the response from the Prometheus server to extract user group information.
+    Process the response from the Prometheus server to extract user group information. Note that only the most recent date of user group membership is used.
     """
     result = []
     unique_keys = set()
     for data in response["data"]["result"]:
-        for value in data["values"]:
-            date = datetime.fromtimestamp(value[0], tz=timezone.utc).strftime(
-                "%Y-%m-%d"
-            )
-            hub = data["metric"]["namespace"]
-            user = data["metric"]["username"]
-            user_escaped = data["metric"]["username_escaped"]
-            group = data["metric"]["usergroup"]
-            key = (date, hub, user, user_escaped, group)
-            if key not in unique_keys:
-                unique_keys.add(key)
-                result.append(
-                    {
-                        "date": date,
-                        "hub": hub,
-                        "username": user,
-                        "username_escaped": user_escaped,
-                        "usergroup": group,
-                    }
-                )
-            result = _filter_json(
-                result, hub=hub_name, username=user_name, usergroup=group_name
+        hub = data["metric"]["namespace"]
+        user = data["metric"]["username"]
+        user_escaped = data["metric"]["username_escaped"]
+        group = data["metric"]["usergroup"]
+        key = (hub, user, user_escaped, group)
+        if key not in unique_keys:
+            unique_keys.add(key)
+            result.append(
+                {
+                    "hub": hub,
+                    "username": user,
+                    "username_escaped": user_escaped,
+                    "usergroup": group,
+                }
             )
     return result
 
@@ -297,7 +293,7 @@ def query_users_with_multiple_groups(
     hub_name: str | None = None,
     user_name: str | None = None,
 ) -> list[dict]:
-    response = query_user_groups(date_range, hub_name=hub_name, user_name=user_name)
+    response = query_user_groups(hub_name=hub_name, user_name=user_name)
     grouped = defaultdict(
         lambda: {"username": None, "hub": None, "usergroups": [], "has_multiple": False}
     )
@@ -327,7 +323,7 @@ def query_users_with_no_groups(
     hub_name: str | None = None,
     user_name: str | None = None,
 ) -> list[dict]:
-    response = query_user_groups(date_range, hub_name=hub_name, user_name=user_name)
+    response = query_user_groups(hub_name=hub_name, user_name=user_name)
     grouped = defaultdict(lambda: {"username": None, "hub": None})
     for entry in response:
         key = (entry["username"], entry["hub"])

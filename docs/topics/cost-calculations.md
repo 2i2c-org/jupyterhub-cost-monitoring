@@ -44,6 +44,10 @@ The proportional usage described above does not take into account the underutili
 
 Group-level costs are calculated by aggregating the user-level costs for all users within a group. Each entry in the [`/costs-per-user`](#id-costs-per-user) endpoint includes a `usergroup` key that indicates the group which the user belongs.
 
+:::{note}
+Only user group memberships from the most recent dates are considered. Historical user group memberships incur a heavy performance penalty.
+:::
+
 There are a few extra endpoints provided by the cost monitoring application to help track user group costs.
 
 ### `/total-costs-per-group`

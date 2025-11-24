@@ -83,12 +83,6 @@ def total_costs(
 
 @app.get("/user-groups")
 def user_groups(
-    from_date: str | None = Query(
-        None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
-    ),
-    to_date: str | None = Query(
-        None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
-    ),
     hub: str | None = Query(None, description="Name of the hub to filter results"),
     username: str | None = Query(
         None, description="Name of the user to filter results"
@@ -98,11 +92,10 @@ def user_groups(
     ),
 ):
     """
-    Endpoint to serve user group memberships.
+    Endpoint to serve user group memberships. Note that only the most recent date for each user group membership is returned.
     """
-    date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    return query_user_groups(date_range, hub, username, usergroup)
+    return query_user_groups(hub, username, usergroup)
 
 
 @app.get("/users-with-multiple-groups")
@@ -268,8 +261,6 @@ def costs_per_user(
         limit = None
     if not usergroup or ("all" in [u.lower() for u in usergroup]):
         usergroup = [None]
-
-    logger.info(f"Limit parameter: {limit}")
 
     # Get per-user costs by combining AWS costs with Prometheus usage data
     results = []
