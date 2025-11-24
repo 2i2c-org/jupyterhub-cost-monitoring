@@ -44,7 +44,6 @@ def test_get_user_group_info(mock_prometheus_user_group_info, env_vars):
     from src.jupyterhub_cost_monitoring.query_usage import query_user_groups
 
     response = query_user_groups(
-        date_range,
         hub_name=None,
         user_name=None,
         group_name=None,
