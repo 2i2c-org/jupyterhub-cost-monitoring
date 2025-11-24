@@ -574,19 +574,36 @@ def query_total_costs_per_user(
             results.append(entry)
     results = [x for x in results if x["hub"] != "binder"]  # Exclude binder hubs
     user_groups = query_user_groups(date_range, hub, user)
+    seen = set()
     list_groups = []
+    # Ensure uniquely keyed entries when double-counting group costs
     for r in results:
+        matched = False
         for entry in user_groups:
-            if r["hub"] == entry["hub"] and (r["user"] == entry["username"]):
-                if "usergroup" not in r.keys():
+            if r["hub"] == entry["hub"] and r["user"] == entry["username"]:
+                key = (
+                    r["date"],
+                    r["hub"],
+                    r["user"],
+                    r["component"],
+                    entry["usergroup"],
+                )
+                if key in seen:
+                    continue
+                seen.add(key)
+                if "usergroup" not in r:
                     r["usergroup"] = entry["usergroup"]
+                    matched = True
                 else:
                     r_copy = copy.deepcopy(r)
                     r_copy["usergroup"] = entry["usergroup"]
                     list_groups.append(r_copy)
-        if r.get("usergroup") is None:
-            logger.debug(f"No username match for group membership: {r}")
-            r["usergroup"] = "none"
+                    matched = True
+        if not matched:
+            key = (r["date"], r["hub"], r["user"], r["component"], "none")
+            if key not in seen:
+                seen.add(key)
+                r["usergroup"] = "none"
     results.extend(list_groups)
     if limit:
         limit = int(limit)
