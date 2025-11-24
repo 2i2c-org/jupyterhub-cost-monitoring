@@ -628,7 +628,7 @@ def query_total_costs_per_group(
     response = {}
     for r in results:
         key = (r["date"], r["usergroup"])
-        logger.info(f"Key: {key}, Value: {r['value']}")
+        logger.debug(f"Key: {key}, Value: {r['value']}")
         response[key] = response.get(key, 0) + float(r["value"])
 
     final_response = [
