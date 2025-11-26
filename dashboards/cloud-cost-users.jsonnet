@@ -150,38 +150,59 @@ local Top5 =
   + bg.queryOptions.withTransformations([
     bg.queryOptions.transformation.withId('groupBy')
     + bg.queryOptions.transformation.withOptions({
-      fields: {
-        Cost: {
-          aggregations: [
-            'sum',
+      "fields": {
+        "Cost": {
+          "aggregations": [
+            "firstNotNull"
           ],
-          operation: 'aggregate',
+          "operation": "aggregate"
         },
-        User: {
-          aggregations: [],
-          operation: 'groupby',
-        },
-        date: {
-          aggregations: [],
-        },
-        user: {
-          aggregations: [],
-          operation: 'groupby',
-        },
-        value: {
-          aggregations: [
-            'sum',
+        "Date": {
+          "aggregations": [
+            "firstNotNull"
           ],
-          operation: 'aggregate',
+          "operation": "groupby"
         },
-      },
+        "User": {
+          "aggregations": [],
+          "operation": "groupby"
+        },
+        "date": {
+          "aggregations": []
+        },
+        "user": {
+          "aggregations": [],
+          "operation": "groupby"
+        },
+        "value": {
+          "aggregations": [
+            "sum"
+          ],
+          "operation": "aggregate"
+        }
+      }
+    }),
+    bg.queryOptions.transformation.withId('groupBy')
+    + bg.queryOptions.transformation.withOptions({
+      "fields": {
+        "Cost (firstNotNull)": {
+          "aggregations": [
+            "sum"
+          ],
+          "operation": "aggregate"
+        },
+        "User": {
+          "aggregations": [],
+          "operation": "groupby"
+        }
+      }
     }),
     bg.queryOptions.transformation.withId('sortBy')
     + bg.queryOptions.transformation.withOptions({
       sort: [
         {
           desc: true,
-          field: 'Cost (sum)',
+          field: 'Cost (firstNotNull) (sum)',
         },
       ],
     }),
