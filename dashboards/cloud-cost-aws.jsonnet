@@ -92,33 +92,7 @@ local dailyCostsPerComponent =
       - All costs are pure usage costs, and doesn't consider credits etc.
     |||
   )
-  + ts.queryOptions.withTargets([
-    common.queryComponentTarget
-    {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=compute',
-      refid: 'compute',
-    },
-    common.queryComponentTarget
-    {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=home%20storage',
-      refid: 'home storage',
-    },
-    common.queryComponentTarget
-    {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=object%20storage',
-      refid: 'object storage',
-    },
-    common.queryComponentTarget
-    {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=core',
-      refid: 'core',
-    },
-    common.queryComponentTarget
-    {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=networking',
-      refid: 'networking',
-    },
-  ])
+  + ts.queryOptions.withTargets(common.queryComponentArray)
   + ts.queryOptions.withTransformations([
     ts.queryOptions.transformation.withId('prepareTimeSeries')
     + ts.queryOptions.transformation.withOptions({
@@ -133,6 +107,13 @@ local dailyCostsPerComponent =
           "Cost core": "core",
           "Cost networking": "networking",
         },
+        "indexByName": {
+          compute: 0,
+          core: 3,
+          'home storage': 1,
+          networking: 4,
+          'object storage': 2,
+      },
     }),
   ])
 ;

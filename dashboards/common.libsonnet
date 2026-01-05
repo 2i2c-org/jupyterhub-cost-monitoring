@@ -182,6 +182,30 @@ local bg = grafonnet.panel.barGauge;
     format: 'table',
   },
 
+  // Individual queries for each component for accurate aggregation in table totals in the legend.
+  queryComponentArray: [
+    $.queryComponentTarget + {
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=compute',
+      refid: 'compute',
+    },
+    $.queryComponentTarget + {
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=home%20storage',
+      refid: 'home storage',
+    },
+    $.queryComponentTarget + {
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=object%20storage',
+      refid: 'object storage',
+    },
+    $.queryComponentTarget + {
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=core',
+      refid: 'core',
+    },
+    $.queryComponentTarget + {
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=networking',
+      refid: 'networking',
+    },    
+  ],
+
   queryUsersTarget: {
     datasource: {
       type: 'yesoreyeram-infinity-datasource',
