@@ -298,6 +298,7 @@ local bg = grafonnet.panel.barGauge;
     + ts.fieldConfig.defaults.custom.withLineInterpolation('stepAfter')
     + ts.fieldConfig.defaults.custom.withFillOpacity(10)
     + ts.standardOptions.withUnit('currencyUSD')
+    + ts.standardOptions.withNoValue('$0.00')
     + ts.standardOptions.withDecimals(2)
     + ts.options.withLegend({
       calcs: [
