@@ -206,6 +206,29 @@ local bg = grafonnet.panel.barGauge;
     },    
   ],
 
+  queryComponentHubArray: [
+    $.queryComponentTarget + {
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=compute' + '&hub=$hub_general',
+      refid: 'compute',
+    },
+    $.queryComponentTarget + {
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=home%20storage' + '&hub=$hub_general',
+      refid: 'home storage',
+    },
+    $.queryComponentTarget + {
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=object%20storage' + '&hub=$hub_general',
+      refid: 'object storage',
+    },
+    $.queryComponentTarget + {
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=core' + '&hub=$hub_general',
+      refid: 'core',
+    },
+    $.queryComponentTarget + {
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=networking' + '&hub=$hub_general',
+      refid: 'networking',
+    },    
+  ],
+
   queryUsersTarget: {
     datasource: {
       type: 'yesoreyeram-infinity-datasource',
@@ -351,4 +374,58 @@ local bg = grafonnet.panel.barGauge;
     + bg.standardOptions.withMin(0)
     + bg.standardOptions.withDecimals(2)
     + bg.standardOptions.withUnit('currencyUSD'),
+
+  tsStylingComponents:
+    ts.standardOptions.withOverrides([
+      {
+        matcher: { id: 'byName', options: 'compute' },
+        properties: [{
+          id: 'color',
+          value: {
+            fixedColor: 'blue',
+            mode: 'fixed',
+          },
+        }],
+      },
+      {
+        matcher: { id: 'byName', options: 'home storage' },
+        properties: [{
+          id: 'color',
+          value: {
+            fixedColor: 'yellow',
+            mode: 'fixed',
+          },
+        }],
+      },
+      {
+        matcher: { id: 'byName', options: 'object storage' },
+        properties: [{
+          id: 'color',
+          value: {
+            fixedColor: 'red',
+            mode: 'fixed',
+          },
+        }],
+      },
+      {
+        matcher: { id: 'byName', options: 'core' },
+        properties: [{
+          id: 'color',
+          value: {
+            fixedColor: 'green',
+            mode: 'fixed',
+          },
+        }],
+      },
+      {
+        matcher: { id: 'byName', options: 'networking' },
+        properties: [{
+          id: 'color',
+          value: {
+            fixedColor: 'orange',
+            mode: 'fixed',
+          },
+        }],
+      },
+    ])
 }
