@@ -95,16 +95,44 @@ local dailyCostsPerComponent =
   + ts.queryOptions.withTargets([
     common.queryComponentTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}',
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=compute',
+      refid: 'compute',
+    },
+    common.queryComponentTarget
+    {
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=home%20storage',
+      refid: 'home storage',
+    },
+    common.queryComponentTarget
+    {
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=object%20storage',
+      refid: 'object storage',
+    },
+    common.queryComponentTarget
+    {
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=core',
+      refid: 'core',
+    },
+    common.queryComponentTarget
+    {
+      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=networking',
+      refid: 'networking',
     },
   ])
   + ts.queryOptions.withTransformations([
-    ts.queryOptions.transformation.withId('groupingToMatrix')
+    ts.queryOptions.transformation.withId('prepareTimeSeries')
     + ts.queryOptions.transformation.withOptions({
-      columnField: 'Component',
-      emptyValue: 'zero',
-      rowField: 'Date',
-      valueField: 'Cost',
+        "format": "wide",
+    }),
+    ts.queryOptions.transformation.withId('organize')
+    + ts.queryOptions.transformation.withOptions({
+        "renameByName": {
+          "Cost compute": "compute",
+          "Cost home storage": "home storage",
+          "Cost object storage": "object storage",
+          "Cost core": "core",
+          "Cost networking": "networking",
+        },
     }),
   ])
 ;

@@ -180,7 +180,6 @@ local bg = grafonnet.panel.barGauge;
       data: '',
     },
     format: 'table',
-    refId: 'A',
   },
 
   queryUsersTarget: {
