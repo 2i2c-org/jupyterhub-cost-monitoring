@@ -81,8 +81,8 @@ local dailyCostsPerComponent =
   + ts.new('Total daily costs per component')
   + ts.panelOptions.withDescription(
     |||
-      Components are human friendly groupings of AWS services, as [defined
-      here](https://github.com/2i2c-org/infrastructure/blob/main/helm-charts/jupyterhub-cost-monitoring/mounted-files/const.py#L11-L20).
+      Components are human-friendly groupings of AWS services, as [defined
+      here](https://github.com/2i2c-org/jupyterhub-cost-monitoring/blob/6465946221dd0ecdba622bf482db3844e6fb1f06/src/jupyterhub_cost_monitoring/const_cost_aws.py#L11).
 
       ---
 
@@ -92,19 +92,22 @@ local dailyCostsPerComponent =
       - All costs are pure usage costs, and doesn't consider credits etc.
     |||
   )
-  + ts.queryOptions.withTargets([
-    common.queryComponentTarget
-    {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}',
-    },
-  ])
+  + common.tsStylingComponents
+  + ts.queryOptions.withTargets(common.queryComponentArray)
   + ts.queryOptions.withTransformations([
-    ts.queryOptions.transformation.withId('groupingToMatrix')
+    ts.queryOptions.transformation.withId('prepareTimeSeries')
     + ts.queryOptions.transformation.withOptions({
-      columnField: 'Component',
-      emptyValue: 'zero',
-      rowField: 'Date',
-      valueField: 'Cost',
+        "format": "wide",
+    }),
+    ts.queryOptions.transformation.withId('organize')
+    + ts.queryOptions.transformation.withOptions({
+        "renameByName": {
+          "Cost compute": "compute",
+          "Cost home storage": "home storage",
+          "Cost object storage": "object storage",
+          "Cost core": "core",
+          "Cost networking": "networking",
+        },
     }),
   ])
 ;
@@ -116,7 +119,7 @@ local dailyCostsPerComponentAndHub =
   + ts.panelOptions.withDescription(
     |||
       Components are human friendly groupings of AWS services, as [defined
-      here](https://github.com/2i2c-org/infrastructure/blob/main/helm-charts/jupyterhub-cost-monitoring/mounted-files/const.py#L11-L20).
+      here](https://github.com/2i2c-org/jupyterhub-cost-monitoring/blob/6465946221dd0ecdba622bf482db3844e6fb1f06/src/jupyterhub_cost_monitoring/const_cost_aws.py#L11).
 
       **Note**
 
@@ -126,21 +129,24 @@ local dailyCostsPerComponentAndHub =
       - All costs are pure usage costs, and doesn't consider credits etc.
     |||
   )
+  + common.tsStylingComponents
   + ts.panelOptions.withRepeat('hub_general')
   + ts.panelOptions.withMaxPerRow(2)
-  + ts.queryOptions.withTargets([
-    common.queryComponentTarget
-    {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}&hub=$hub_general',
-    },
-  ])
+  + ts.queryOptions.withTargets(common.queryComponentHubArray)
   + ts.queryOptions.withTransformations([
-    ts.queryOptions.transformation.withId('groupingToMatrix')
+    ts.queryOptions.transformation.withId('prepareTimeSeries')
     + ts.queryOptions.transformation.withOptions({
-      columnField: 'Component',
-      emptyValue: 'zero',
-      rowField: 'Date',
-      valueField: 'Cost',
+        "format": "wide",
+    }),
+    ts.queryOptions.transformation.withId('organize')
+    + ts.queryOptions.transformation.withOptions({
+        "renameByName": {
+          "Cost compute": "compute",
+          "Cost home storage": "home storage",
+          "Cost object storage": "object storage",
+          "Cost core": "core",
+          "Cost networking": "networking",
+        },
     }),
   ])
 ;
