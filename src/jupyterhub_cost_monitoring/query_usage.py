@@ -19,6 +19,8 @@ logger = get_logger(__name__)
 
 prometheus_host = os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_HOST", "localhost")
 prometheus_port = int(os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_PORT", 9090))
+prometheus_username = os.environ.get("PROMETHEUS_USERNAME", "")
+prometheus_password = os.environ.get("PROMETHEUS_PASSWORD", "")
 
 
 def query_prometheus(query: str, date_range: DateRange, step: str) -> requests.Response:
@@ -39,6 +41,12 @@ def query_prometheus(query: str, date_range: DateRange, step: str) -> requests.R
     prometheus_api = URL.build(
         scheme="http", host=prometheus_host, port=prometheus_port
     )
+    if prometheus_username != "" and prometheus_password != "":
+        prometheus_auth = requests.auth.HTTPBasicAuth(
+            prometheus_username, prometheus_password
+        )
+    else:
+        prometheus_auth = None
     parameters = {
         "query": query,
         "start": from_date,
@@ -46,7 +54,7 @@ def query_prometheus(query: str, date_range: DateRange, step: str) -> requests.R
         "step": step,
     }
     query_api = URL(prometheus_api.with_path("/api/v1/query_range"))
-    with requests.get(query_api, params=parameters) as response:
+    with requests.get(query_api, params=parameters, auth=prometheus_auth) as response:
         logger.info(f"Querying Prometheus: {response.url}")
         response.raise_for_status()
         result = response.json()
