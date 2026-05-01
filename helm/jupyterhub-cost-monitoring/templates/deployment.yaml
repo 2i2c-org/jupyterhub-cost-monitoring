@@ -34,6 +34,16 @@ spec:
             {{- with .Values.extraEnv }}
             {{- tpl (. | toYaml) $ | nindent 12 }}
             {{- end }}
+            - name: PROMETHEUS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "jupyterhub-cost-monitoring.webserver.fullname" . }}-auth
+                  key: username
+            - name: PROMETHEUS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "jupyterhub-cost-monitoring.webserver.fullname" . }}-auth
+                  key: password
           resources:
             {{- .Values.resources | toYaml | nindent 12 }}
           securityContext:

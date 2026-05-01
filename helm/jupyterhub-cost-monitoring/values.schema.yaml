@@ -26,6 +26,7 @@ required:
 - service
 - ingress
 - networkPolicy
+- secrets
 properties:
   # Flag to conditionally install the chart
   # ---------------------------------------------------------------------------
@@ -161,3 +162,18 @@ properties:
         properties:
           localGrafanaInstances:
             type: boolean
+
+# Secrets resource
+# -----------------------------------------------------------------------------
+#
+prometheusAuth:
+  type: object
+  additionalProperties: false
+  properties:
+    enabled:
+      type: boolean
+    username:
+      type: string
+    password:
+      type: string
+  required: [enabled]

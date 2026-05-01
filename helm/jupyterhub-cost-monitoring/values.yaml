@@ -66,3 +66,11 @@ networkPolicy:
   ingress: []
   ingressAllowRules:
     localGrafanaInstances: true
+
+# Secrets resource
+# -----------------------------------------------------------------------------
+#
+prometheusAuth:
+  enabled: false
+  username: ""
+  password: ""
