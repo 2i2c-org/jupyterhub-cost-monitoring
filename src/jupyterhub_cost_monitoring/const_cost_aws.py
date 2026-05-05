@@ -6,7 +6,9 @@ import os
 
 # Environment variables based config isn't great, see fixme comment in
 # values.yaml under the software configuration heading
-CLUSTER_NAME = os.environ["CLUSTER_NAME"]
+CLUSTER_NAME = os.environ.get("CLUSTER_NAME", "")
+if not CLUSTER_NAME:
+    raise ValueError("$CLUSTER_NAME is not set")
 
 SERVICE_COMPONENT_MAP = {
     "AWS Backup": "backup",
