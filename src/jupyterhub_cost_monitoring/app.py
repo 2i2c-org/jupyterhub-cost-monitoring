@@ -58,7 +58,7 @@ def hub_names(
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
     try:
-        query_hub_names(date_range)
+        return query_hub_names(date_range)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
 
@@ -69,7 +69,7 @@ def component_names():
     Endpoint to serve component names.
     """
     try:
-        list(USAGE_MAP.keys())
+        return list(USAGE_MAP.keys())
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
 
@@ -90,7 +90,7 @@ def total_costs(
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
     try:
-        query_total_costs(date_range)
+        return query_total_costs(date_range)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
 
@@ -110,7 +110,7 @@ def user_groups(
     """
 
     try:
-        query_user_groups(hub, username, usergroup)
+        return query_user_groups(hub, username, usergroup)
     except requests.exceptions.HTTPError as e:
         response = e.response
         raise HTTPException(
@@ -140,7 +140,12 @@ def users_with_multiple_groups(
     )
 
     try:
-        query_users_with_multiple_groups(date_range, hub_name, user_name)
+        return query_users_with_multiple_groups(date_range, hub_name, user_name)
+    except requests.exceptions.HTTPError as e:
+        response = e.response
+        raise HTTPException(
+            status_code=response.status_code, detail=f"{response.text}"
+        ) from e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
 
@@ -165,9 +170,14 @@ def users_with_no_groups(
     )
 
     try:
-        query_users_with_no_groups(date_range, hub_name, user_name)
+        return query_users_with_no_groups(date_range, hub_name, user_name)
+    except requests.exceptions.HTTPError as e:
+        response = e.response
+        raise HTTPException(
+            status_code=response.status_code, detail=f"{response.text}"
+        ) from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}")
+        raise HTTPException(status_code=500, detail=f"{e}") from e
 
 
 @app.get("/total-costs-per-hub")
@@ -186,7 +196,7 @@ def total_costs_per_hub(
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
     try:
-        query_total_costs_per_hub(date_range)
+        return query_total_costs_per_hub(date_range)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
 
@@ -216,7 +226,7 @@ def total_costs_per_component(
         component = None
 
     try:
-        query_total_costs_per_component(date_range, hub, component)
+        return query_total_costs_per_component(date_range, hub, component)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
 
@@ -237,7 +247,10 @@ def total_costs_per_group(
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
     try:
-        query_total_costs_per_group(date_range)
+        return query_total_costs_per_group(date_range)
+    except requests.exceptions.HTTPError as e:
+        response = e.response
+        raise HTTPException(status_code=response.status_code, detail=response.text)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
 
@@ -306,6 +319,9 @@ def costs_per_user(
             per_user_costs = query_total_costs_per_user(
                 date_range, hub, component, user, ug, limit
             )
+        except requests.exceptions.HTTPError as e:
+            response = e.response
+            raise HTTPException(status_code=response.status_code, detail=response.text)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"{e}")
         results.extend(per_user_costs)
@@ -343,9 +359,11 @@ def total_usage(
         user = None
 
     try:
-        query_usage(date_range, hub, component, user)
+        return query_usage(date_range, hub, component, user)
+    except requests.exceptions.HTTPError as e:
+        response = e.response
+        raise HTTPException(status_code=response.status_code, detail=response.text)
     except Exception as e:
-        print(e.args)
         raise HTTPException(status_code=500, detail=f"{e}")
 
 

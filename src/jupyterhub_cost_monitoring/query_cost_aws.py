@@ -7,6 +7,7 @@ import functools
 from pprint import pformat
 
 import boto3
+import requests
 
 from .cache import ttl_lru_cache
 from .const_cost_aws import (
@@ -83,6 +84,7 @@ def query_hub_names(date_range: DateRange):
         TagKey="2i2c:hub-name",
     )
     hub_names = [t or "support" for t in response["Tags"]]
+    logger.info(f"{hub_names=}")
     return hub_names
 
 
@@ -555,12 +557,15 @@ def query_total_costs_per_user(
     # Get user usage percentages from Prometheus using the same DateRange object
     # This ensures we query the same logical date range for both AWS and Prometheus,
     # accounting for their different date range semantics (exclusive vs inclusive)
-    usage_shares = query_usage(
-        date_range,
-        hub_name=hub,
-        component_name=component,
-        user_name=user,
-    )
+    try:
+        usage_shares = query_usage(
+            date_range,
+            hub_name=hub,
+            component_name=component,
+            user_name=user,
+        )
+    except requests.exceptions.ConnectionError:
+        raise
     results = []
     for entry in usage_shares:
         d = entry["date"]
@@ -638,8 +643,11 @@ def query_total_costs_per_group(
     Returns:
         List of dicts with keys: date, usergroup and cost.
     """
-
-    results = query_total_costs_per_user(date_range=date_range)
+    try:
+        results = query_total_costs_per_user(date_range=date_range)
+    except Exception as e:
+        logger.exception(f"HTTP request failed: {e}")
+        raise
     response = {}
     for r in results:
         key = (r["date"], r["usergroup"])

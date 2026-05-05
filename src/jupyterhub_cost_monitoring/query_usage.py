@@ -84,17 +84,23 @@ def query_usage(
     if component_name is None:
         # Query all components defined in USAGE_MAP
         for component, params in USAGE_MAP.items():
-            response = query_prometheus(
-                params["query"], date_range, step=params["step"]
-            )
+            try:
+                response = query_prometheus(
+                    params["query"], date_range, step=params["step"]
+                )
+            except requests.exceptions.RequestException:
+                raise
             result.extend(_process_response(response, component))
     else:
         # Query specific component only
-        response = query_prometheus(
-            USAGE_MAP[component_name]["query"],
-            date_range,
-            step=USAGE_MAP[component_name]["step"],
-        )
+        try:
+            response = query_prometheus(
+                USAGE_MAP[component_name]["query"],
+                date_range,
+                step=USAGE_MAP[component_name]["step"],
+            )
+        except requests.exceptions.RequestException:
+            raise
         result.extend(_process_response(response, component_name))
     # Calculate daily cost factors from absolute usage totals)
     result = _calculate_daily_cost_factors(result, hub_name=hub_name)
@@ -305,7 +311,11 @@ def query_users_with_multiple_groups(
     hub_name: str | None = None,
     user_name: str | None = None,
 ) -> list[dict]:
-    response = query_user_groups(hub_name=hub_name, user_name=user_name)
+    try:
+        response = query_user_groups(hub_name=hub_name, user_name=user_name)
+    except requests.exceptions.RequestException as e:
+        logger.exception(f"HTTP request failed: {e}")
+        raise
     grouped = defaultdict(
         lambda: {"username": None, "hub": None, "usergroups": [], "has_multiple": False}
     )
@@ -335,7 +345,11 @@ def query_users_with_no_groups(
     hub_name: str | None = None,
     user_name: str | None = None,
 ) -> list[dict]:
-    response = query_user_groups(hub_name=hub_name, user_name=user_name)
+    try:
+        response = query_user_groups(hub_name=hub_name, user_name=user_name)
+    except requests.exceptions.RequestException as e:
+        logger.exception(f"HTTP request failed: {e}")
+        raise
     grouped = defaultdict(lambda: {"username": None, "hub": None})
     for entry in response:
         key = (entry["username"], entry["hub"])
