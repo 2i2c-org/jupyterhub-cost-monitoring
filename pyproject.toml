@@ -10,6 +10,7 @@ dependencies = [
     "fastapi[standard]>=0.116.1",
     "flask>=3.1.1",
     "pandas>=2.3.1",
+    "prometheus-client~=0.24",
     "requests>=2.32.4",
     "yarl>=1.20.1",
 ]
