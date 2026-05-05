@@ -260,7 +260,11 @@ def query_user_groups(
     """
     now_date = get_now_date() - timedelta(days=1)
     date_range = DateRange(start_date=now_date, end_date=now_date)
-    response = query_prometheus(USER_GROUP_INFO, date_range, step="1d")
+    try:
+        response = query_prometheus(USER_GROUP_INFO, date_range, step="1d")
+    except requests.exceptions.RequestException as e:
+        logger.exception(f"HTTP request failed: {e}")
+        raise
     result = _process_user_groups(response, hub_name, user_name, group_name)
     return result
 

@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+import requests
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
@@ -7,7 +8,7 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from .const_usage import USAGE_MAP
 from .date_utils import get_now_date, parse_from_to_in_query_params
 from .logs import get_logger
-from .middleware import MetricsMiddleware
+from .metrics import MetricsMiddleware
 from .query_cost_aws import (
     query_hub_names,
     query_total_costs,
@@ -56,7 +57,10 @@ def hub_names(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    return query_hub_names(date_range)
+    try:
+        query_hub_names(date_range)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
 
 
 @app.get("/component-names")
@@ -64,7 +68,10 @@ def component_names():
     """
     Endpoint to serve component names.
     """
-    return list(USAGE_MAP.keys())
+    try:
+        list(USAGE_MAP.keys())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
 
 
 @app.get("/total-costs")
@@ -82,7 +89,10 @@ def total_costs(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    return query_total_costs(date_range)
+    try:
+        query_total_costs(date_range)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
 
 
 @app.get("/user-groups")
@@ -99,7 +109,15 @@ def user_groups(
     Endpoint to serve user group memberships. Note that only the most recent date for each user group membership is returned.
     """
 
-    return query_user_groups(hub, username, usergroup)
+    try:
+        query_user_groups(hub, username, usergroup)
+    except requests.exceptions.HTTPError as e:
+        response = e.response
+        raise HTTPException(
+            status_code=response.status_code, detail=f"{response.text}"
+        ) from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
 
 
 @app.get("/users-with-multiple-groups")
@@ -121,7 +139,10 @@ def users_with_multiple_groups(
         from_date.isoformat(), to_date.isoformat()
     )
 
-    return query_users_with_multiple_groups(date_range, hub_name, user_name)
+    try:
+        query_users_with_multiple_groups(date_range, hub_name, user_name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
 
 
 @app.get("/users-with-no-groups")
@@ -143,7 +164,10 @@ def users_with_no_groups(
         from_date.isoformat(), to_date.isoformat()
     )
 
-    return query_users_with_no_groups(date_range, hub_name, user_name)
+    try:
+        query_users_with_no_groups(date_range, hub_name, user_name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
 
 
 @app.get("/total-costs-per-hub")
@@ -161,7 +185,10 @@ def total_costs_per_hub(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    return query_total_costs_per_hub(date_range)
+    try:
+        query_total_costs_per_hub(date_range)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
 
 
 @app.get("/total-costs-per-component")
@@ -188,7 +215,10 @@ def total_costs_per_component(
     if not component or component.lower() == "all":
         component = None
 
-    return query_total_costs_per_component(date_range, hub, component)
+    try:
+        query_total_costs_per_component(date_range, hub, component)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
 
 
 @app.get("/total-costs-per-group")
@@ -206,7 +236,10 @@ def total_costs_per_group(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    return query_total_costs_per_group(date_range)
+    try:
+        query_total_costs_per_group(date_range)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
 
 
 @app.get("/costs-per-user")
@@ -269,9 +302,12 @@ def costs_per_user(
     # Get per-user costs by combining AWS costs with Prometheus usage data
     results = []
     for ug in usergroup:
-        per_user_costs = query_total_costs_per_user(
-            date_range, hub, component, user, ug, limit
-        )
+        try:
+            per_user_costs = query_total_costs_per_user(
+                date_range, hub, component, user, ug, limit
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"{e}")
         results.extend(per_user_costs)
 
     return results
@@ -309,6 +345,7 @@ def total_usage(
     try:
         query_usage(date_range, hub, component, user)
     except Exception as e:
+        print(e.args)
         raise HTTPException(status_code=500, detail=f"{e}")
 
 
