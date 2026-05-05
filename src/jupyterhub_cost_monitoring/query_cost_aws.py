@@ -84,7 +84,6 @@ def query_hub_names(date_range: DateRange):
         TagKey="2i2c:hub-name",
     )
     hub_names = [t or "support" for t in response["Tags"]]
-    logger.info(f"{hub_names=}")
     return hub_names
 
 
