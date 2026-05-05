@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 
 from .const_usage import USAGE_MAP
 from .date_utils import get_now_date, parse_from_to_in_query_params
@@ -302,4 +302,7 @@ def total_usage(
     if not user or user.lower() == "all":
         user = None
 
-    return query_usage(date_range, hub, component, user)
+    try:
+        query_usage(date_range, hub, component, user)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
