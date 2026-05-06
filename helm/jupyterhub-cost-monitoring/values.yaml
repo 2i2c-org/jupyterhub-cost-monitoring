@@ -47,7 +47,7 @@ service:
   port: 80
   annotations:
     prometheus.io/scrape: "true"
-    prometheus.io/port: "80"
+    prometheus.io/port: "8080"
 
 # Ingress resource
 # -----------------------------------------------------------------------------
