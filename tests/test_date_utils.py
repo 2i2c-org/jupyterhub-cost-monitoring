@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.jupyterhub_cost_monitoring.cache import ttl_lru_cache
+from cachetools.func import ttl_cache
 from src.jupyterhub_cost_monitoring.date_utils import (
     DateRange,
     ensure_utc_datetime,
@@ -229,14 +229,14 @@ class TestParseDateRangeParams:
 
 
 class TestCacheIntegration:
-    """Test DateRange compatibility with ttl_lru_cache."""
+    """Test DateRange compatibility with ttl_cache."""
 
     def test_daterange_as_cache_key(self):
         """Test that DateRange objects work as cache keys."""
 
         call_count = 0
 
-        @ttl_lru_cache(seconds_to_live=300)
+        @ttl_cache(ttl=300)
         def cached_function(date_range: DateRange) -> str:
             nonlocal call_count
             call_count += 1
@@ -261,7 +261,7 @@ class TestCacheIntegration:
         """Test that different DateRange objects result in cache misses."""
         call_count = 0
 
-        @ttl_lru_cache(seconds_to_live=300)
+        @ttl_cache(ttl=300)
         def cached_function(date_range: DateRange) -> str:
             nonlocal call_count
             call_count += 1
@@ -286,7 +286,7 @@ class TestCacheIntegration:
         """Test that DateRange objects with same dates but different times result in cache hits."""
         call_count = 0
 
-        @ttl_lru_cache(seconds_to_live=300)
+        @ttl_cache(ttl=300)
         def cached_function(date_range: DateRange) -> str:
             nonlocal call_count
             call_count += 1

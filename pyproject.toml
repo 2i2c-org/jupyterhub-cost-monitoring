@@ -13,6 +13,7 @@ dependencies = [
     "prometheus-client~=0.24",
     "requests>=2.32.4",
     "yarl>=1.20.1",
+    "cachetools"
 ]
 
 [dependency-groups]

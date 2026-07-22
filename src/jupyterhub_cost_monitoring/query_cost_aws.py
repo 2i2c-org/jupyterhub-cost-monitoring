@@ -6,10 +6,10 @@ import copy
 import functools
 from pprint import pformat
 
+from cachetools.func import ttl_cache
 import boto3
 import requests
 
-from .cache import ttl_lru_cache
 from .const_cost_aws import (
     FILTER_ATTRIBUTABLE_COSTS,
     FILTER_CORE_COSTS,
@@ -64,7 +64,7 @@ def query_aws_cost_explorer(metrics, granularity, from_date, to_date, filter, gr
     return response
 
 
-@ttl_lru_cache(seconds_to_live=3600)
+@ttl_cache(ttl=3600)
 def query_hub_names(date_range: DateRange):
     """
     Query hub names from AWS Cost Explorer within the given date range.
@@ -87,7 +87,7 @@ def query_hub_names(date_range: DateRange):
     return hub_names
 
 
-@ttl_lru_cache(seconds_to_live=3600)
+@ttl_cache(ttl=3600)
 def query_total_costs(date_range: DateRange):
     """
     Query total costs from AWS Cost Explorer for the given date range.
@@ -119,7 +119,7 @@ def query_total_costs(date_range: DateRange):
     return processed_response
 
 
-@ttl_lru_cache(seconds_to_live=3600)
+@ttl_cache(ttl=3600)
 def _query_total_costs(date_range: DateRange, add_attributable_costs_filter):
     """
     Internal function to query total costs from AWS Cost Explorer.
@@ -169,7 +169,7 @@ def _query_total_costs(date_range: DateRange, add_attributable_costs_filter):
     return processed_response
 
 
-@ttl_lru_cache(seconds_to_live=3600)
+@ttl_cache(ttl=3600)
 def query_total_costs_per_hub(date_range: DateRange):
     """
     Query total costs per hub from AWS Cost Explorer for the given date range.
@@ -378,7 +378,7 @@ def _process_core_costs(entries_by_date, core_cost_response):
                 logger.debug(f"Added new core entry for {date}: {core_cost:.2f}")
 
 
-@ttl_lru_cache(seconds_to_live=3600)
+@ttl_cache(ttl=3600)
 def query_total_costs_per_component(
     date_range: DateRange,
     hub_name: str = None,
@@ -513,7 +513,7 @@ def query_total_costs_per_component(
     return final_response
 
 
-@ttl_lru_cache(seconds_to_live=3600)
+@ttl_cache(ttl=3600)
 def query_total_costs_per_user(
     date_range: DateRange,
     hub: str = None,
@@ -629,7 +629,7 @@ def query_total_costs_per_user(
     return results
 
 
-@ttl_lru_cache(seconds_to_live=3600)
+@ttl_cache(ttl=3600)
 def query_total_costs_per_group(
     date_range: DateRange,
 ):

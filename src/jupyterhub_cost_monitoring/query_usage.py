@@ -10,7 +10,7 @@ import escapism
 import requests
 from yarl import URL
 
-from .cache import ttl_lru_cache
+from cachetools.func import ttl_cache
 from .const_usage import USAGE_MAP, USER_GROUP_INFO
 from .date_utils import DateRange, get_now_date
 from .logs import get_logger
@@ -255,7 +255,7 @@ def _calculate_daily_cost_factors(
     return result
 
 
-@ttl_lru_cache(seconds_to_live=3600)
+@ttl_cache(ttl=3600)
 def query_user_groups(
     hub_name: str | None = None,
     user_name: str | None = None,
@@ -305,7 +305,7 @@ def _process_user_groups(
     return result
 
 
-@ttl_lru_cache(seconds_to_live=3600)
+@ttl_cache(ttl=3600)
 def query_users_with_multiple_groups(
     date_range: DateRange,
     hub_name: str | None = None,
@@ -339,7 +339,7 @@ def query_users_with_multiple_groups(
     return result
 
 
-@ttl_lru_cache(seconds_to_live=3600)
+@ttl_cache(ttl=3600)
 def query_users_with_no_groups(
     date_range: DateRange,
     hub_name: str | None = None,
