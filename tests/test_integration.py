@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict
 
 import pytest
@@ -7,7 +8,6 @@ from src.jupyterhub_cost_monitoring.const_cost_aws import (
     METRICS_UNBLENDED_COST,
 )
 from src.jupyterhub_cost_monitoring.date_utils import parse_from_to_in_query_params
-import logging
 from src.jupyterhub_cost_monitoring.query_cost_aws import (
     query_total_costs_per_component,
 )

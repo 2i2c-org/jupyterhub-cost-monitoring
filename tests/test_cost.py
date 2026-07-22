@@ -1,6 +1,7 @@
+import logging
+
 import pandas as pd
 
-import logging
 from src.jupyterhub_cost_monitoring.query_usage import _calculate_daily_cost_factors
 
 logger = logging.getLogger(__name__)

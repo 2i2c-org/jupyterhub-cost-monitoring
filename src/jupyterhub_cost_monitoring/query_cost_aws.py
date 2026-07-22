@@ -4,6 +4,7 @@ Queries to AWS Cost Explorer to get different kinds of cost data.
 
 import copy
 import functools
+import logging
 from pprint import pformat
 
 import boto3
@@ -22,7 +23,6 @@ from .const_cost_aws import (
     SERVICE_COMPONENT_MAP,
 )
 from .date_utils import DateRange
-import logging
 from .query_usage import _filter_json, query_usage, query_user_groups
 
 logger = logging.getLogger(__name__)

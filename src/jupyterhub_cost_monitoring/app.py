@@ -1,7 +1,7 @@
+import logging
 from datetime import timedelta
 
 import requests
-import logging
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest

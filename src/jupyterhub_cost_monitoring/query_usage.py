@@ -2,6 +2,7 @@
 Query the Prometheus server to get usage of JupyterHub resources.
 """
 
+import logging
 import os
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
@@ -13,7 +14,6 @@ from yarl import URL
 from .cache import ttl_lru_cache
 from .const_usage import USAGE_MAP, USER_GROUP_INFO
 from .date_utils import DateRange, get_now_date
-import logging
 
 logger = logging.getLogger(__name__)
 
