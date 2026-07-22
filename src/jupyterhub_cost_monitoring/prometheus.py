@@ -15,9 +15,6 @@ from yarl import URL
 from .cache import ttl_lru_cache
 from .const_usage import USAGE_MAP, USER_GROUP_INFO
 from .date_utils import DateRange, get_now_date
-from .logs import get_logger
-
-logger = get_logger(__name__)
 
 
 class Prometheus(LoggingConfigurable):
@@ -76,7 +73,7 @@ class Prometheus(LoggingConfigurable):
         with requests.get(
             query_api, params=parameters, auth=prometheus_auth
         ) as response:
-            logger.info(f"Querying Prometheus: {response.url}")
+            self.log.info(f"Querying Prometheus: {response.url}")
             response.raise_for_status()
             result = response.json()
             return result
@@ -172,7 +169,7 @@ class Prometheus(LoggingConfigurable):
                             entry["user"], escape_char="-"
                         )
                     except ValueError:
-                        logger.warning(
+                        self.log.warning(
                             f"Could not unescape username {entry['user']} for home storage component."
                         )
                         continue
@@ -288,7 +285,7 @@ class Prometheus(LoggingConfigurable):
         try:
             response = self.query(USER_GROUP_INFO, date_range, step="1d")
         except requests.exceptions.RequestException as e:
-            logger.exception(f"HTTP request failed: {e}")
+            self.log.exception(f"HTTP request failed: {e}")
             raise
         result = self._process_user_groups(response, hub_name, user_name, group_name)
         return result
@@ -333,7 +330,7 @@ class Prometheus(LoggingConfigurable):
         try:
             response = self.query_user_groups(hub_name=hub_name, user_name=user_name)
         except requests.exceptions.RequestException as e:
-            logger.exception(f"HTTP request failed: {e}")
+            self.log.exception(f"HTTP request failed: {e}")
             raise
         grouped = defaultdict(
             lambda: {
@@ -372,7 +369,7 @@ class Prometheus(LoggingConfigurable):
         try:
             response = self.query_user_groups(hub_name=hub_name, user_name=user_name)
         except requests.exceptions.RequestException as e:
-            logger.exception(f"HTTP request failed: {e}")
+            self.log.exception(f"HTTP request failed: {e}")
             raise
         grouped = defaultdict(lambda: {"username": None, "hub": None})
         for entry in response:
@@ -381,7 +378,7 @@ class Prometheus(LoggingConfigurable):
                 grouped[key]["username"] = entry["username"]
                 grouped[key]["hub"] = entry["hub"]
                 if entry["usergroup"] == "none":
-                    logger.debug(
+                    self.log.debug(
                         f"User {entry['username']} in hub {entry['hub']} has no groups."
                     )
                     grouped[key]["has_none"] = True
