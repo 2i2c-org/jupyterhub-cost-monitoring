@@ -13,9 +13,9 @@ from yarl import URL
 from .cache import ttl_lru_cache
 from .const_usage import USAGE_MAP, USER_GROUP_INFO
 from .date_utils import DateRange, get_now_date
-from .logs import get_logger
+import logging
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 prometheus_host = os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_HOST", "localhost")
 prometheus_port = int(os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_PORT", 9090))

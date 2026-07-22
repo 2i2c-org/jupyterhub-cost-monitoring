@@ -7,12 +7,12 @@ from src.jupyterhub_cost_monitoring.const_cost_aws import (
     METRICS_UNBLENDED_COST,
 )
 from src.jupyterhub_cost_monitoring.date_utils import parse_from_to_in_query_params
-from src.jupyterhub_cost_monitoring.logs import get_logger
+import logging
 from src.jupyterhub_cost_monitoring.query_cost_aws import (
     query_total_costs_per_component,
 )
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 date_range = parse_from_to_in_query_params("2025-09-01", "2025-09-02")
 

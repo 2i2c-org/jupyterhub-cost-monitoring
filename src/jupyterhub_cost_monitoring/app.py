@@ -1,13 +1,13 @@
 from datetime import timedelta
 
 import requests
+import logging
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from .const_usage import USAGE_MAP
 from .date_utils import get_now_date, parse_from_to_in_query_params
-from .logs import get_logger
 from .metrics import MetricsMiddleware
 from .query_cost_aws import (
     query_hub_names,
@@ -26,7 +26,7 @@ from .query_usage import (
 
 app = FastAPI()
 app.add_middleware(MetricsMiddleware)
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 @app.get("/")

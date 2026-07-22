@@ -1,9 +1,9 @@
 import pandas as pd
 
-from src.jupyterhub_cost_monitoring.logs import get_logger
+import logging
 from src.jupyterhub_cost_monitoring.query_usage import _calculate_daily_cost_factors
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def test_cost_factor_by_hub(input_data_usage, output_data_hub):

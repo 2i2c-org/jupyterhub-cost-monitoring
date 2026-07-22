@@ -22,10 +22,10 @@ from .const_cost_aws import (
     SERVICE_COMPONENT_MAP,
 )
 from .date_utils import DateRange
-from .logs import get_logger
+import logging
 from .query_usage import _filter_json, query_usage, query_user_groups
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 aws_ce_client = boto3.client("ce")
 
 
