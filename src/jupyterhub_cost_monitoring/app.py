@@ -5,28 +5,18 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
+from .aws import AWSCostExplorer
 from .const_usage import USAGE_MAP
 from .date_utils import get_now_date, parse_from_to_in_query_params
 from .logs import get_logger
 from .metrics import MetricsMiddleware
-from .prometheus import (
-    query_usage,
-    query_user_groups,
-    query_users_with_multiple_groups,
-    query_users_with_no_groups,
-)
-from .query_cost_aws import (
-    query_hub_names,
-    query_total_costs,
-    query_total_costs_per_component,
-    query_total_costs_per_group,
-    query_total_costs_per_hub,
-    query_total_costs_per_user,
-)
+from .prometheus import Prometheus
 
 app = FastAPI()
 app.add_middleware(MetricsMiddleware)
 logger = get_logger(__name__)
+prometheus = Prometheus()
+aws_ce = AWSCostExplorer(prometheus=prometheus)
 
 
 @app.get("/")
@@ -58,7 +48,7 @@ def hub_names(
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
     try:
-        return query_hub_names(date_range)
+        return aws_ce.query_hub_names(date_range)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
 
@@ -90,7 +80,7 @@ def total_costs(
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
     try:
-        return query_total_costs(date_range)
+        return aws_ce.query_total_costs(date_range)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
 
@@ -110,7 +100,7 @@ def user_groups(
     """
 
     try:
-        return query_user_groups(hub, username, usergroup)
+        return prometheus.query_user_groups(hub, username, usergroup)
     except requests.exceptions.HTTPError as e:
         response = e.response
         raise HTTPException(
@@ -140,7 +130,9 @@ def users_with_multiple_groups(
     )
 
     try:
-        return query_users_with_multiple_groups(date_range, hub_name, user_name)
+        return prometheus.query_users_with_multiple_groups(
+            date_range, hub_name, user_name
+        )
     except requests.exceptions.HTTPError as e:
         response = e.response
         raise HTTPException(
@@ -170,7 +162,7 @@ def users_with_no_groups(
     )
 
     try:
-        return query_users_with_no_groups(date_range, hub_name, user_name)
+        return prometheus.query_users_with_no_groups(date_range, hub_name, user_name)
     except requests.exceptions.HTTPError as e:
         response = e.response
         raise HTTPException(
@@ -196,7 +188,7 @@ def total_costs_per_hub(
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
     try:
-        return query_total_costs_per_hub(date_range)
+        return aws_ce.query_total_costs_per_hub(date_range)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
 
@@ -226,7 +218,7 @@ def total_costs_per_component(
         component = None
 
     try:
-        return query_total_costs_per_component(date_range, hub, component)
+        return aws_ce.query_total_costs_per_component(date_range, hub, component)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
 
@@ -247,7 +239,7 @@ def total_costs_per_group(
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
     try:
-        return query_total_costs_per_group(date_range)
+        return aws_ce.query_total_costs_per_group(date_range)
     except requests.exceptions.HTTPError as e:
         response = e.response
         raise HTTPException(status_code=response.status_code, detail=response.text)
@@ -316,7 +308,7 @@ def costs_per_user(
     results = []
     for ug in usergroup:
         try:
-            per_user_costs = query_total_costs_per_user(
+            per_user_costs = aws_ce.query_total_costs_per_user(
                 date_range, hub, component, user, ug, limit
             )
         except requests.exceptions.HTTPError as e:
@@ -359,7 +351,7 @@ def total_usage(
         user = None
 
     try:
-        return query_usage(date_range, hub, component, user)
+        return prometheus.query_usage(date_range, hub, component, user)
     except requests.exceptions.HTTPError as e:
         response = e.response
         raise HTTPException(status_code=response.status_code, detail=response.text)
