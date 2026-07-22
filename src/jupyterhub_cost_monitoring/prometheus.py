@@ -8,6 +8,8 @@ from datetime import datetime, timedelta, timezone
 
 import escapism
 import requests
+from traitlets import Integer, Unicode
+from traitlets.config import LoggingConfigurable
 from yarl import URL
 
 from .cache import ttl_lru_cache
@@ -17,12 +19,33 @@ from .logs import get_logger
 
 logger = get_logger(__name__)
 
-prometheus_host = os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_HOST", "localhost")
-prometheus_port = int(os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_PORT", 9090))
-prometheus_username = os.environ.get("PROMETHEUS_USERNAME", "")
-prometheus_password = os.environ.get("PROMETHEUS_PASSWORD", "")
 
 class Prometheus(LoggingConfigurable):
+    host = Unicode(
+        os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_HOST", "localhost"),
+        help="Host where the prometheus server is running",
+        config=True,
+    )
+    port = Integer(
+        int(os.environ.get("SUPPORT_PROMETHEUS_SERVER_SERVICE_PORT", 9090)),
+        help="Port where the prometheus server is running",
+        config=True,
+    )
+
+    username = Unicode(
+        os.environ.get("PROMETHEUS_USERNAME", None),
+        allow_none=True,
+        help="HTTP Basic Auth username required to talk to prometheus (if required)",
+        config=True,
+    )
+
+    password = Unicode(
+        os.environ.get("PROMETHEUS_PASSWORD", None),
+        allow_none=True,
+        help="HTTP Basic Auth password required to talk to prometheus (if required)",
+        config=True,
+    )
+
     def query(self, query: str, date_range: DateRange, step: str) -> requests.Response:
         """
         Query the Prometheus server with the given query over a date range.
@@ -38,13 +61,9 @@ class Prometheus(LoggingConfigurable):
         # Use Prometheus-formatted dates (inclusive date range with ISO timestamps)
         from_date, to_date = date_range.prometheus_range
 
-        prometheus_api = URL.build(
-            scheme="http", host=prometheus_host, port=prometheus_port
-        )
-        if prometheus_username != "" and prometheus_password != "":
-            prometheus_auth = requests.auth.HTTPBasicAuth(
-                prometheus_username, prometheus_password
-            )
+        prometheus_api = URL.build(scheme="http", host=self.host, port=self.port)
+        if self.username is not None and self.password is not None:
+            prometheus_auth = requests.auth.HTTPBasicAuth(self.username, self.password)
         else:
             prometheus_auth = None
         parameters = {
@@ -54,12 +73,13 @@ class Prometheus(LoggingConfigurable):
             "step": step,
         }
         query_api = URL(prometheus_api.with_path("/api/v1/query_range"))
-        with requests.get(query_api, params=parameters, auth=prometheus_auth) as response:
+        with requests.get(
+            query_api, params=parameters, auth=prometheus_auth
+        ) as response:
             logger.info(f"Querying Prometheus: {response.url}")
             response.raise_for_status()
             result = response.json()
             return result
-
 
     def query_usage(
         self,
@@ -110,7 +130,6 @@ class Prometheus(LoggingConfigurable):
         result = self._filter_json(result, hub=hub_name, user=user_name)
         return result
 
-
     def _process_response(
         self,
         response: requests.Response,
@@ -149,7 +168,9 @@ class Prometheus(LoggingConfigurable):
             for entry in processed_result:
                 if "shared" not in entry["user"]:
                     try:
-                        entry["user"] = escapism.unescape(entry["user"], escape_char="-")
+                        entry["user"] = escapism.unescape(
+                            entry["user"], escape_char="-"
+                        )
                     except ValueError:
                         logger.warning(
                             f"Could not unescape username {entry['user']} for home storage component."
@@ -157,14 +178,12 @@ class Prometheus(LoggingConfigurable):
                         continue
         return processed_result
 
-
     def _filter_json(self, result: list[dict], **filters):
         return [
             item
             for item in result
             if all(filters[k] is None or item.get(k) == filters[k] for k in filters)
         ]
-
 
     def _pivot_response_dict(self, result: list[dict]) -> list[dict]:
         """
@@ -183,7 +202,6 @@ class Prometheus(LoggingConfigurable):
                     }
                 )
         return pivot
-
 
     def _sum_absolute_usage_by_date(self, result: list[dict]) -> list[dict]:
         """
@@ -213,7 +231,6 @@ class Prometheus(LoggingConfigurable):
             }
             for (date, user, hub, component), total in sums.items()
         ]
-
 
     def _calculate_daily_cost_factors(
         self, result: list[dict], hub_name: str | None = None
@@ -256,7 +273,6 @@ class Prometheus(LoggingConfigurable):
                 entry["value"] = 0.0
         return result
 
-
     @ttl_lru_cache(seconds_to_live=3600)
     def query_user_groups(
         self,
@@ -276,7 +292,6 @@ class Prometheus(LoggingConfigurable):
             raise
         result = self._process_user_groups(response, hub_name, user_name, group_name)
         return result
-
 
     def _process_user_groups(
         self,
@@ -308,7 +323,6 @@ class Prometheus(LoggingConfigurable):
                 )
         return result
 
-
     @ttl_lru_cache(seconds_to_live=3600)
     def query_users_with_multiple_groups(
         self,
@@ -322,7 +336,12 @@ class Prometheus(LoggingConfigurable):
             logger.exception(f"HTTP request failed: {e}")
             raise
         grouped = defaultdict(
-            lambda: {"username": None, "hub": None, "usergroups": [], "has_multiple": False}
+            lambda: {
+                "username": None,
+                "hub": None,
+                "usergroups": [],
+                "has_multiple": False,
+            }
         )
         for entry in response:
             k = (entry["username"], entry["hub"])
@@ -342,7 +361,6 @@ class Prometheus(LoggingConfigurable):
                     )
 
         return result
-
 
     @ttl_lru_cache(seconds_to_live=3600)
     def query_users_with_no_groups(
