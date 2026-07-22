@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 
 import requests
@@ -8,13 +9,12 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from .aws import AWSCostExplorer
 from .const_usage import USAGE_MAP
 from .date_utils import get_now_date, parse_from_to_in_query_params
-from .logs import get_logger
 from .metrics import MetricsMiddleware
 from .prometheus import Prometheus
 
 app = FastAPI()
 app.add_middleware(MetricsMiddleware)
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 prometheus = Prometheus()
 aws_ce = AWSCostExplorer(prometheus=prometheus)
 
