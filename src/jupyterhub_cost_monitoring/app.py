@@ -9,6 +9,12 @@ from .const_usage import USAGE_MAP
 from .date_utils import get_now_date, parse_from_to_in_query_params
 from .logs import get_logger
 from .metrics import MetricsMiddleware
+from .prometheus import (
+    query_usage,
+    query_user_groups,
+    query_users_with_multiple_groups,
+    query_users_with_no_groups,
+)
 from .query_cost_aws import (
     query_hub_names,
     query_total_costs,
@@ -16,12 +22,6 @@ from .query_cost_aws import (
     query_total_costs_per_group,
     query_total_costs_per_hub,
     query_total_costs_per_user,
-)
-from .query_usage import (
-    query_usage,
-    query_user_groups,
-    query_users_with_multiple_groups,
-    query_users_with_no_groups,
 )
 
 app = FastAPI()

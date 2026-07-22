@@ -23,7 +23,7 @@ from .const_cost_aws import (
 )
 from .date_utils import DateRange
 from .logs import get_logger
-from .query_usage import _filter_json, query_usage, query_user_groups
+from .prometheus import _filter_json, query_usage, query_user_groups
 
 logger = get_logger(__name__)
 aws_ce_client = boto3.client("ce")
