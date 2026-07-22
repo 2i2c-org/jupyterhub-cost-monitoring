@@ -28,7 +28,6 @@ from .logs import get_logger
 from .prometheus import Prometheus
 
 logger = get_logger(__name__)
-aws_ce_client = boto3.client("ce")
 
 
 class AWSCostExplorer(LoggingConfigurable):
@@ -47,13 +46,17 @@ class AWSCostExplorer(LoggingConfigurable):
         klass=Prometheus,
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.aws_ce_client = boto3.client("ce")
+
     def query(self, metrics, granularity, from_date, to_date, filter, group_by):
         """
         Function meant to be responsible for making the API call and handling
         pagination etc. Currently pagination isn't handled.
         """
         # ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce/client/get_cost_and_usage.html#get-cost-and-usage
-        response = aws_ce_client.get_cost_and_usage(
+        response = self.aws_ce_client.get_cost_and_usage(
             Metrics=metrics,
             Granularity=granularity,
             TimePeriod={"Start": from_date, "End": to_date},
@@ -86,7 +89,7 @@ class AWSCostExplorer(LoggingConfigurable):
         from_date, to_date = date_range.aws_range
 
         # ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce/client/get_tags.html
-        response = aws_ce_client.get_tags(
+        response = self.aws_ce_client.get_tags(
             TimePeriod={"Start": from_date, "End": to_date},
             TagKey="2i2c:hub-name",
         )
