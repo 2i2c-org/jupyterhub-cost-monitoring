@@ -8,9 +8,9 @@ from datetime import datetime, timedelta, timezone
 
 import escapism
 import requests
+from cachetools.func import ttl_cache
 from yarl import URL
 
-from cachetools.func import ttl_cache
 from .const_usage import USAGE_MAP, USER_GROUP_INFO
 from .date_utils import DateRange, get_now_date
 from .logs import get_logger

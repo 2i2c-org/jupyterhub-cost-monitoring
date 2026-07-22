@@ -6,9 +6,9 @@ import copy
 import functools
 from pprint import pformat
 
-from cachetools.func import ttl_cache
 import boto3
 import requests
+from cachetools.func import ttl_cache
 
 from .const_cost_aws import (
     FILTER_ATTRIBUTABLE_COSTS,

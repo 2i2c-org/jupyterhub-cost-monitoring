@@ -9,8 +9,8 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import pytest
-
 from cachetools.func import ttl_cache
+
 from src.jupyterhub_cost_monitoring.date_utils import (
     DateRange,
     ensure_utc_datetime,
