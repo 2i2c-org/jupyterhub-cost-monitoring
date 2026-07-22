@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 import aiohttp
-import requests
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
@@ -10,6 +9,7 @@ from .const_usage import USAGE_MAP
 from .date_utils import get_now_date, parse_from_to_in_query_params
 from .logs import get_logger
 from .metrics import MetricsMiddleware
+from .prometheus import Prometheus
 from .query_cost_aws import (
     query_hub_names,
     query_total_costs,
@@ -18,17 +18,12 @@ from .query_cost_aws import (
     query_total_costs_per_hub,
     query_total_costs_per_user,
 )
-from .query_usage import (
-    query_usage,
-    query_user_groups,
-    query_users_with_multiple_groups,
-    query_users_with_no_groups,
-)
 
 app = FastAPI()
 app.add_middleware(MetricsMiddleware)
 logger = get_logger(__name__)
 client_session = aiohttp.ClientSession()
+prometheus = Prometheus()
 
 
 @app.get("/")
@@ -98,7 +93,7 @@ def total_costs(
 
 
 @app.get("/user-groups")
-def user_groups(
+async def user_groups(
     hub: str | None = Query(None, description="Name of the hub to filter results"),
     username: str | None = Query(
         None, description="Name of the user to filter results"
@@ -111,19 +106,11 @@ def user_groups(
     Endpoint to serve user group memberships. Note that only the most recent date for each user group membership is returned.
     """
 
-    try:
-        return query_user_groups(hub, username, usergroup)
-    except requests.exceptions.HTTPError as e:
-        response = e.response
-        raise HTTPException(
-            status_code=response.status_code, detail=f"{response.text}"
-        ) from e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}")
+    return await prometheus.query_user_groups(hub, username, usergroup)
 
 
 @app.get("/users-with-multiple-groups")
-def users_with_multiple_groups(
+async def users_with_multiple_groups(
     hub_name: str | None = Query(None, description="Name of the hub to filter results"),
     user_name: str | None = Query(
         None, description="Name of the user to filter results"
@@ -141,19 +128,13 @@ def users_with_multiple_groups(
         from_date.isoformat(), to_date.isoformat()
     )
 
-    try:
-        return query_users_with_multiple_groups(date_range, hub_name, user_name)
-    except requests.exceptions.HTTPError as e:
-        response = e.response
-        raise HTTPException(
-            status_code=response.status_code, detail=f"{response.text}"
-        ) from e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}")
+    return await prometheus.query_users_with_multiple_groups(
+        date_range, hub_name, user_name
+    )
 
 
 @app.get("/users-with-no-groups")
-def users_with_no_groups(
+async def users_with_no_groups(
     hub_name: str | None = Query(None, description="Name of the hub to filter results"),
     user_name: str | None = Query(
         None, description="Name of the user to filter results"
@@ -171,19 +152,11 @@ def users_with_no_groups(
         from_date.isoformat(), to_date.isoformat()
     )
 
-    try:
-        return query_users_with_no_groups(date_range, hub_name, user_name)
-    except requests.exceptions.HTTPError as e:
-        response = e.response
-        raise HTTPException(
-            status_code=response.status_code, detail=f"{response.text}"
-        ) from e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}") from e
+    return await prometheus.query_users_with_no_groups(date_range, hub_name, user_name)
 
 
 @app.get("/total-costs-per-hub")
-def total_costs_per_hub(
+async def total_costs_per_hub(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
     ),
@@ -204,7 +177,7 @@ def total_costs_per_hub(
 
 
 @app.get("/total-costs-per-component")
-def total_costs_per_component(
+async def total_costs_per_component(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
     ),
@@ -234,7 +207,7 @@ def total_costs_per_component(
 
 
 @app.get("/total-costs-per-group")
-def total_costs_per_group(
+async def total_costs_per_group(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
     ),
@@ -248,13 +221,7 @@ def total_costs_per_group(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    try:
-        return query_total_costs_per_group(date_range)
-    except requests.exceptions.HTTPError as e:
-        response = e.response
-        raise HTTPException(status_code=response.status_code, detail=response.text)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}")
+    return query_total_costs_per_group(date_range)
 
 
 @app.get("/costs-per-user")
@@ -354,13 +321,7 @@ async def total_usage(
     if not user or user.lower() == "all":
         user = None
 
-    try:
-        return await query_usage(client_session, date_range, hub, component, user)
-    except requests.exceptions.HTTPError as e:
-        response = e.response
-        raise HTTPException(status_code=response.status_code, detail=response.text)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}")
+    return await prometheus.query_usage(date_range, hub, component, user)
 
 
 @app.get("/metrics")
