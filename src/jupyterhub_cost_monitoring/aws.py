@@ -24,10 +24,7 @@ from .const_cost_aws import (
     SERVICE_COMPONENT_MAP,
 )
 from .date_utils import DateRange
-from .logs import get_logger
 from .prometheus import Prometheus
-
-logger = get_logger(__name__)
 
 
 class AWSCostExplorer(LoggingConfigurable):
@@ -37,7 +34,7 @@ class AWSCostExplorer(LoggingConfigurable):
             return SERVICE_COMPONENT_MAP[service_name]
         else:
             # only printed once per service name thanks to memoization
-            logger.warning(
+            self.log.warning(
                 f"Service '{service_name}' not categorized as a component yet"
             )
             return "other"
@@ -255,7 +252,7 @@ class AWSCostExplorer(LoggingConfigurable):
                         0.0, current_compute_cost - home_storage_cost
                     )
                     compute_entry["cost"] = f"{new_compute_cost:.2f}"
-                    logger.debug(
+                    self.log.debug(
                         f"Adjusted compute cost for {date}: {current_compute_cost:.2f} -> {new_compute_cost:.2f}"
                     )
 
@@ -267,7 +264,7 @@ class AWSCostExplorer(LoggingConfigurable):
                         current_home_storage_cost + home_storage_cost
                     )
                     home_storage_entry["cost"] = f"{new_home_storage_cost:.2f}"
-                    logger.debug(
+                    self.log.debug(
                         f"Updated home storage cost for {date}: {current_home_storage_cost:.2f} -> {new_home_storage_cost:.2f}"
                     )
                 else:
@@ -281,7 +278,7 @@ class AWSCostExplorer(LoggingConfigurable):
                     if date not in entries_by_date:
                         entries_by_date[date] = {}
                     entries_by_date[date]["home storage"] = new_entry
-                    logger.debug(
+                    self.log.debug(
                         f"Added new home storage entry for {date}: {home_storage_cost:.2f}"
                     )
 
@@ -340,7 +337,7 @@ class AWSCostExplorer(LoggingConfigurable):
             entries_by_date: Dictionary indexed by date containing component entries
             core_cost_response: AWS Cost Explorer response for core costs
         """
-        logger.debug(
+        self.log.debug(
             f"Processing core costs: {pformat(core_cost_response['ResultsByTime'])}"
         )
         for core_e in core_cost_response["ResultsByTime"]:
@@ -360,7 +357,7 @@ class AWSCostExplorer(LoggingConfigurable):
                     current_compute_cost = float(compute_entry["cost"])
                     new_compute_cost = max(0.0, current_compute_cost - core_cost)
                     compute_entry["cost"] = f"{new_compute_cost:.2f}"
-                    logger.debug(
+                    self.log.debug(
                         f"Adjusted compute cost for {date} (core cost): {current_compute_cost:.2f} -> {new_compute_cost:.2f}"
                     )
 
@@ -370,7 +367,7 @@ class AWSCostExplorer(LoggingConfigurable):
                     current_core_cost = float(core_entry["cost"])
                     new_core_cost = current_core_cost + core_cost
                     core_entry["cost"] = f"{new_core_cost:.2f}"
-                    logger.debug(
+                    self.log.debug(
                         f"Updated core cost for {date}: {current_core_cost:.2f} -> {new_core_cost:.2f}"
                     )
                 else:
@@ -384,7 +381,7 @@ class AWSCostExplorer(LoggingConfigurable):
                     if date not in entries_by_date:
                         entries_by_date[date] = {}
                     entries_by_date[date]["core"] = new_entry
-                    logger.debug(f"Added new core entry for {date}: {core_cost:.2f}")
+                    self.log.debug(f"Added new core entry for {date}: {core_cost:.2f}")
 
     @ttl_lru_cache(seconds_to_live=3600)
     def query_total_costs_per_component(
@@ -424,7 +421,7 @@ class AWSCostExplorer(LoggingConfigurable):
 
         processed_response = []
 
-        logger.debug(f"Processing response: {pformat(response['ResultsByTime'])}")
+        self.log.debug(f"Processing response: {pformat(response['ResultsByTime'])}")
 
         for e in response["ResultsByTime"]:
             # coalesce service costs to component costs
@@ -438,7 +435,7 @@ class AWSCostExplorer(LoggingConfigurable):
                 )
 
             # Filter to specific component if requested
-            logger.debug(f"Component costs before filtering: {component_costs}")
+            self.log.debug(f"Component costs before filtering: {component_costs}")
             if component:
                 component_costs = {
                     k: v for k, v in component_costs.items() if k == component
@@ -463,7 +460,7 @@ class AWSCostExplorer(LoggingConfigurable):
                 entries_by_date[date] = {}
             entries_by_date[date][entry["component"]] = entry
 
-        logger.debug(f"Entries by date before deduplication: {entries_by_date}\n\n")
+        self.log.debug(f"Entries by date before deduplication: {entries_by_date}\n\n")
 
         # EC2 - Other is a service that can include costs for EBS volumes and snapshots
         # By default, these costs are mapped to the compute component, but
@@ -489,7 +486,7 @@ class AWSCostExplorer(LoggingConfigurable):
             entries_by_date, home_storage_ebs_cost_response
         )
 
-        logger.debug(
+        self.log.debug(
             f"Entries by date after home storage processing: {entries_by_date}\n\n"
         )
 
@@ -511,7 +508,7 @@ class AWSCostExplorer(LoggingConfigurable):
         # Process core costs and adjust compute costs accordingly
         self._process_core_costs(entries_by_date, core_cost_response)
 
-        logger.debug(
+        self.log.debug(
             f"Entries by date after core cost processing: {entries_by_date}\n\n"
         )
 
@@ -633,7 +630,7 @@ class AWSCostExplorer(LoggingConfigurable):
                 )
             top_users = sorted(user_costs.items(), key=lambda x: -x[1])[:limit]
             top_user_set = {user for user, _ in top_users}
-            logger.debug(f"Top users: {top_users}")
+            self.log.debug(f"Top users: {top_users}")
             results = [entry for entry in results if entry["user"] in top_user_set]
         results = self.prometheus._filter_json(
             results, hub=hub, component=component, user=user, usergroup=usergroup
@@ -660,12 +657,12 @@ class AWSCostExplorer(LoggingConfigurable):
         try:
             results = self.query_total_costs_per_user(date_range=date_range)
         except Exception as e:
-            logger.exception(f"HTTP request failed: {e}")
+            self.log.exception(f"HTTP request failed: {e}")
             raise
         response = {}
         for r in results:
             key = (r["date"], r["usergroup"])
-            logger.debug(f"Key: {key}, Value: {r['value']}")
+            self.log.debug(f"Key: {key}, Value: {r['value']}")
             response[key] = response.get(key, 0) + float(r["value"])
 
         final_response = [
