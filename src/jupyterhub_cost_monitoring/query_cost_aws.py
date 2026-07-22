@@ -6,8 +6,8 @@ import copy
 import functools
 from pprint import pformat
 
+import aiohttp
 import boto3
-import requests
 
 from .cache import ttl_lru_cache
 from .const_cost_aws import (
@@ -514,7 +514,8 @@ def query_total_costs_per_component(
 
 
 @ttl_lru_cache(seconds_to_live=3600)
-def query_total_costs_per_user(
+async def query_total_costs_per_user(
+    client: aiohttp.ClientSession,
     date_range: DateRange,
     hub: str = None,
     component: str = None,
@@ -556,15 +557,13 @@ def query_total_costs_per_user(
     # Get user usage percentages from Prometheus using the same DateRange object
     # This ensures we query the same logical date range for both AWS and Prometheus,
     # accounting for their different date range semantics (exclusive vs inclusive)
-    try:
-        usage_shares = query_usage(
-            date_range,
-            hub_name=hub,
-            component_name=component,
-            user_name=user,
-        )
-    except requests.exceptions.ConnectionError:
-        raise
+    usage_shares = await query_usage(
+        client,
+        date_range,
+        hub_name=hub,
+        component_name=component,
+        user_name=user,
+    )
     results = []
     for entry in usage_shares:
         d = entry["date"]
@@ -577,7 +576,7 @@ def query_total_costs_per_user(
             )  # Adjust usage share to cost
             results.append(entry)
     results = [x for x in results if x["hub"] != "binder"]  # Exclude binder hubs
-    user_groups = query_user_groups(date_range, hub, user)
+    user_groups = await query_user_groups(client, date_range, hub, user)
     seen = set()
     list_groups = []
     # Ensure uniquely keyed entries when double-counting group costs
@@ -630,7 +629,8 @@ def query_total_costs_per_user(
 
 
 @ttl_lru_cache(seconds_to_live=3600)
-def query_total_costs_per_group(
+async def query_total_costs_per_group(
+    client: aiohttp.ClientSession,
     date_range: DateRange,
 ):
     """
@@ -642,11 +642,7 @@ def query_total_costs_per_group(
     Returns:
         List of dicts with keys: date, usergroup and cost.
     """
-    try:
-        results = query_total_costs_per_user(date_range=date_range)
-    except Exception as e:
-        logger.exception(f"HTTP request failed: {e}")
-        raise
+    results = await query_total_costs_per_user(client, date_range=date_range)
     response = {}
     for r in results:
         key = (r["date"], r["usergroup"])

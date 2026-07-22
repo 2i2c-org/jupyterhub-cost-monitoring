@@ -6,8 +6,8 @@ import os
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
+import aiohttp
 import escapism
-import requests
 from yarl import URL
 
 from .cache import ttl_lru_cache
@@ -23,7 +23,9 @@ prometheus_username = os.environ.get("PROMETHEUS_USERNAME", "")
 prometheus_password = os.environ.get("PROMETHEUS_PASSWORD", "")
 
 
-def query_prometheus(query: str, date_range: DateRange, step: str) -> requests.Response:
+async def query_prometheus(
+    client: aiohttp.ClientSession, query: str, date_range: DateRange, step: str
+) -> dict:
     """
     Query the Prometheus server with the given query over a date range.
 
@@ -42,9 +44,7 @@ def query_prometheus(query: str, date_range: DateRange, step: str) -> requests.R
         scheme="http", host=prometheus_host, port=prometheus_port
     )
     if prometheus_username != "" and prometheus_password != "":
-        prometheus_auth = requests.auth.HTTPBasicAuth(
-            prometheus_username, prometheus_password
-        )
+        prometheus_auth = aiohttp.BasicAuth(prometheus_username, prometheus_password)
     else:
         prometheus_auth = None
     parameters = {
@@ -53,15 +53,16 @@ def query_prometheus(query: str, date_range: DateRange, step: str) -> requests.R
         "end": to_date,
         "step": step,
     }
-    query_api = URL(prometheus_api.with_path("/api/v1/query_range"))
-    with requests.get(query_api, params=parameters, auth=prometheus_auth) as response:
+    query_api = prometheus_api.with_path("/api/v1/query_range").with_query(parameters)
+    async with client.get(query_api, auth=prometheus_auth) as response:
         logger.info(f"Querying Prometheus: {response.url}")
         response.raise_for_status()
-        result = response.json()
+        result = await response.json()
         return result
 
 
-def query_usage(
+async def query_usage(
+    client: aiohttp.ClientSession,
     date_range: DateRange,
     hub_name: str | None,
     component_name: str | None,
@@ -84,23 +85,18 @@ def query_usage(
     if component_name is None:
         # Query all components defined in USAGE_MAP
         for component, params in USAGE_MAP.items():
-            try:
-                response = query_prometheus(
-                    params["query"], date_range, step=params["step"]
-                )
-            except requests.exceptions.RequestException:
-                raise
+            response = await query_prometheus(
+                client, params["query"], date_range, step=params["step"]
+            )
             result.extend(_process_response(response, component))
     else:
         # Query specific component only
-        try:
-            response = query_prometheus(
-                USAGE_MAP[component_name]["query"],
-                date_range,
-                step=USAGE_MAP[component_name]["step"],
-            )
-        except requests.exceptions.RequestException:
-            raise
+        response = await query_prometheus(
+            client,
+            USAGE_MAP[component_name]["query"],
+            date_range,
+            step=USAGE_MAP[component_name]["step"],
+        )
         result.extend(_process_response(response, component_name))
     # Calculate daily cost factors from absolute usage totals)
     result = _calculate_daily_cost_factors(result, hub_name=hub_name)
@@ -111,9 +107,9 @@ def query_usage(
 
 
 def _process_response(
-    response: requests.Response,
+    response: dict,
     component_name: str,
-) -> dict:
+) -> list[dict]:
     """
     Process the response from the Prometheus server to extract absolute usage data.
 
@@ -256,7 +252,8 @@ def _calculate_daily_cost_factors(
 
 
 @ttl_lru_cache(seconds_to_live=3600)
-def query_user_groups(
+async def query_user_groups(
+    client: aiohttp.ClientSession,
     hub_name: str | None = None,
     user_name: str | None = None,
     group_name: str | None = None,
@@ -266,17 +263,13 @@ def query_user_groups(
     """
     now_date = get_now_date() - timedelta(days=1)
     date_range = DateRange(start_date=now_date, end_date=now_date)
-    try:
-        response = query_prometheus(USER_GROUP_INFO, date_range, step="1d")
-    except requests.exceptions.RequestException as e:
-        logger.exception(f"HTTP request failed: {e}")
-        raise
+    response = await query_prometheus(client, USER_GROUP_INFO, date_range, step="1d")
     result = _process_user_groups(response, hub_name, user_name, group_name)
     return result
 
 
 def _process_user_groups(
-    response: requests.Response,
+    response: dict,
     hub_name: str | None = None,
     user_name: str | None = None,
     group_name: str | None = None,
@@ -306,16 +299,13 @@ def _process_user_groups(
 
 
 @ttl_lru_cache(seconds_to_live=3600)
-def query_users_with_multiple_groups(
+async def query_users_with_multiple_groups(
+    client: aiohttp.ClientSession,
     date_range: DateRange,
     hub_name: str | None = None,
     user_name: str | None = None,
 ) -> list[dict]:
-    try:
-        response = query_user_groups(hub_name=hub_name, user_name=user_name)
-    except requests.exceptions.RequestException as e:
-        logger.exception(f"HTTP request failed: {e}")
-        raise
+    response = await query_user_groups(client, hub_name=hub_name, user_name=user_name)
     grouped = defaultdict(
         lambda: {"username": None, "hub": None, "usergroups": [], "has_multiple": False}
     )
@@ -340,16 +330,13 @@ def query_users_with_multiple_groups(
 
 
 @ttl_lru_cache(seconds_to_live=3600)
-def query_users_with_no_groups(
+async def query_users_with_no_groups(
+    client: aiohttp.ClientSession,
     date_range: DateRange,
     hub_name: str | None = None,
     user_name: str | None = None,
 ) -> list[dict]:
-    try:
-        response = query_user_groups(hub_name=hub_name, user_name=user_name)
-    except requests.exceptions.RequestException as e:
-        logger.exception(f"HTTP request failed: {e}")
-        raise
+    response = await query_user_groups(client, hub_name=hub_name, user_name=user_name)
     grouped = defaultdict(lambda: {"username": None, "hub": None})
     for entry in response:
         key = (entry["username"], entry["hub"])

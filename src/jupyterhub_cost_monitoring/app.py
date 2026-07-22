@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+import aiohttp
 import requests
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import Response
@@ -27,6 +28,7 @@ from .query_usage import (
 app = FastAPI()
 app.add_middleware(MetricsMiddleware)
 logger = get_logger(__name__)
+client_session = aiohttp.ClientSession()
 
 
 @app.get("/")
@@ -256,7 +258,7 @@ def total_costs_per_group(
 
 
 @app.get("/costs-per-user")
-def costs_per_user(
+async def costs_per_user(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
     ),
@@ -315,22 +317,16 @@ def costs_per_user(
     # Get per-user costs by combining AWS costs with Prometheus usage data
     results = []
     for ug in usergroup:
-        try:
-            per_user_costs = query_total_costs_per_user(
-                date_range, hub, component, user, ug, limit
-            )
-        except requests.exceptions.HTTPError as e:
-            response = e.response
-            raise HTTPException(status_code=response.status_code, detail=response.text)
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"{e}")
+        per_user_costs = await query_total_costs_per_user(
+            client_session, date_range, hub, component, user, ug, limit
+        )
         results.extend(per_user_costs)
 
     return results
 
 
 @app.get("/total-usage")
-def total_usage(
+async def total_usage(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
     ),
@@ -359,7 +355,7 @@ def total_usage(
         user = None
 
     try:
-        return query_usage(date_range, hub, component, user)
+        return await query_usage(client_session, date_range, hub, component, user)
     except requests.exceptions.HTTPError as e:
         response = e.response
         raise HTTPException(status_code=response.status_code, detail=response.text)

@@ -31,3 +31,6 @@ escapism = { git = "https://github.com/jupyterhub/escapism", tag = "1.0.1" }
 [pytest]
 log_cli = true
 log_cli_level = "INFO"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

@@ -3,6 +3,7 @@ import os
 from datetime import datetime, timezone
 from unittest.mock import patch
 
+import aiohttp
 import boto3
 import pytest
 from botocore.stub import Stubber
@@ -12,6 +13,12 @@ os.environ["CLUSTER_NAME"] = "test-cluster"
 from src.jupyterhub_cost_monitoring.query_usage import _calculate_daily_cost_factors
 
 # Usage and cost data fixtures for test_cost.py
+
+
+@pytest.fixture(scope="session")
+async def client_session():
+    async with aiohttp.ClientSession() as client:
+        yield client
 
 
 @pytest.fixture(scope="function")
