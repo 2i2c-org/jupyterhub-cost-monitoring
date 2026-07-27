@@ -287,19 +287,7 @@ class Prometheus(LoggingConfigurable):
         except requests.exceptions.RequestException as e:
             self.log.exception(f"HTTP request failed: {e}")
             raise
-        result = self._process_user_groups(response, hub_name, user_name, group_name)
-        return result
 
-    def _process_user_groups(
-        self,
-        response: requests.Response,
-        hub_name: str | None = None,
-        user_name: str | None = None,
-        group_name: str | None = None,
-    ) -> list[dict]:
-        """
-        Process the response from the Prometheus server to extract user group information. Note that only the most recent date of user group membership is used.
-        """
         result = []
         unique_keys = set()
         for data in response["data"]["result"]:

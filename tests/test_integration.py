@@ -1,7 +1,10 @@
+import json
 import logging
 from collections import defaultdict
+from datetime import timedelta
 
 import pytest
+from pytest_httpserver import HTTPServer
 
 from src.jupyterhub_cost_monitoring.const_cost_aws import (
     GRANULARITY_DAILY,
@@ -11,6 +14,7 @@ from src.jupyterhub_cost_monitoring.date_utils import parse_from_to_in_query_par
 from src.jupyterhub_cost_monitoring.query_cost_aws import (
     query_total_costs_per_component,
 )
+from jupyterhub_cost_monitoring.prometheus import Prometheus
 
 logger = logging.getLogger(__name__)
 
@@ -37,19 +41,40 @@ def test_get_usage_data(mock_prometheus_usage, env_vars):
         assert len(response) > 0
 
 
-def test_get_user_group_info(mock_prometheus_user_group_info, env_vars):
+def test_get_user_group_info(httpserver: HTTPServer):
     """
     Test mocked Prometheus user group info json data retrieval.
     """
-    from src.jupyterhub_cost_monitoring.query_usage import query_user_groups
 
-    response = query_user_groups(
+    prometheus = Prometheus()
+    prometheus.host = httpserver.host
+    prometheus.port = httpserver.port
+
+    now_date = get_now_date() - timedelta(days=1)
+
+    date_range = DateRange(start_date=now_date, end_date=now_date)
+    start, end = date_range.prometheus_range
+
+    with open("tests/data/prometheus-groups.json") as f:
+        httpserver.expect_request(
+            "/api/v1/query_range",
+            query_string={
+                "query": USER_GROUP_INFO,
+                "start": start,
+                "end": end,
+                "step": "1d",
+            },
+        ).respond_with_data(f.read())
+
+    response = prometheus.query_user_groups(
         hub_name=None,
         user_name=None,
         group_name=None,
     )
-    logger.info(f"User group info: {response}")
-    assert len(response) > 0
+
+    with open("tests/data/test_output_user_group_info.json") as f:
+        expected_response = json.load(f)
+        assert expected_response == response
 
 
 def test_get_cost_component_data(mock_ce, env_vars):
