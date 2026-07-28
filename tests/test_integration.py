@@ -2,17 +2,21 @@ import json
 import logging
 from collections import defaultdict
 from datetime import timedelta
+from pathlib import Path
+from typing import TypedDict
 
 import pytest
 from pytest_httpserver import HTTPServer
 
-from src.jupyterhub_cost_monitoring.const_cost_aws import (
+from jupyterhub_cost_monitoring.const_cost_aws import (
     GRANULARITY_DAILY,
     METRICS_UNBLENDED_COST,
 )
-from src.jupyterhub_cost_monitoring.date_utils import parse_from_to_in_query_params
-from src.jupyterhub_cost_monitoring.query_cost_aws import (
-    query_total_costs_per_component,
+from jupyterhub_cost_monitoring.const_usage import USAGE_MAP, USER_GROUP_INFO
+from jupyterhub_cost_monitoring.date_utils import (
+    DateRange,
+    get_now_date,
+    parse_from_to_in_query_params,
 )
 from jupyterhub_cost_monitoring.prometheus import Prometheus
 
@@ -21,24 +25,31 @@ logger = logging.getLogger(__name__)
 date_range = parse_from_to_in_query_params("2025-09-01", "2025-09-02")
 
 
-@pytest.mark.parametrize(
-    "mock_prometheus_usage", [["compute", "home_storage"]], indirect=True
+MockedQueryResponse = TypedDict(
+    "MockedQueryResponse",
+    {"query": str, "start": str, "end": str, "step": str, "response": str | Path},
 )
-def test_get_usage_data(mock_prometheus_usage, env_vars):
-    """
-    Test mocked Prometheus compute and home storage json data retrieval.
-    """
-    from src.jupyterhub_cost_monitoring.query_usage import query_usage
 
-    for component_name in ["compute", "home_storage"]:
-        response = query_usage(
-            date_range,
-            hub_name=None,
-            component_name=component_name,
-            user_name=None,
-        )
-        logger.info(f"{component_name} usage shares: {response}")
-        assert len(response) > 0
+
+def mock_prometheus_queries(
+    httpserver: HTTPServer, query_responses: list[MockedQueryResponse]
+):
+    for query_response in query_responses:
+        if isinstance(query_response["response"], Path):
+            with open(query_response["response"]) as f:
+                response = f.read()
+        else:
+            response = query_response["response"]
+
+        httpserver.expect_request(
+            "/api/v1/query_range",
+            query_string={
+                "query": query_response["query"],
+                "start": query_response["start"],
+                "end": query_response["end"],
+                "step": query_response["step"],
+            },
+        ).respond_with_data(response)
 
 
 def test_get_user_group_info(httpserver: HTTPServer):
@@ -55,16 +66,18 @@ def test_get_user_group_info(httpserver: HTTPServer):
     date_range = DateRange(start_date=now_date, end_date=now_date)
     start, end = date_range.prometheus_range
 
-    with open("tests/data/prometheus-groups.json") as f:
-        httpserver.expect_request(
-            "/api/v1/query_range",
-            query_string={
+    mock_prometheus_queries(
+        httpserver,
+        [
+            {
                 "query": USER_GROUP_INFO,
                 "start": start,
                 "end": end,
                 "step": "1d",
-            },
-        ).respond_with_data(f.read())
+                "response": Path("tests/data/prometheus-groups.json"),
+            }
+        ],
+    )
 
     response = prometheus.query_user_groups(
         hub_name=None,
@@ -75,6 +88,43 @@ def test_get_user_group_info(httpserver: HTTPServer):
     with open("tests/data/test_output_user_group_info.json") as f:
         expected_response = json.load(f)
         assert expected_response == response
+
+
+def test_get_usage_data(httpserver: HTTPServer):
+    prometheus = Prometheus()
+
+    prometheus.host = httpserver.host
+    prometheus.port = httpserver.port
+
+    now_date = get_now_date() - timedelta(days=1)
+
+    date_range = DateRange(start_date=now_date, end_date=now_date)
+    start, end = date_range.prometheus_range
+    mock_prometheus_queries(
+        httpserver,
+        [
+            {
+                "query": USAGE_MAP[component]["query"],
+                "start": start,
+                "end": end,
+                "step": USAGE_MAP[component]["step"],
+                "response": Path(
+                    f"tests/data/prometheus-responses/{component.replace(' ', '-')}-usage.json"
+                ),
+            }
+            for component in ["compute", "home storage"]
+        ],
+    )
+    response = prometheus.query_usage(
+        date_range,
+        hub_name=None,
+        component_name=None,
+        user_name=None,
+    )
+
+    with open("tests/data/test_get_usage_data_output.json") as f:
+        expected_data = json.load(f)
+        assert expected_data == response
 
 
 def test_get_cost_component_data(mock_ce, env_vars):
