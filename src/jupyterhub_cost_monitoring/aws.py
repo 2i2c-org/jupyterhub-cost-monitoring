@@ -8,7 +8,7 @@ from pprint import pformat
 
 import boto3
 import requests
-from traitlets import Instance
+from traitlets import Dict, Instance, Unicode
 from traitlets.config import LoggingConfigurable
 
 from .cache import ttl_lru_cache
@@ -43,15 +43,25 @@ class AWSCostExplorer(LoggingConfigurable):
         klass=Prometheus,
     )
 
+    aws_client_extra_kwargs = Dict(
+        Unicode(),
+        help="""
+        Extra arguments to be passed to the AWS Client that talks to the Cost Explorer
+        """,
+        config=True,
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.aws_ce_client = boto3.client("ce")
+        self.aws_ce_client = boto3.client("ce", **self.aws_client_extra_kwargs)
 
-    def query(self, metrics, granularity, from_date, to_date, filter, group_by):
+    def query(self, metrics, granularity, date_range: DateRange, filter, group_by):
         """
         Function meant to be responsible for making the API call and handling
         pagination etc. Currently pagination isn't handled.
         """
+        from_date, to_date = date_range.aws_range
+
         # ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce/client/get_cost_and_usage.html#get-cost-and-usage
         response = self.aws_ce_client.get_cost_and_usage(
             Metrics=metrics,
@@ -93,73 +103,14 @@ class AWSCostExplorer(LoggingConfigurable):
         hub_names = [t or "support" for t in response["Tags"]]
         return hub_names
 
-    @ttl_lru_cache(seconds_to_live=3600)
-    def query_total_costs(self, date_range: DateRange):
-        """
-        Query total costs from AWS Cost Explorer for the given date range.
-
-        Reports both the total AWS account cost and the total attributable cost.
-        Not all costs will be successfully attributed, such as the cost of accessing
-        the AWS Cost Explorer API - its not something that can be attributed based
-        on a tag.
-
-        Args:
-            date_range: DateRange object containing the time period for the query
-
-        Returns:
-            List of cost entries with 'date', 'cost', and 'name' fields, sorted by date
-        """
-        total_account_costs = self._query_total_costs(
-            date_range, add_attributable_costs_filter=False
-        )
-        total_attributable_costs = self._query_total_costs(
-            date_range, add_attributable_costs_filter=True
-        )
-
-        processed_response = total_account_costs + total_attributable_costs
-
-        # the infinity plugin appears needs us to sort by date, otherwise it fails
-        # to distinguish time series by the name field for some reason
-        processed_response = sorted(processed_response, key=lambda x: x["date"])
-
-        return processed_response
-
-    @ttl_lru_cache(seconds_to_live=3600)
-    def _query_total_costs(self, date_range: DateRange, add_attributable_costs_filter):
-        """
-        Internal function to query total costs from AWS Cost Explorer.
-
-        Can query either the total account costs or only the attributable costs
-        based on the add_attributable_costs_filter parameter.
-
-        Args:
-            date_range: DateRange object containing the time period for the query
-            add_attributable_costs_filter: If True, only include attributable costs
-
-        Returns:
-            List of cost entries with 'date', 'cost', and 'name' fields
-        """
-        if add_attributable_costs_filter:
-            name = "attributable"
-            filter = {
-                "And": [
-                    FILTER_USAGE_COSTS,
-                    FILTER_ATTRIBUTABLE_COSTS,
-                ]
-            }
-        else:
-            name = "account"
-            filter = FILTER_USAGE_COSTS
-
-        # Use AWS-formatted dates (exclusive end date) for Cost Explorer API
+    def query_account_costs(self, date_range: DateRange):
         from_date, to_date = date_range.aws_range
 
         response = self.query(
             metrics=[METRICS_UNBLENDED_COST],
             granularity=GRANULARITY_DAILY,
-            from_date=from_date,
-            to_date=to_date,
-            filter=filter,
+            date_range=date_range,
+            filter=FILTER_USAGE_COSTS,
             group_by=[],
         )
 
@@ -167,10 +118,36 @@ class AWSCostExplorer(LoggingConfigurable):
             {
                 "date": e["TimePeriod"]["Start"],
                 "cost": f"{float(e['Total']['UnblendedCost']['Amount']):.2f}",
-                "name": name,
+                "name": "account",
             }
             for e in response["ResultsByTime"]
         ]
+
+        return processed_response
+
+    def query_attributable_costs(self, date_range: DateRange):
+        response = self.query(
+            metrics=[METRICS_UNBLENDED_COST],
+            granularity=GRANULARITY_DAILY,
+            date_range=date_range,
+            filter={
+                "And": [
+                    FILTER_USAGE_COSTS,
+                    FILTER_ATTRIBUTABLE_COSTS,
+                ]
+            },
+            group_by=[],
+        )
+
+        processed_response = [
+            {
+                "date": e["TimePeriod"]["Start"],
+                "cost": f"{float(e['Total']['UnblendedCost']['Amount']):.2f}",
+                "name": "account",
+            }
+            for e in response["ResultsByTime"]
+        ]
+
         return processed_response
 
     @ttl_lru_cache(seconds_to_live=3600)

@@ -80,7 +80,15 @@ def total_costs(
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
     try:
-        return aws_ce.query_total_costs(date_range)
+        account_costs = aws_ce.query_account_costs(date_range)
+        attributable_costs = aws_ce.query_attributable_costs(date_range)
+
+        # the infinity plugin appears needs us to sort by date, otherwise it fails
+        # to distinguish time series by the name field for some reason
+        sorted_response = sorted(
+            account_costs + attributable_costs, key=lambda x: x["date"]
+        )
+        return sorted_response
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
 
