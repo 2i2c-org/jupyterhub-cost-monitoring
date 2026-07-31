@@ -75,5 +75,4 @@ networkPolicy:
 #
 prometheusAuth:
   enabled: false
-  username: ""
-  password: ""
+  envFromSecret: ""

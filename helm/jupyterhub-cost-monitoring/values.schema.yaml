@@ -172,8 +172,16 @@ prometheusAuth:
   properties:
     enabled:
       type: boolean
-    username:
-      type: string
-    password:
+    envFromSecret:
       type: string
   required: [enabled]
+  # If enabled, then make envFromSecret mandatory
+  anyOf:
+  - properties:
+      enabled:
+        const: true
+    required:
+      - envFromSecret
+  - properties:
+      enabled:
+        const: false
