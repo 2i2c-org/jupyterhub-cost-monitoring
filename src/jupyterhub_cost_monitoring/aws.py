@@ -143,7 +143,7 @@ class AWSCostExplorer(LoggingConfigurable):
             {
                 "date": e["TimePeriod"]["Start"],
                 "cost": f"{float(e['Total']['UnblendedCost']['Amount']):.2f}",
-                "name": "account",
+                "name": "attributable",
             }
             for e in response["ResultsByTime"]
         ]
