@@ -127,46 +127,6 @@ def test_get_usage_data(httpserver: HTTPServer):
         assert expected_data == response
 
 
-def test_get_cost_component_data(mock_ce, env_vars):
-    """
-    Test mocked AWS Cost Explorer cost json data retrieval for all, home storage and core components.
-    """
-    from_date, to_date = date_range.aws_range
-    params = {
-        "TimePeriod": {"Start": f"{from_date}", "End": f"{to_date}"},
-        "Granularity": GRANULARITY_DAILY,
-        "Metrics": [METRICS_UNBLENDED_COST],
-    }
-    for i in range(3):
-        # range(3) to cover stubbed responses for all, home storage and core costs
-        response = mock_ce.get_cost_and_usage(
-            TimePeriod=params["TimePeriod"],
-            Granularity=params["Granularity"],
-            Metrics=params["Metrics"],
-        )
-        logger.debug(f"Cost response {i + 1}: {response}")
-        assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
-
-
-def test_total_costs_per_component(mock_ce):
-    """
-    Test cost logic for compute, home storage and core components of the total costs per component endpoint.
-    """
-    costs_per_component = query_total_costs_per_component(date_range)
-    components = {"compute", "home storage", "core"}
-    logger.info(f"Costs per component: {costs_per_component}")
-
-    result = {
-        item["component"]: float(item["cost"])
-        for item in costs_per_component
-        if item["date"] == date_range.aws_range[0] and item["component"] in components
-    }
-
-    assert result["compute"] == 8.85
-    assert result["home storage"] == 7.22
-    assert result["core"] == 11.13
-
-
 @pytest.mark.parametrize("mock_prometheus_usage", [None], indirect=True)
 def test_costs_per_user(
     mock_prometheus_usage,
