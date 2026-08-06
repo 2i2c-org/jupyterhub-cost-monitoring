@@ -532,15 +532,12 @@ class AWSCostExplorer(LoggingConfigurable):
         # Get user usage percentages from Prometheus using the same DateRange object
         # This ensures we query the same logical date range for both AWS and Prometheus,
         # accounting for their different date range semantics (exclusive vs inclusive)
-        try:
-            usage_shares = self.prometheus.query_usage(
-                date_range,
-                hub_name=hub,
-                component_name=component,
-                user_name=user,
-            )
-        except requests.exceptions.ConnectionError:
-            raise
+        usage_shares = self.prometheus.query_usage(
+            date_range,
+            hub_name=hub,
+            component_name=component,
+            user_name=user,
+        )
         results = []
         for entry in usage_shares:
             d = entry["date"]
@@ -618,11 +615,7 @@ class AWSCostExplorer(LoggingConfigurable):
         Returns:
             List of dicts with keys: date, usergroup and cost.
         """
-        try:
-            results = self.query_total_costs_per_user(date_range=date_range)
-        except Exception as e:
-            self.log.exception(f"HTTP request failed: {e}")
-            raise
+        results = self.query_total_costs_per_user(date_range=date_range)
         response = {}
         for r in results:
             key = (r["date"], r["usergroup"])

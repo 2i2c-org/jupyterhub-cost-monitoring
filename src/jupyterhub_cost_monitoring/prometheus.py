@@ -102,23 +102,17 @@ class Prometheus(LoggingConfigurable):
         if component_name is None:
             # Query all components defined in USAGE_MAP
             for component, params in USAGE_MAP.items():
-                try:
-                    response = self.query(
-                        params["query"], date_range, step=params["step"]
-                    )
-                except requests.exceptions.RequestException:
-                    raise
+                response = self.query(
+                    params["query"], date_range, step=params["step"]
+                )
                 result.extend(self._process_response(response, component))
         else:
             # Query specific component only
-            try:
-                response = self.query(
-                    USAGE_MAP[component_name]["query"],
-                    date_range,
-                    step=USAGE_MAP[component_name]["step"],
-                )
-            except requests.exceptions.RequestException:
-                raise
+            response = self.query(
+                USAGE_MAP[component_name]["query"],
+                date_range,
+                step=USAGE_MAP[component_name]["step"],
+            )
             result.extend(self._process_response(response, component_name))
         # Calculate daily cost factors from absolute usage totals)
         result = self._calculate_daily_cost_factors(result, hub_name=hub_name)
@@ -282,11 +276,7 @@ class Prometheus(LoggingConfigurable):
         """
         now_date = get_now_date() - timedelta(days=1)
         date_range = DateRange(start_date=now_date, end_date=now_date)
-        try:
-            response = self.query(USER_GROUP_INFO, date_range, step="1d")
-        except requests.exceptions.RequestException as e:
-            self.log.exception(f"HTTP request failed: {e}")
-            raise
+        response = self.query(USER_GROUP_INFO, date_range, step="1d")
 
         result = []
         unique_keys = set()
@@ -315,11 +305,7 @@ class Prometheus(LoggingConfigurable):
         hub_name: str | None = None,
         user_name: str | None = None,
     ) -> list[dict]:
-        try:
-            response = self.query_user_groups(hub_name=hub_name, user_name=user_name)
-        except requests.exceptions.RequestException as e:
-            self.log.exception(f"HTTP request failed: {e}")
-            raise
+        response = self.query_user_groups(hub_name=hub_name, user_name=user_name)
         grouped = defaultdict(
             lambda: {
                 "username": None,
@@ -354,11 +340,7 @@ class Prometheus(LoggingConfigurable):
         hub_name: str | None = None,
         user_name: str | None = None,
     ) -> list[dict]:
-        try:
-            response = self.query_user_groups(hub_name=hub_name, user_name=user_name)
-        except requests.exceptions.RequestException as e:
-            self.log.exception(f"HTTP request failed: {e}")
-            raise
+        response = self.query_user_groups(hub_name=hub_name, user_name=user_name)
         grouped = defaultdict(lambda: {"username": None, "hub": None})
         for entry in response:
             key = (entry["username"], entry["hub"])
