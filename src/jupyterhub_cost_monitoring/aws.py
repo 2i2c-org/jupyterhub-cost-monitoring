@@ -51,6 +51,14 @@ class AWSCostExplorer(LoggingConfigurable):
         config=True,
     )
 
+    hub_name_tag = Unicode(
+        "2i2c:hub-name",
+        help="""
+        Tag name that associates a cloud resource as belonging to a particular hub
+        """,
+        config=True,
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.aws_ce_client = boto3.client("ce", **self.aws_client_extra_kwargs)
@@ -81,25 +89,18 @@ class AWSCostExplorer(LoggingConfigurable):
 
         return response
 
-    @ttl_lru_cache(seconds_to_live=3600)
     def query_hub_names(self, date_range: DateRange):
         """
-        Query hub names from AWS Cost Explorer within the given date range.
+        Query list of hubs discovered via cost explorer in the date range
 
-        Args:
-            date_range: DateRange object containing the time period for the query
-
-        Returns:
-            List of hub names, with empty/None values converted to "support"
+        Returns list of hub names, with empty/None values converted to "support"
         """
-        # Use AWS-formatted dates (exclusive end date) for Cost Explorer API
         from_date, to_date = date_range.aws_range
 
-        # ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce/client/get_tags.html
         response = self.aws_ce_client.get_tags(
-            TimePeriod={"Start": from_date, "End": to_date},
-            TagKey="2i2c:hub-name",
+            TimePeriod={"Start": from_date, "End": to_date}, TagKey=self.hub_name_tag
         )
+        # FIXME: Understand why none responses are marked as "support"
         hub_names = [t or "support" for t in response["Tags"]]
         return hub_names
 
@@ -272,7 +273,7 @@ class AWSCostExplorer(LoggingConfigurable):
             filter_dict["And"].append(
                 {
                     "Tags": {
-                        "Key": "2i2c:hub-name",
+                        "Key": self.hub_name_tag,
                         "MatchOptions": ["ABSENT"],
                     },
                 }
@@ -281,7 +282,7 @@ class AWSCostExplorer(LoggingConfigurable):
             filter_dict["And"].append(
                 {
                     "Tags": {
-                        "Key": "2i2c:hub-name",
+                        "Key": self.hub_name_tag,
                         "Values": [hub_name],
                         "MatchOptions": ["EQUALS"],
                     },
