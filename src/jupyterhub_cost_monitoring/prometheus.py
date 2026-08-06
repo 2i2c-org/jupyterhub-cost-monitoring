@@ -102,9 +102,7 @@ class Prometheus(LoggingConfigurable):
         if component_name is None:
             # Query all components defined in USAGE_MAP
             for component, params in USAGE_MAP.items():
-                response = self.query(
-                    params["query"], date_range, step=params["step"]
-                )
+                response = self.query(params["query"], date_range, step=params["step"])
                 result.extend(self._process_response(response, component))
         else:
             # Query specific component only

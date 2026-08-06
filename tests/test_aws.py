@@ -1,8 +1,8 @@
 import json
 from datetime import datetime
 from pathlib import Path
-
 from typing import List
+
 import pytest
 from pytest_httpserver import HTTPServer
 
@@ -32,7 +32,9 @@ def setup_mock_ce(httpserver: HTTPServer, responses: Path | List[Path]):
 
     for path in paths:
         with open(path) as f:
-            httpserver.expect_ordered_request("/", method="POST").respond_with_data(f.read())
+            httpserver.expect_ordered_request("/", method="POST").respond_with_data(
+                f.read()
+            )
 
     return ce
 
@@ -85,13 +87,23 @@ def test_query_total_costs_per_hub(httpserver: HTTPServer, aws_date_range: DateR
         assert per_hub_costs == json.load(f)
 
 
-def test_query_total_costs_per_component(httpserver: HTTPServer, aws_date_range: DateRange):
-    ce = setup_mock_ce(httpserver,
-    [
-        Path("tests/data/fixtures/aws-ce/test_query_total_costs_per_component-input_by_service.json"),
-        Path("tests/data/fixtures/aws-ce/test_query_total_costs_per_component-input_homedir.json"),
-        Path("tests/data/fixtures/aws-ce/test_query_total_costs_per_component-input_core.json")
-    ])
+def test_query_total_costs_per_component(
+    httpserver: HTTPServer, aws_date_range: DateRange
+):
+    ce = setup_mock_ce(
+        httpserver,
+        [
+            Path(
+                "tests/data/fixtures/aws-ce/test_query_total_costs_per_component-input_by_service.json"
+            ),
+            Path(
+                "tests/data/fixtures/aws-ce/test_query_total_costs_per_component-input_homedir.json"
+            ),
+            Path(
+                "tests/data/fixtures/aws-ce/test_query_total_costs_per_component-input_core.json"
+            ),
+        ],
+    )
 
     with open(
         "tests/data/fixtures/aws-ce/test_query_total_costs_per_component-output.json"

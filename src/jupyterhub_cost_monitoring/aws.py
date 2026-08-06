@@ -7,7 +7,6 @@ import functools
 from pprint import pformat
 
 import boto3
-import requests
 from traitlets import Dict, Instance, Unicode
 from traitlets.config import LoggingConfigurable
 
