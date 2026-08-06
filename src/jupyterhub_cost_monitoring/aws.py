@@ -164,14 +164,11 @@ class AWSCostExplorer(LoggingConfigurable):
         Returns:
             List of cost entries with 'date', 'cost', and 'name' (hub name) fields
         """
-        # Use AWS-formatted dates (exclusive end date) for Cost Explorer API
-        from_date, to_date = date_range.aws_range
 
         response = self.query(
             metrics=[METRICS_UNBLENDED_COST],
             granularity=GRANULARITY_DAILY,
-            from_date=from_date,
-            to_date=to_date,
+            date_range=date_range,
             filter={
                 "And": [
                     FILTER_USAGE_COSTS,

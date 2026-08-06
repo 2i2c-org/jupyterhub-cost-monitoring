@@ -19,7 +19,7 @@ def setup_mock_ce(httpserver: HTTPServer, response: str | Path):
     aws_endpoint_url = f"http://{httpserver.host}:{httpserver.port}/"
     ce = AWSCostExplorer(
         aws_client_extra_kwargs={
-            "region_name": "test", # does not matter but we must pass it
+            "region_name": "test",  # does not matter but we must pass it
             "endpoint_url": aws_endpoint_url,
         }
     )
@@ -70,7 +70,13 @@ def test_query_hub_names(httpserver: HTTPServer, aws_date_range: DateRange):
 
 
 def test_query_total_costs_per_hub(httpserver: HTTPServer, aws_date_range: DateRange):
-    ce = AWSCostExplorer()
+    ce = setup_mock_ce(
+        httpserver,
+        Path("tests/data/fixtures/aws-ce/test_query_total_costs_per_hub-input.json"),
+    )
 
-    print(ce.query_total_costs_per_hub(aws_date_range))
-    pass
+    per_hub_costs = ce.query_total_costs_per_hub(aws_date_range)
+    with open(
+        "tests/data/fixtures/aws-ce/test_query_total_costs_per_hub-output.json"
+    ) as f:
+        assert per_hub_costs == json.load(f)

@@ -1,0 +1,162 @@
+[
+    {
+        "date": "2026-06-20",
+        "cost": "3.55",
+        "name": "support"
+    },
+    {
+        "date": "2026-06-20",
+        "cost": "0.00",
+        "name": "binder"
+    },
+    {
+        "date": "2026-06-20",
+        "cost": "40.48",
+        "name": "prod"
+    },
+    {
+        "date": "2026-06-20",
+        "cost": "0.08",
+        "name": "staging"
+    },
+    {
+        "date": "2026-06-21",
+        "cost": "3.55",
+        "name": "support"
+    },
+    {
+        "date": "2026-06-21",
+        "cost": "0.00",
+        "name": "binder"
+    },
+    {
+        "date": "2026-06-21",
+        "cost": "42.50",
+        "name": "prod"
+    },
+    {
+        "date": "2026-06-21",
+        "cost": "0.08",
+        "name": "staging"
+    },
+    {
+        "date": "2026-06-22",
+        "cost": "3.55",
+        "name": "support"
+    },
+    {
+        "date": "2026-06-22",
+        "cost": "0.00",
+        "name": "binder"
+    },
+    {
+        "date": "2026-06-22",
+        "cost": "40.22",
+        "name": "prod"
+    },
+    {
+        "date": "2026-06-22",
+        "cost": "0.08",
+        "name": "staging"
+    },
+    {
+        "date": "2026-06-23",
+        "cost": "3.55",
+        "name": "support"
+    },
+    {
+        "date": "2026-06-23",
+        "cost": "0.00",
+        "name": "binder"
+    },
+    {
+        "date": "2026-06-23",
+        "cost": "34.76",
+        "name": "prod"
+    },
+    {
+        "date": "2026-06-23",
+        "cost": "0.08",
+        "name": "staging"
+    },
+    {
+        "date": "2026-06-24",
+        "cost": "4.36",
+        "name": "support"
+    },
+    {
+        "date": "2026-06-24",
+        "cost": "0.00",
+        "name": "binder"
+    },
+    {
+        "date": "2026-06-24",
+        "cost": "36.36",
+        "name": "prod"
+    },
+    {
+        "date": "2026-06-24",
+        "cost": "2.52",
+        "name": "staging"
+    },
+    {
+        "date": "2026-06-25",
+        "cost": "4.23",
+        "name": "support"
+    },
+    {
+        "date": "2026-06-25",
+        "cost": "0.19",
+        "name": "binder"
+    },
+    {
+        "date": "2026-06-25",
+        "cost": "34.53",
+        "name": "prod"
+    },
+    {
+        "date": "2026-06-25",
+        "cost": "1.81",
+        "name": "staging"
+    },
+    {
+        "date": "2026-06-26",
+        "cost": "4.06",
+        "name": "support"
+    },
+    {
+        "date": "2026-06-26",
+        "cost": "0.00",
+        "name": "binder"
+    },
+    {
+        "date": "2026-06-26",
+        "cost": "31.96",
+        "name": "prod"
+    },
+    {
+        "date": "2026-06-26",
+        "cost": "0.53",
+        "name": "staging"
+    },
+    {
+        "date": "2026-06-27",
+        "cost": "3.76",
+        "name": "support"
+    },
+    {
+        "date": "2026-06-27",
+        "cost": "0.00",
+        "name": "binder"
+    },
+    {
+        "date": "2026-06-27",
+        "cost": "28.27",
+        "name": "prod"
+    },
+    {
+        "date": "2026-06-27",
+        "cost": "0.08",
+        "name": "staging"
+    }
+]

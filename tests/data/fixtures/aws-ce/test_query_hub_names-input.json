@@ -1,0 +1,23 @@
+{
+    "Tags": [
+        "",
+        "binder",
+        "prod",
+        "staging"
+    ],
+    "ReturnSize": 4,
+    "TotalSize": 4,
+    "ResponseMetadata": {
+        "RequestId": "7162a9a2-32e8-4105-b1b1-b0c49761bfc1",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+            "date": "Thu, 06 Aug 2026 18:48:11 GMT",
+            "content-type": "application/x-amz-json-1.1",
+            "content-length": "68",
+            "connection": "keep-alive",
+            "x-amzn-requestid": "7162a9a2-32e8-4105-b1b1-b0c49761bfc1",
+            "cache-control": "no-cache"
+        },
+        "RetryAttempts": 0
+    }
+}

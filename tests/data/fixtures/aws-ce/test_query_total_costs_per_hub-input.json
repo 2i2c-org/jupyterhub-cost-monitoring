@@ -1,0 +1,456 @@
+{
+    "GroupDefinitions": [
+        {
+            "Type": "TAG",
+            "Key": "2i2c:hub-name"
+        }
+    ],
+    "ResultsByTime": [
+        {
+            "TimePeriod": {
+                "Start": "2026-06-20",
+                "End": "2026-06-21"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "2i2c:hub-name$"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "3.547489858",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$binder"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000084403",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$prod"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "40.4784125662",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$staging"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0838144563",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-21",
+                "End": "2026-06-22"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "2i2c:hub-name$"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "3.5457775726",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$binder"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000084403",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$prod"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "42.4995031107",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$staging"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0838138459",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-22",
+                "End": "2026-06-23"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "2i2c:hub-name$"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "3.5494143463",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$binder"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000084403",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$prod"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "40.2245626515",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$staging"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0837880756",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-23",
+                "End": "2026-06-24"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "2i2c:hub-name$"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "3.5476848621",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$binder"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000092403",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$prod"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "34.7595282858",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$staging"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0837690732",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-24",
+                "End": "2026-06-25"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "2i2c:hub-name$"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "4.364552907",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$binder"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000088416",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$prod"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "36.3631629395",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$staging"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "2.5216780525",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-25",
+                "End": "2026-06-26"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "2i2c:hub-name$"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "4.2282101128",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$binder"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.1852293611",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$prod"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "34.5301573217",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$staging"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "1.8136305062",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-26",
+                "End": "2026-06-27"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "2i2c:hub-name$"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "4.0599069023",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$binder"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000092444",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$prod"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "31.9621564901",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$staging"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.527768202",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-27",
+                "End": "2026-06-28"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "2i2c:hub-name$"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "3.7563223336",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$binder"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000084403",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$prod"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "28.2674259555",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "2i2c:hub-name$staging"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.084627648",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        }
+    ],
+    "DimensionValueAttributes": [],
+    "ResponseMetadata": {
+        "RequestId": "6a3bb4e1-d5a9-45f6-be47-f50f629af363",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+            "date": "Thu, 06 Aug 2026 18:53:06 GMT",
+            "content-type": "application/x-amz-json-1.1",
+            "content-length": "4063",
+            "connection": "keep-alive",
+            "x-amzn-requestid": "6a3bb4e1-d5a9-45f6-be47-f50f629af363",
+            "cache-control": "no-cache"
+        },
+        "RetryAttempts": 0
+    }
+}
