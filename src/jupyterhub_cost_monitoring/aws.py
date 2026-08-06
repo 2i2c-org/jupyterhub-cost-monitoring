@@ -104,8 +104,6 @@ class AWSCostExplorer(LoggingConfigurable):
         return hub_names
 
     def query_account_costs(self, date_range: DateRange):
-        from_date, to_date = date_range.aws_range
-
         response = self.query(
             metrics=[METRICS_UNBLENDED_COST],
             granularity=GRANULARITY_DAILY,
@@ -379,14 +377,10 @@ class AWSCostExplorer(LoggingConfigurable):
         base_filter = self._create_base_filter()
         self._add_hub_filter(base_filter, hub_name)
 
-        # Use AWS-formatted dates (exclusive end date) for Cost Explorer API
-        from_date, to_date = date_range.aws_range
-
         response = self.query(
             metrics=[METRICS_UNBLENDED_COST],
             granularity=GRANULARITY_DAILY,
-            from_date=from_date,
-            to_date=to_date,
+            date_range=date_range,
             filter=base_filter,
             group_by=[GROUP_BY_SERVICE_DIMENSION],
         )
@@ -447,8 +441,7 @@ class AWSCostExplorer(LoggingConfigurable):
         home_storage_ebs_cost_response = self.query(
             metrics=[METRICS_UNBLENDED_COST],
             granularity=GRANULARITY_DAILY,
-            from_date=from_date,
-            to_date=to_date,
+            date_range=date_range,
             filter=home_storage_filter,
             group_by=[GROUP_BY_SERVICE_DIMENSION],
         )
@@ -471,8 +464,7 @@ class AWSCostExplorer(LoggingConfigurable):
         core_cost_response = self.query(
             metrics=[METRICS_UNBLENDED_COST],
             granularity=GRANULARITY_DAILY,
-            from_date=from_date,
-            to_date=to_date,
+            date_range=date_range,
             filter=core_cost_filter,
             group_by=[GROUP_BY_SERVICE_DIMENSION],
         )
