@@ -18,7 +18,6 @@ from .const_cost_aws import (
     FILTER_HOME_STORAGE_COSTS,
     FILTER_USAGE_COSTS,
     GRANULARITY_DAILY,
-    GROUP_BY_HUB_TAG,
     GROUP_BY_SERVICE_DIMENSION,
     METRICS_UNBLENDED_COST,
     SERVICE_COMPONENT_MAP,
@@ -176,7 +175,10 @@ class AWSCostExplorer(LoggingConfigurable):
                 ]
             },
             group_by=[
-                GROUP_BY_HUB_TAG,
+                {
+                    "Type": "TAG",
+                    "Key": self.hub_name_tag
+                }
             ],
         )
 

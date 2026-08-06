@@ -99,11 +99,6 @@ FILTER_ATTRIBUTABLE_COSTS = {
     ]
 }
 
-GROUP_BY_HUB_TAG = {
-    "Type": "TAG",
-    "Key": "2i2c:hub-name",
-}
-
 GROUP_BY_SERVICE_DIMENSION = {
     "Type": "DIMENSION",
     "Key": "SERVICE",
