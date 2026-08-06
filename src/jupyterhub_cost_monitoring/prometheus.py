@@ -43,7 +43,7 @@ class Prometheus(LoggingConfigurable):
         config=True,
     )
 
-    def query(self, query: str, date_range: DateRange, step: str) -> requests.Response:
+    def query(self, query: str, date_range: DateRange, step: str):
         """
         Query the Prometheus server with the given query over a date range.
 
