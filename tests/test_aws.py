@@ -39,9 +39,13 @@ def test_query_attributable_cost(httpserver: HTTPServer, aws_date_range: DateRan
         }
     )
 
-    with open("tests/data/fixtures/aws-ce/test_query_attributable_cost-input.json") as f:
+    with open(
+        "tests/data/fixtures/aws-ce/test_query_attributable_cost-input.json"
+    ) as f:
         httpserver.expect_request("/", method="POST").respond_with_data(f.read())
 
     account_costs = ce.query_attributable_costs(aws_date_range)
-    with open("tests/data/fixtures/aws-ce/test_query_attributable_cost-output.json") as f:
+    with open(
+        "tests/data/fixtures/aws-ce/test_query_attributable_cost-output.json"
+    ) as f:
         assert account_costs == json.load(f)
