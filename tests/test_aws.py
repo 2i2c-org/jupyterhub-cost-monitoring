@@ -109,3 +109,28 @@ def test_query_total_costs_per_component(
         "tests/data/fixtures/aws-ce/test_query_total_costs_per_component-output.json"
     ) as f:
         assert ce.query_total_costs_per_component(aws_date_range) == json.load(f)
+
+
+def test_query_total_costs_per_component_per_hub(
+    httpserver: HTTPServer, aws_date_range: DateRange
+):
+    ce = setup_mock_ce(
+        httpserver,
+        [
+            Path(
+                "tests/data/fixtures/aws-ce/test_query_total_costs_per_component_per_hub-input_by_service.json"
+            ),
+            Path(
+                "tests/data/fixtures/aws-ce/test_query_total_costs_per_component_per_hub-input_homedir.json"
+            ),
+            Path(
+                "tests/data/fixtures/aws-ce/test_query_total_costs_per_component_per_hub-input_core.json"
+            ),
+        ],
+    )
+
+
+    with open(
+        "tests/data/fixtures/aws-ce/test_query_total_costs_per_component_per_hub-output.json"
+    ) as f:
+        assert ce.query_total_costs_per_component(aws_date_range, hub_name="prod") == json.load(f)
