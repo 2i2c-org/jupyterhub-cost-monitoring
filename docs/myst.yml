@@ -16,6 +16,7 @@ project:
     - file: how-to/dashboard.md
   - title: Topics
     children:
+    - file: topics/concepts.md
     - file: topics/architecture.md
     - file: topics/components.md
     - file: topics/cost-calculations.md
