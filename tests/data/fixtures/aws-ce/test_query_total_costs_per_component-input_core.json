@@ -1,0 +1,280 @@
+{
+    "GroupDefinitions": [
+        {
+            "Type": "DIMENSION",
+            "Key": "SERVICE"
+        }
+    ],
+    "ResultsByTime": [
+        {
+            "TimePeriod": {
+                "Start": "2026-06-20",
+                "End": "2026-06-21"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.260055073",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "3.167434785",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-21",
+                "End": "2026-06-22"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.2583442831",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "3.1674332895",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-22",
+                "End": "2026-06-23"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.261980043",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "3.1674343033",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-23",
+                "End": "2026-06-24"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.2602493855",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "3.1674354766",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-24",
+                "End": "2026-06-25"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.2670594457",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "3.1673956887",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-25",
+                "End": "2026-06-26"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.2714363248",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "3.1673973816",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-26",
+                "End": "2026-06-27"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.2636616848",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "3.1673919658",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-27",
+                "End": "2026-06-28"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.2576030922",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "3.1673902038",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        }
+    ],
+    "DimensionValueAttributes": [],
+    "ResponseMetadata": {
+        "RequestId": "0db86e62-0213-41b2-906d-9d43e7bc269d",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+            "date": "Thu, 06 Aug 2026 19:55:37 GMT",
+            "content-type": "application/x-amz-json-1.1",
+            "content-length": "2568",
+            "connection": "keep-alive",
+            "x-amzn-requestid": "0db86e62-0213-41b2-906d-9d43e7bc269d",
+            "cache-control": "no-cache"
+        },
+        "RetryAttempts": 0
+    }
+}

@@ -252,7 +252,7 @@ class AWSCostExplorer(LoggingConfigurable):
                         f"Added new home storage entry for {date}: {home_storage_cost:.2f}"
                     )
 
-    def _add_hub_filter(self, filter_dict: dict, hub_name: str = None) -> None:
+    def _add_hub_filter(self, filter_dict: dict, hub_name: str | None = None) -> None:
         """
         Add hub-specific filtering to a given filter dictionary.
 
@@ -357,8 +357,8 @@ class AWSCostExplorer(LoggingConfigurable):
     def query_total_costs_per_component(
         self,
         date_range: DateRange,
-        hub_name: str = None,
-        component: str = None,
+        hub_name: str | None = None,
+        component: str | None = None,
     ):
         """
         Query total costs per component from AWS Cost Explorer for the given date range.
