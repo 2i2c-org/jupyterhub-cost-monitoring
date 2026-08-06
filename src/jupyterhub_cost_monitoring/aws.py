@@ -174,12 +174,7 @@ class AWSCostExplorer(LoggingConfigurable):
                     FILTER_ATTRIBUTABLE_COSTS,
                 ]
             },
-            group_by=[
-                {
-                    "Type": "TAG",
-                    "Key": self.hub_name_tag
-                }
-            ],
+            group_by=[{"Type": "TAG", "Key": self.hub_name_tag}],
         )
 
         processed_response = []
