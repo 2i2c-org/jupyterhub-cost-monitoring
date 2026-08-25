@@ -265,6 +265,7 @@ class Prometheus(LoggingConfigurable):
     @ttl_lru_cache(seconds_to_live=3600)
     def query_user_groups(
         self,
+        date_range: DateRange,
         hub_name: str | None = None,
         user_name: str | None = None,
         group_name: str | None = None,
@@ -272,8 +273,6 @@ class Prometheus(LoggingConfigurable):
         """
         Get user group information from the Prometheus server for the most recent day.
         """
-        now_date = get_now_date() - timedelta(days=1)
-        date_range = DateRange(start_date=now_date, end_date=now_date)
         response = self.query(USER_GROUP_INFO, date_range, step="1d")
 
         result = []
@@ -303,7 +302,7 @@ class Prometheus(LoggingConfigurable):
         hub_name: str | None = None,
         user_name: str | None = None,
     ) -> list[dict]:
-        response = self.query_user_groups(hub_name=hub_name, user_name=user_name)
+        response = self.query_user_groups(date_range, hub_name=hub_name, user_name=user_name)
         grouped = defaultdict(
             lambda: {
                 "username": None,
