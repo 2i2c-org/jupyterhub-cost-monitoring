@@ -5,9 +5,11 @@ from pytest_httpserver import HTTPServer
 from traitlets.config import Application
 
 from jupyterhub_cost_monitoring.aws import AWSCostExplorer
+from jupyterhub_cost_monitoring.const_usage import USAGE_MAP, USER_GROUP_INFO
 from jupyterhub_cost_monitoring.date_utils import DateRange
+from jupyterhub_cost_monitoring.prometheus import Prometheus
 
-from .utils import setup_mock_ce
+from .utils import mock_prometheus_queries, setup_mock_ce
 
 
 def test_query_account_cost(httpserver: HTTPServer, aws_date_range: DateRange):
@@ -100,8 +102,63 @@ def test_query_total_costs_per_component_per_hub(
         ],
     )
 
-
     with open(
         "tests/data/fixtures/aws-ce/test_query_total_costs_per_component_per_hub-output.json"
     ) as f:
-        assert ce.query_total_costs_per_component(aws_date_range, hub_name="prod") == json.load(f)
+        assert ce.query_total_costs_per_component(
+            aws_date_range, hub_name="prod"
+        ) == json.load(f)
+
+
+def test_query_total_costs_per_user(httpserver: HTTPServer, aws_date_range: DateRange):
+    start, end = aws_date_range.prometheus_range
+
+    prometheus = Prometheus()
+
+    prometheus.host = httpserver.host
+    prometheus.port = httpserver.port
+
+    query_responses = [
+        {
+            "query": USAGE_MAP[component]["query"],
+            "start": start,
+            "end": end,
+            "step": USAGE_MAP[component]["step"],
+            "response": Path(
+                f"tests/data/fixtures/aws-ce/test_query_total_costs_per_user/input/prometheus-{component.replace(' ', '-')}.json"
+            ),
+        }
+        for component in ["compute", "home storage"]
+    ]
+    query_responses.append(
+        {
+            "query": USER_GROUP_INFO,
+            "start": start,
+            "end": end,
+            "step": "1d",
+            "response": Path(
+                "tests/data/fixtures/aws-ce/test_query_total_costs_per_user/input/prometheus-groups.json"
+            ),
+        }
+    )
+    mock_prometheus_queries(httpserver, query_responses)
+
+
+    ce = setup_mock_ce(
+        httpserver,
+        [
+            Path(
+                "tests/data/fixtures/aws-ce/test_query_total_costs_per_user/input/aws-ce-by-service.json"
+            ),
+            Path(
+                "tests/data/fixtures/aws-ce/test_query_total_costs_per_user/input/aws-ce-homedir.json"
+            ),
+            Path(
+                "tests/data/fixtures/aws-ce/test_query_total_costs_per_user/input/aws-ce-core.json"
+            ),
+        ],
+    )
+
+    ce.prometheus = prometheus
+    with open("tests/data/fixtures/aws-ce/test_query_total_costs_per_user/output.json") as f:
+        assert json.load(f) == ce.query_total_costs_per_user(aws_date_range)
