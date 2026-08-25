@@ -3,16 +3,12 @@ import logging
 from collections import defaultdict
 from datetime import timedelta
 from pathlib import Path
-from typing import TypedDict
 
 import pytest
 from pytest_httpserver import HTTPServer
+from traitlets.config import Application
 
-from jupyterhub_cost_monitoring.const_cost_aws import (
-    GRANULARITY_DAILY,
-    METRICS_UNBLENDED_COST,
-)
-from jupyterhub_cost_monitoring.const_usage import USAGE_MAP, USER_GROUP_INFO
+from jupyterhub_cost_monitoring.const_usage import USER_GROUP_INFO
 from jupyterhub_cost_monitoring.date_utils import (
     DateRange,
     get_now_date,
@@ -20,36 +16,11 @@ from jupyterhub_cost_monitoring.date_utils import (
 )
 from jupyterhub_cost_monitoring.prometheus import Prometheus
 
+from .utils import mock_prometheus_queries
+
 logger = logging.getLogger(__name__)
 
 date_range = parse_from_to_in_query_params("2025-09-01", "2025-09-02")
-
-
-MockedQueryResponse = TypedDict(
-    "MockedQueryResponse",
-    {"query": str, "start": str, "end": str, "step": str, "response": str | Path},
-)
-
-
-def mock_prometheus_queries(
-    httpserver: HTTPServer, query_responses: list[MockedQueryResponse]
-):
-    for query_response in query_responses:
-        if isinstance(query_response["response"], Path):
-            with open(query_response["response"]) as f:
-                response = f.read()
-        else:
-            response = query_response["response"]
-
-        httpserver.expect_request(
-            "/api/v1/query_range",
-            query_string={
-                "query": query_response["query"],
-                "start": query_response["start"],
-                "end": query_response["end"],
-                "step": query_response["step"],
-            },
-        ).respond_with_data(response)
 
 
 def test_get_user_group_info(httpserver: HTTPServer):
