@@ -7,7 +7,7 @@ import functools
 from pprint import pformat
 
 import boto3
-from traitlets import Dict, Instance, Unicode
+from traitlets import Dict, Instance, Unicode, default
 from traitlets.config import LoggingConfigurable
 
 from .cache import ttl_lru_cache
@@ -40,6 +40,10 @@ class AWSCostExplorer(LoggingConfigurable):
     prometheus = Instance(
         klass=Prometheus,
     )
+
+    @default("prometheus")
+    def _prometheus_default(self):
+        return Prometheus(parent=self)
 
     aws_client_extra_kwargs = Dict(
         Unicode(),
