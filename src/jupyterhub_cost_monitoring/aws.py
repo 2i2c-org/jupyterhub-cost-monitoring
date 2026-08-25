@@ -493,11 +493,11 @@ class AWSCostExplorer(LoggingConfigurable):
     def query_total_costs_per_user(
         self,
         date_range: DateRange,
-        hub: str = None,
-        component: str = None,
-        user: str = None,
-        usergroup: str = None,
-        limit: str = None,
+        hub: str | None = None,
+        component: str | None = None,
+        user: str | None = None,
+        usergroup: str | None = None,
+        limit: int | None = None,
     ):
         """
         Query total costs per user by combining AWS costs with Prometheus usage data.
