@@ -48,6 +48,7 @@ def test_get_user_group_info(httpserver: HTTPServer):
     )
 
     response = prometheus.query_user_groups(
+        date_range,
         hub_name=None,
         user_name=None,
         group_name=None,
