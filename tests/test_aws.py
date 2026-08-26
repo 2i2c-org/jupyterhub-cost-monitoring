@@ -2,9 +2,7 @@ import json
 from pathlib import Path
 
 from pytest_httpserver import HTTPServer
-from traitlets.config import Application
 
-from jupyterhub_cost_monitoring.aws import AWSCostExplorer
 from jupyterhub_cost_monitoring.const_usage import USAGE_MAP, USER_GROUP_INFO
 from jupyterhub_cost_monitoring.date_utils import DateRange
 from jupyterhub_cost_monitoring.prometheus import Prometheus
@@ -143,7 +141,6 @@ def test_query_total_costs_per_user(httpserver: HTTPServer, aws_date_range: Date
     )
     mock_prometheus_queries(httpserver, query_responses)
 
-
     ce = setup_mock_ce(
         httpserver,
         [
@@ -160,5 +157,7 @@ def test_query_total_costs_per_user(httpserver: HTTPServer, aws_date_range: Date
     )
 
     ce.prometheus = prometheus
-    with open("tests/data/fixtures/aws-ce/test_query_total_costs_per_user/output.json") as f:
+    with open(
+        "tests/data/fixtures/aws-ce/test_query_total_costs_per_user/output.json"
+    ) as f:
         assert json.load(f) == ce.query_total_costs_per_user(aws_date_range)

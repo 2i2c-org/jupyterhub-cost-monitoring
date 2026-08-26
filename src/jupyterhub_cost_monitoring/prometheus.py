@@ -4,7 +4,7 @@ Query the Prometheus server to get usage of JupyterHub resources.
 
 import os
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 import escapism
 import requests
@@ -14,7 +14,7 @@ from yarl import URL
 
 from .cache import ttl_lru_cache
 from .const_usage import USAGE_MAP, USER_GROUP_INFO
-from .date_utils import DateRange, get_now_date
+from .date_utils import DateRange
 
 
 class Prometheus(LoggingConfigurable):
@@ -302,7 +302,9 @@ class Prometheus(LoggingConfigurable):
         hub_name: str | None = None,
         user_name: str | None = None,
     ) -> list[dict]:
-        response = self.query_user_groups(date_range, hub_name=hub_name, user_name=user_name)
+        response = self.query_user_groups(
+            date_range, hub_name=hub_name, user_name=user_name
+        )
         grouped = defaultdict(
             lambda: {
                 "username": None,

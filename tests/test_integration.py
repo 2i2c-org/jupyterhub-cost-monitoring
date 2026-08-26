@@ -1,14 +1,11 @@
 import json
 import logging
-from collections import defaultdict
 from datetime import timedelta
 from pathlib import Path
 
-import pytest
 from pytest_httpserver import HTTPServer
-from traitlets.config import Application
 
-from jupyterhub_cost_monitoring.const_usage import USER_GROUP_INFO
+from jupyterhub_cost_monitoring.const_usage import USAGE_MAP, USER_GROUP_INFO
 from jupyterhub_cost_monitoring.date_utils import (
     DateRange,
     get_now_date,
@@ -96,4 +93,3 @@ def test_get_usage_data(httpserver: HTTPServer):
     with open("tests/data/test_get_usage_data_output.json") as f:
         expected_data = json.load(f)
         assert expected_data == response
-

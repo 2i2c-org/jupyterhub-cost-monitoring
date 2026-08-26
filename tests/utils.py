@@ -1,6 +1,8 @@
-from pytest_httpserver import HTTPServer
-from typing import TypedDict, List
 from pathlib import Path
+from typing import List, TypedDict
+
+from pytest_httpserver import HTTPServer
+
 from jupyterhub_cost_monitoring.aws import AWSCostExplorer
 
 MockedQueryResponse = TypedDict(

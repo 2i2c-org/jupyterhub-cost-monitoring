@@ -74,7 +74,7 @@ class AWSCostExplorer(LoggingConfigurable):
 
         Primarily used for the EBS volume that contains the home directory
         used by all users on a hub.
-        """
+        """,
     )
 
     def __init__(self, *args, **kwargs):
