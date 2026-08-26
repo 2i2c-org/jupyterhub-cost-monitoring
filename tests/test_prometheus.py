@@ -42,7 +42,7 @@ def test_get_user_group_info(httpserver: HTTPServer):
                 "start": start,
                 "end": end,
                 "step": "1d",
-                "response": Path("tests/data/prometheus-groups.json"),
+                "response": Path("tests/fixtures/prometheus/test_get_user_group_info/input.json"),
             }
         ],
     )
@@ -54,7 +54,7 @@ def test_get_user_group_info(httpserver: HTTPServer):
         group_name=None,
     )
 
-    with open("tests/data/test_output_user_group_info.json") as f:
+    with open("tests/fixtures/prometheus/test_get_user_group_info/output.json") as f:
         expected_response = json.load(f)
         assert expected_response == response
 
@@ -78,7 +78,7 @@ def test_get_usage_data(httpserver: HTTPServer):
                 "end": end,
                 "step": USAGE_MAP[component]["step"],
                 "response": Path(
-                    f"tests/data/prometheus-responses/{component.replace(' ', '-')}-usage.json"
+                    f"tests/fixtures/prometheus/test_get_usage_data/input/{component.replace(' ', '-')}-usage.json"
                 ),
             }
             for component in ["compute", "home storage"]
@@ -91,6 +91,6 @@ def test_get_usage_data(httpserver: HTTPServer):
         user_name=None,
     )
 
-    with open("tests/data/test_get_usage_data_output.json") as f:
+    with open("tests/fixtures/prometheus/test_get_usage_data/output.json") as f:
         expected_data = json.load(f)
         assert expected_data == response

@@ -13,47 +13,47 @@ from .utils import mock_prometheus_queries, setup_mock_ce
 def test_query_account_cost(httpserver: HTTPServer, aws_date_range: DateRange):
     ce = setup_mock_ce(
         httpserver,
-        Path("tests/data/fixtures/aws-ce/test_query_account_cost-input.json"),
+        Path("tests/fixtures/aws-ce/test_query_account_cost/input.json"),
     )
 
     account_costs = ce.query_account_costs(aws_date_range)
-    with open("tests/data/fixtures/aws-ce/test_query_account_cost-output.json") as f:
+    with open("tests/fixtures/aws-ce/test_query_account_cost/output.json") as f:
         assert account_costs == json.load(f)
 
 
 def test_query_attributable_cost(httpserver: HTTPServer, aws_date_range: DateRange):
     ce = setup_mock_ce(
         httpserver,
-        Path("tests/data/fixtures/aws-ce/test_query_attributable_cost-input.json"),
+        Path("tests/fixtures/aws-ce/test_query_attributable_cost/input.json"),
     )
 
     account_costs = ce.query_attributable_costs(aws_date_range)
     with open(
-        "tests/data/fixtures/aws-ce/test_query_attributable_cost-output.json"
+        "tests/fixtures/aws-ce/test_query_attributable_cost/output.json"
     ) as f:
         assert account_costs == json.load(f)
 
 
 def test_query_hub_names(httpserver: HTTPServer, aws_date_range: DateRange):
     ce = setup_mock_ce(
-        httpserver, Path("tests/data/fixtures/aws-ce/test_query_hub_names-input.json")
+        httpserver, Path("tests/fixtures/aws-ce/test_query_hub_names/input.json")
     )
 
     hub_names = ce.query_hub_names(aws_date_range)
 
-    with open("tests/data/fixtures/aws-ce/test_query_hub_names-output.json") as f:
+    with open("tests/fixtures/aws-ce/test_query_hub_names/output.json") as f:
         assert hub_names == json.load(f)
 
 
 def test_query_total_costs_per_hub(httpserver: HTTPServer, aws_date_range: DateRange):
     ce = setup_mock_ce(
         httpserver,
-        Path("tests/data/fixtures/aws-ce/test_query_total_costs_per_hub-input.json"),
+        Path("tests/fixtures/aws-ce/test_query_total_costs_per_hub/input.json"),
     )
 
     per_hub_costs = ce.query_total_costs_per_hub(aws_date_range)
     with open(
-        "tests/data/fixtures/aws-ce/test_query_total_costs_per_hub-output.json"
+        "tests/fixtures/aws-ce/test_query_total_costs_per_hub/output.json"
     ) as f:
         assert per_hub_costs == json.load(f)
 
@@ -65,19 +65,19 @@ def test_query_total_costs_per_component(
         httpserver,
         [
             Path(
-                "tests/data/fixtures/aws-ce/test_query_total_costs_per_component-input_by_service.json"
+                "tests/fixtures/aws-ce/test_query_total_costs_per_component/input/by-service.json"
             ),
             Path(
-                "tests/data/fixtures/aws-ce/test_query_total_costs_per_component-input_homedir.json"
+                "tests/fixtures/aws-ce/test_query_total_costs_per_component/input/homedir.json"
             ),
             Path(
-                "tests/data/fixtures/aws-ce/test_query_total_costs_per_component-input_core.json"
+                "tests/fixtures/aws-ce/test_query_total_costs_per_component/input/core.json"
             ),
         ],
     )
 
     with open(
-        "tests/data/fixtures/aws-ce/test_query_total_costs_per_component-output.json"
+        "tests/fixtures/aws-ce/test_query_total_costs_per_component/output.json"
     ) as f:
         assert ce.query_total_costs_per_component(aws_date_range) == json.load(f)
 
@@ -89,19 +89,19 @@ def test_query_total_costs_per_component_per_hub(
         httpserver,
         [
             Path(
-                "tests/data/fixtures/aws-ce/test_query_total_costs_per_component_per_hub-input_by_service.json"
+                "tests/fixtures/aws-ce/test_query_total_costs_per_component_per_hub/input/by-service.json"
             ),
             Path(
-                "tests/data/fixtures/aws-ce/test_query_total_costs_per_component_per_hub-input_homedir.json"
+                "tests/fixtures/aws-ce/test_query_total_costs_per_component_per_hub/input/homedir.json"
             ),
             Path(
-                "tests/data/fixtures/aws-ce/test_query_total_costs_per_component_per_hub-input_core.json"
+                "tests/fixtures/aws-ce/test_query_total_costs_per_component_per_hub/input/core.json"
             ),
         ],
     )
 
     with open(
-        "tests/data/fixtures/aws-ce/test_query_total_costs_per_component_per_hub-output.json"
+        "tests/fixtures/aws-ce/test_query_total_costs_per_component_per_hub/output.json"
     ) as f:
         assert ce.query_total_costs_per_component(
             aws_date_range, hub_name="prod"
@@ -123,7 +123,7 @@ def test_query_total_costs_per_user(httpserver: HTTPServer, aws_date_range: Date
             "end": end,
             "step": USAGE_MAP[component]["step"],
             "response": Path(
-                f"tests/data/fixtures/aws-ce/test_query_total_costs_per_user/input/prometheus-{component.replace(' ', '-')}.json"
+                f"tests/fixtures/aws-ce/test_query_total_costs_per_user/input/prometheus-{component.replace(' ', '-')}.json"
             ),
         }
         for component in ["compute", "home storage"]
@@ -135,7 +135,7 @@ def test_query_total_costs_per_user(httpserver: HTTPServer, aws_date_range: Date
             "end": end,
             "step": "1d",
             "response": Path(
-                "tests/data/fixtures/aws-ce/test_query_total_costs_per_user/input/prometheus-groups.json"
+                "tests/fixtures/aws-ce/test_query_total_costs_per_user/input/prometheus-groups.json"
             ),
         }
     )
@@ -145,19 +145,19 @@ def test_query_total_costs_per_user(httpserver: HTTPServer, aws_date_range: Date
         httpserver,
         [
             Path(
-                "tests/data/fixtures/aws-ce/test_query_total_costs_per_user/input/aws-ce-by-service.json"
+                "tests/fixtures/aws-ce/test_query_total_costs_per_user/input/aws-ce-by-service.json"
             ),
             Path(
-                "tests/data/fixtures/aws-ce/test_query_total_costs_per_user/input/aws-ce-homedir.json"
+                "tests/fixtures/aws-ce/test_query_total_costs_per_user/input/aws-ce-homedir.json"
             ),
             Path(
-                "tests/data/fixtures/aws-ce/test_query_total_costs_per_user/input/aws-ce-core.json"
+                "tests/fixtures/aws-ce/test_query_total_costs_per_user/input/aws-ce-core.json"
             ),
         ],
     )
 
     ce.prometheus = prometheus
     with open(
-        "tests/data/fixtures/aws-ce/test_query_total_costs_per_user/output.json"
+        "tests/fixtures/aws-ce/test_query_total_costs_per_user/output.json"
     ) as f:
         assert json.load(f) == ce.query_total_costs_per_user(aws_date_range)
