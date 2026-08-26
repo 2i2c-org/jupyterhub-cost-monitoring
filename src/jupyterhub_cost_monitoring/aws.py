@@ -14,7 +14,6 @@ from .cache import ttl_lru_cache
 from .const_cost_aws import (
     FILTER_ATTRIBUTABLE_COSTS,
     FILTER_CORE_COSTS,
-    FILTER_HOME_STORAGE_COSTS,
     FILTER_USAGE_COSTS,
     GRANULARITY_DAILY,
     GROUP_BY_SERVICE_DIMENSION,
@@ -59,6 +58,23 @@ class AWSCostExplorer(LoggingConfigurable):
         Tag name that associates a cloud resource as belonging to a particular hub
         """,
         config=True,
+    )
+
+    home_storage_costs_filter = Dict(
+        Dict(),
+        default={
+            "Tags": {
+                "Key": "2i2c:volume-purpose",
+                "Values": ["home-nfs"],
+                "MatchOptions": ["EQUALS"],
+            }
+        },
+        help="""
+        AWS Cost Explorer Filter for tagging home directory costs.
+
+        Primarily used for the EBS volume that contains the home directory
+        used by all users on a hub.
+        """
     )
 
     def __init__(self, *args, **kwargs):
@@ -439,7 +455,7 @@ class AWSCostExplorer(LoggingConfigurable):
         # Create home storage filter using the same base filter and hub filtering
         home_storage_filter = self._create_base_filter()
         self._add_hub_filter(home_storage_filter, hub_name)
-        home_storage_filter["And"].append(FILTER_HOME_STORAGE_COSTS)
+        home_storage_filter["And"].append(self.home_storage_costs_filter)
 
         home_storage_ebs_cost_response = self.query(
             metrics=[METRICS_UNBLENDED_COST],

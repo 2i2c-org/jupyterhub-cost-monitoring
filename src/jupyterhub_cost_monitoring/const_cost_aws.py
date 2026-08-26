@@ -104,14 +104,6 @@ GROUP_BY_SERVICE_DIMENSION = {
     "Key": "SERVICE",
 }
 
-FILTER_HOME_STORAGE_COSTS = {
-    "Tags": {
-        "Key": "2i2c:volume-purpose",
-        "Values": ["home-nfs"],
-        "MatchOptions": ["EQUALS"],
-    }
-}
-
 
 # Some costs like costs associated with core nodes, hub database storage, and support components
 # (Prometheus, Grafana, Alertmanager) are not tied to any specific hub or user.
