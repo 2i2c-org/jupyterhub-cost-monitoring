@@ -8,7 +8,7 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from .aws import AWSCostExplorer
 from .date_utils import get_now_date, parse_from_to_in_query_params
 from .metrics import MetricsMiddleware
-from .prometheus import Prometheus, USAGE_MAP
+from .prometheus import USAGE_MAP, Prometheus
 
 app = FastAPI()
 app.add_middleware(MetricsMiddleware)
