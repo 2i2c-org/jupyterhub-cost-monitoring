@@ -12,12 +12,22 @@ from traitlets import Any, Dict, Instance, Unicode, default
 from traitlets.config import LoggingConfigurable
 
 from .cache import ttl_lru_cache
-from .const_cost_aws import (
-    FILTER_USAGE_COSTS,
-    GROUP_BY_SERVICE_DIMENSION,
-)
 from .date_utils import DateRange
 from .prometheus import Prometheus
+
+# AWS CE filter for getting only information about usage, rather than taxes, credits, etc
+FILTER_USAGE_COSTS = {
+    "Dimensions": {
+        "Key": "RECORD_TYPE",
+        "Values": ["Usage"],
+    },
+}
+
+# AWS CE group_by clause for grouping charges by service that used them
+GROUP_BY_SERVICE_DIMENSION = {
+    "Type": "DIMENSION",
+    "Key": "SERVICE",
+}
 
 
 class AWSCostExplorer(LoggingConfigurable):
@@ -64,7 +74,7 @@ class AWSCostExplorer(LoggingConfigurable):
     )
 
     attributable_costs_filter = Dict(
-        Dict(),
+        Any(),
         help="""
         AWS Cost Explorer filter for *all* resources we attribute to JupyterHub infrastructure
         """,
@@ -74,6 +84,12 @@ class AWSCostExplorer(LoggingConfigurable):
     @default("attributable_costs_filter")
     def _attributable_costs_filter_default(self):
         cluster_name = os.environ.get("CLUSTER_NAME")
+
+        if cluster_name is None:
+            # We don't want to rely on this environment variable in the future
+            raise ValueError(
+                "CLUSTER_NAME env var is not set, and required currently. This will change in the future."
+            )
 
         return {
             # https://github.com/2i2c-org/infrastructure/issues/4787#issue-2519110356
