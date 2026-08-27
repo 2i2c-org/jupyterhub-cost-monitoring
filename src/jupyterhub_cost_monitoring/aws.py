@@ -4,6 +4,7 @@ Queries to AWS Cost Explorer to get different kinds of cost data.
 
 import copy
 import functools
+import os
 from pprint import pformat
 
 import boto3
@@ -12,8 +13,6 @@ from traitlets.config import LoggingConfigurable
 
 from .cache import ttl_lru_cache
 from .const_cost_aws import (
-    FILTER_ATTRIBUTABLE_COSTS,
-    FILTER_CORE_COSTS,
     FILTER_USAGE_COSTS,
     GRANULARITY_DAILY,
     GROUP_BY_SERVICE_DIMENSION,
@@ -75,6 +74,177 @@ class AWSCostExplorer(LoggingConfigurable):
         Primarily used for the EBS volume that contains the home directory
         used by all users on a hub.
         """,
+        config=True,
+    )
+
+    attributable_costs_filter = Dict(
+        Dict(),
+        help="""
+        AWS Cost Explorer filter for *all* resources we attribute to JupyterHub infrastructure
+        """,
+        config=True,
+    )
+
+    @default("attributable_costs_filter")
+    def _attributable_costs_filter_default(self):
+        cluster_name = os.environ.get("CLUSTER_NAME")
+
+        return {
+            # https://github.com/2i2c-org/infrastructure/issues/4787#issue-2519110356
+            "Or": [
+                {
+                    "Tags": {
+                        "Key": "alpha.eksctl.io/cluster-name",
+                        "Values": [cluster_name],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+                {
+                    "Tags": {
+                        "Key": f"kubernetes.io/cluster/{cluster_name}",
+                        "Values": ["owned"],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+                {
+                    "Tags": {
+                        "Key": "2i2c.org/cluster-name",
+                        "Values": [cluster_name],
+                        "MatchOptions": ["EQUALS"],
+                    },
+                },
+                # FIXME: The inclusion of tags 2i2c:hub-name and 2i2c:node-purpose below
+                #        in this filter is a patch to capture openscapes data from 1st
+                #        July and up to 24th September 2024, and can be removed once
+                #        that date range is considered irrelevant.
+                #
+                {
+                    "Not": {
+                        "Tags": {
+                            "Key": "2i2c:hub-name",
+                            "MatchOptions": ["ABSENT"],
+                        },
+                    },
+                },
+                {
+                    "Not": {
+                        "Tags": {
+                            "Key": "2i2c:node-purpose",
+                            "MatchOptions": ["ABSENT"],
+                        },
+                    },
+                },
+            ]
+        }
+
+    core_costs_filter = Dict(
+        Dict(),
+        default={
+            "Or": [
+                # Core node storage
+                {
+                    "And": [
+                        {
+                            "Dimensions": {
+                                "Key": "SERVICE",
+                                "Values": ["EC2 - Other"],
+                                "MatchOptions": ["EQUALS"],
+                            },
+                        },
+                        {
+                            "Tags": {
+                                "Key": "2i2c:node-purpose",
+                                "Values": ["core"],
+                                "MatchOptions": ["EQUALS"],
+                            },
+                        },
+                    ]
+                },
+                # Core node compute
+                {
+                    "And": [
+                        {
+                            "Dimensions": {
+                                "Key": "SERVICE",
+                                "Values": ["Amazon Elastic Compute Cloud - Compute"],
+                                "MatchOptions": ["EQUALS"],
+                            },
+                        },
+                        {
+                            "Tags": {
+                                "Key": "2i2c:node-purpose",
+                                "Values": ["core"],
+                                "MatchOptions": ["EQUALS"],
+                            },
+                        },
+                    ]
+                },
+                # Cluster NAT gateway - common for all hubs
+                {
+                    "And": [
+                        {
+                            "Dimensions": {
+                                "Key": "SERVICE",
+                                "Values": ["EC2 - Other"],
+                                "MatchOptions": ["EQUALS"],
+                            },
+                        },
+                        {
+                            "Dimensions": {
+                                "Key": "USAGE_TYPE_GROUP",
+                                "Values": [
+                                    "EC2: NAT Gateway - Running Hours",
+                                    "EC2: NAT Gateway - Data Processed",
+                                ],
+                                "MatchOptions": ["EQUALS"],
+                            },
+                        },
+                    ]
+                },
+                # Hub database storage
+                {
+                    "And": [
+                        {
+                            "Dimensions": {
+                                "Key": "SERVICE",
+                                "Values": ["EC2 - Other"],
+                                "MatchOptions": ["EQUALS"],
+                            },
+                        },
+                        {
+                            "Tags": {
+                                "Key": "kubernetes.io/created-for/pvc/name",
+                                "Values": ["hub-db-dir"],
+                                "MatchOptions": ["EQUALS"],
+                            },
+                        },
+                    ]
+                },
+                # Support components storage (Prometheus, Grafana, Alertmanager)
+                {
+                    "And": [
+                        {
+                            "Dimensions": {
+                                "Key": "SERVICE",
+                                "Values": ["EC2 - Other"],
+                                "MatchOptions": ["EQUALS"],
+                            },
+                        },
+                        {
+                            "Tags": {
+                                "Key": "kubernetes.io/created-for/pvc/namespace",
+                                "Values": ["support"],
+                                "MatchOptions": ["EQUALS"],
+                            },
+                        },
+                    ]
+                },
+            ]
+        },
+        help="""
+        AWS Cost Explorer filter for resources described as 'core' costs
+        """,
+        config=True,
     )
 
     def __init__(self, *args, **kwargs):
@@ -150,7 +320,7 @@ class AWSCostExplorer(LoggingConfigurable):
             filter={
                 "And": [
                     FILTER_USAGE_COSTS,
-                    FILTER_ATTRIBUTABLE_COSTS,
+                    self.attributable_costs_filter,
                 ]
             },
             group_by=[],
@@ -188,7 +358,7 @@ class AWSCostExplorer(LoggingConfigurable):
             filter={
                 "And": [
                     FILTER_USAGE_COSTS,
-                    FILTER_ATTRIBUTABLE_COSTS,
+                    self.attributable_costs_filter,
                 ]
             },
             group_by=[{"Type": "TAG", "Key": self.hub_name_tag}],
@@ -310,7 +480,7 @@ class AWSCostExplorer(LoggingConfigurable):
         return {
             "And": [
                 FILTER_USAGE_COSTS,
-                FILTER_ATTRIBUTABLE_COSTS,
+                self.attributable_costs_filter,
             ]
         }
 
@@ -478,7 +648,7 @@ class AWSCostExplorer(LoggingConfigurable):
         # These should be subtracted from compute and added to a "core" component
         core_cost_filter = self._create_base_filter()
         self._add_hub_filter(core_cost_filter, hub_name)
-        core_cost_filter["And"].append(FILTER_CORE_COSTS)
+        core_cost_filter["And"].append(self.core_costs_filter)
 
         core_cost_response = self.query(
             metrics=[METRICS_UNBLENDED_COST],
