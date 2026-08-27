@@ -15,24 +15,12 @@ from .cache import ttl_lru_cache
 from .const_cost_aws import (
     FILTER_USAGE_COSTS,
     GROUP_BY_SERVICE_DIMENSION,
-    SERVICE_COMPONENT_MAP,
 )
 from .date_utils import DateRange
 from .prometheus import Prometheus
 
 
 class AWSCostExplorer(LoggingConfigurable):
-    @functools.cache
-    def _get_component_name(self, service_name):
-        if service_name in SERVICE_COMPONENT_MAP:
-            return SERVICE_COMPONENT_MAP[service_name]
-        else:
-            # only printed once per service name thanks to memoization
-            self.log.warning(
-                f"Service '{service_name}' not categorized as a component yet"
-            )
-            return "other"
-
     prometheus = Instance(
         klass=Prometheus,
     )
@@ -248,6 +236,33 @@ class AWSCostExplorer(LoggingConfigurable):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.aws_ce_client = boto3.client("ce", **self.aws_client_extra_kwargs)
+
+    @functools.cache
+    def component_for_service(self, service_name: str):
+        """
+        Return the cost monitoring 'component' for a given AWS service name.
+
+        Return "other" with a warning if we don't currently have a classification
+        """
+        service_component_map = {
+            "AWS Backup": "backup",
+            "EC2 - Other": "compute",  # Note: this can include EBS volumes and snapshots used for home storage as well
+            "Amazon Elastic Compute Cloud - Compute": "compute",
+            "Amazon Elastic Container Service for Kubernetes": "core",
+            "Amazon Elastic File System": "home storage",
+            "Amazon Elastic Load Balancing": "networking",
+            "Amazon Simple Storage Service": "object storage",
+            "Amazon Virtual Private Cloud": "networking",
+        }
+        if service_name in service_component_map:
+            return service_component_map[service_name]
+        else:
+            # only printed once per service name thanks to memoization
+            self.log.warning(
+                f"Service '{service_name}' not categorized as a component yet"
+            )
+            return "other"
+
 
     def query(self, date_range: DateRange, filter, group_by):
         """
@@ -576,7 +591,7 @@ class AWSCostExplorer(LoggingConfigurable):
             component_costs = {}
             for g in e["Groups"]:
                 service_name = g["Keys"][0]
-                component_name = self._get_component_name(service_name)
+                component_name = self.component_for_service(service_name)
                 cost = float(g["Metrics"]["UnblendedCost"]["Amount"])
                 component_costs[component_name] = (
                     component_costs.get(component_name, 0.0) + cost
