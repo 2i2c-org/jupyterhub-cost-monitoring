@@ -14,9 +14,7 @@ from traitlets.config import LoggingConfigurable
 from .cache import ttl_lru_cache
 from .const_cost_aws import (
     FILTER_USAGE_COSTS,
-    GRANULARITY_DAILY,
     GROUP_BY_SERVICE_DIMENSION,
-    METRICS_UNBLENDED_COST,
     SERVICE_COMPONENT_MAP,
 )
 from .date_utils import DateRange
@@ -251,7 +249,7 @@ class AWSCostExplorer(LoggingConfigurable):
         super().__init__(*args, **kwargs)
         self.aws_ce_client = boto3.client("ce", **self.aws_client_extra_kwargs)
 
-    def query(self, metrics, granularity, date_range: DateRange, filter, group_by):
+    def query(self, date_range: DateRange, filter, group_by):
         """
         Function meant to be responsible for making the API call and handling
         pagination etc. Currently pagination isn't handled.
@@ -260,8 +258,11 @@ class AWSCostExplorer(LoggingConfigurable):
 
         # ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce/client/get_cost_and_usage.html#get-cost-and-usage
         response = self.aws_ce_client.get_cost_and_usage(
-            Metrics=metrics,
-            Granularity=granularity,
+            # Consistently use unblended costs everywhere
+            Metrics=["UnblendedCost"],
+            # Hourly data is only available for last 2 days, while
+            # daily data is available for last 13 months. Consistently stick to daily data
+            Granularity="DAILY",
             TimePeriod={"Start": from_date, "End": to_date},
             Filter=filter,
             GroupBy=group_by,
@@ -294,8 +295,6 @@ class AWSCostExplorer(LoggingConfigurable):
 
     def query_account_costs(self, date_range: DateRange):
         response = self.query(
-            metrics=[METRICS_UNBLENDED_COST],
-            granularity=GRANULARITY_DAILY,
             date_range=date_range,
             filter=FILTER_USAGE_COSTS,
             group_by=[],
@@ -314,8 +313,6 @@ class AWSCostExplorer(LoggingConfigurable):
 
     def query_attributable_costs(self, date_range: DateRange):
         response = self.query(
-            metrics=[METRICS_UNBLENDED_COST],
-            granularity=GRANULARITY_DAILY,
             date_range=date_range,
             filter={
                 "And": [
@@ -352,8 +349,6 @@ class AWSCostExplorer(LoggingConfigurable):
         """
 
         response = self.query(
-            metrics=[METRICS_UNBLENDED_COST],
-            granularity=GRANULARITY_DAILY,
             date_range=date_range,
             filter={
                 "And": [
@@ -567,8 +562,6 @@ class AWSCostExplorer(LoggingConfigurable):
         self._add_hub_filter(base_filter, hub_name)
 
         response = self.query(
-            metrics=[METRICS_UNBLENDED_COST],
-            granularity=GRANULARITY_DAILY,
             date_range=date_range,
             filter=base_filter,
             group_by=[GROUP_BY_SERVICE_DIMENSION],
@@ -628,8 +621,6 @@ class AWSCostExplorer(LoggingConfigurable):
         home_storage_filter["And"].append(self.home_storage_costs_filter)
 
         home_storage_ebs_cost_response = self.query(
-            metrics=[METRICS_UNBLENDED_COST],
-            granularity=GRANULARITY_DAILY,
             date_range=date_range,
             filter=home_storage_filter,
             group_by=[GROUP_BY_SERVICE_DIMENSION],
@@ -651,8 +642,6 @@ class AWSCostExplorer(LoggingConfigurable):
         core_cost_filter["And"].append(self.core_costs_filter)
 
         core_cost_response = self.query(
-            metrics=[METRICS_UNBLENDED_COST],
-            granularity=GRANULARITY_DAILY,
             date_range=date_range,
             filter=core_cost_filter,
             group_by=[GROUP_BY_SERVICE_DIMENSION],

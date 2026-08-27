@@ -21,23 +21,6 @@ SERVICE_COMPONENT_MAP = {
     "Amazon Virtual Private Cloud": "networking",
 }
 
-# Metrics:
-#
-#   UnblendedCost represents costs for an individual AWS account. It is
-#   the default metric in the AWS web console. BlendedCosts represents
-#   the potentially reduced costs stemming from having multiple AWS
-#   accounts in an organization the collectively could enter better
-#   pricing tiers.
-#
-METRICS_UNBLENDED_COST = "UnblendedCost"
-
-# Granularity:
-#
-#   HOURLY granularity is only available for the last two days, while
-#   DAILY is available for the last 13 months.
-#
-GRANULARITY_DAILY = "DAILY"
-
 # Filter:
 #
 # The various filter objects are meant to be combined based on the needs for
