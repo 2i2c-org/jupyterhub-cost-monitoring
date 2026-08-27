@@ -5,13 +5,12 @@ from pathlib import Path
 
 from pytest_httpserver import HTTPServer
 
-from jupyterhub_cost_monitoring.const_usage import USAGE_MAP, USER_GROUP_INFO
 from jupyterhub_cost_monitoring.date_utils import (
     DateRange,
     get_now_date,
     parse_from_to_in_query_params,
 )
-from jupyterhub_cost_monitoring.prometheus import Prometheus
+from jupyterhub_cost_monitoring.prometheus import USAGE_MAP, USER_GROUP_INFO, Prometheus
 
 from .utils import mock_prometheus_queries
 

@@ -6,10 +6,9 @@ from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from .aws import AWSCostExplorer
-from .const_usage import USAGE_MAP
 from .date_utils import get_now_date, parse_from_to_in_query_params
 from .metrics import MetricsMiddleware
-from .prometheus import Prometheus
+from .prometheus import Prometheus, USAGE_MAP
 
 app = FastAPI()
 app.add_middleware(MetricsMiddleware)

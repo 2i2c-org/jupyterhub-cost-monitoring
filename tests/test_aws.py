@@ -3,9 +3,8 @@ from pathlib import Path
 
 from pytest_httpserver import HTTPServer
 
-from jupyterhub_cost_monitoring.const_usage import USAGE_MAP, USER_GROUP_INFO
 from jupyterhub_cost_monitoring.date_utils import DateRange
-from jupyterhub_cost_monitoring.prometheus import Prometheus
+from jupyterhub_cost_monitoring.prometheus import USAGE_MAP, USER_GROUP_INFO, Prometheus
 
 from .utils import mock_prometheus_queries, setup_mock_ce
 
