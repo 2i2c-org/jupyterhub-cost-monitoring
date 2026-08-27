@@ -1,5 +1,7 @@
 from pathlib import Path
 from typing import List, TypedDict
+from botocore import UNSIGNED
+from botocore.config import Config
 
 from pytest_httpserver import HTTPServer
 
@@ -39,6 +41,8 @@ def setup_mock_ce(httpserver: HTTPServer, responses: Path | List[Path]):
         aws_client_extra_kwargs={
             "region_name": "test",  # does not matter but we must pass it
             "endpoint_url": aws_endpoint_url,
+            # Don't try to sign our requests, since our fake HTTP server doesn't support that
+            "config": Config(signature_version=UNSIGNED)
         }
     )
 

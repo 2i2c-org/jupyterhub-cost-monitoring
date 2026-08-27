@@ -7,7 +7,7 @@ import functools
 from pprint import pformat
 
 import boto3
-from traitlets import Dict, Instance, Unicode, default
+from traitlets import Any, Dict, Instance, Unicode, default
 from traitlets.config import LoggingConfigurable
 
 from .cache import ttl_lru_cache
@@ -45,7 +45,7 @@ class AWSCostExplorer(LoggingConfigurable):
         return Prometheus(parent=self)
 
     aws_client_extra_kwargs = Dict(
-        Unicode(),
+        Any(),
         help="""
         Extra arguments to be passed to the AWS Client that talks to the Cost Explorer
         """,
