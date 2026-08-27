@@ -16,7 +16,7 @@ dependencies = [
     "traitlets"
 ]
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
     "mystmd>=1.6.0",
     "pytest>=8.4.1",
