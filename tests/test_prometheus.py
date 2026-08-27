@@ -42,7 +42,9 @@ def test_get_user_group_info(httpserver: HTTPServer):
                 "start": start,
                 "end": end,
                 "step": "1d",
-                "response": Path("tests/fixtures/prometheus/test_get_user_group_info/input.json"),
+                "response": Path(
+                    "tests/fixtures/prometheus/test_get_user_group_info/input.json"
+                ),
             }
         ],
     )

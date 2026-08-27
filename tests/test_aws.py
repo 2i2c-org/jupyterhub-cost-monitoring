@@ -28,9 +28,7 @@ def test_query_attributable_cost(httpserver: HTTPServer, aws_date_range: DateRan
     )
 
     account_costs = ce.query_attributable_costs(aws_date_range)
-    with open(
-        "tests/fixtures/aws-ce/test_query_attributable_cost/output.json"
-    ) as f:
+    with open("tests/fixtures/aws-ce/test_query_attributable_cost/output.json") as f:
         assert account_costs == json.load(f)
 
 
@@ -52,9 +50,7 @@ def test_query_total_costs_per_hub(httpserver: HTTPServer, aws_date_range: DateR
     )
 
     per_hub_costs = ce.query_total_costs_per_hub(aws_date_range)
-    with open(
-        "tests/fixtures/aws-ce/test_query_total_costs_per_hub/output.json"
-    ) as f:
+    with open("tests/fixtures/aws-ce/test_query_total_costs_per_hub/output.json") as f:
         assert per_hub_costs == json.load(f)
 
 
@@ -157,7 +153,5 @@ def test_query_total_costs_per_user(httpserver: HTTPServer, aws_date_range: Date
     )
 
     ce.prometheus = prometheus
-    with open(
-        "tests/fixtures/aws-ce/test_query_total_costs_per_user/output.json"
-    ) as f:
+    with open("tests/fixtures/aws-ce/test_query_total_costs_per_user/output.json") as f:
         assert json.load(f) == ce.query_total_costs_per_user(aws_date_range)
