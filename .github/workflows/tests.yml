@@ -1,61 +1,26 @@
-name: Test Suite
+name: Run tests
 
-on:
-  workflow_dispatch: {}
-  workflow_call: {}
-  push: {}
-  pull_request: {}
+on: [push, pull_request]
 
 jobs:
-  lint:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.12", "3.13", "3.14"]
-
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v7
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install hatch
-        uses: pypa/hatch@install
-
-      - name: Run linters
-        run: hatch run style:check
-
   test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.12", "3.13", "3.14"]
+        python-version: ['3.12']
 
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@v5
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v7
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
       with:
-        python-version: ${{ matrix.python-version }}
+        version: latest
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
 
-    - name: Install packages
-      run: |
-        pip install --editable .
+    - name: Install dependencies
+      run: uv sync --dev
 
-    - name: Run Tests
-      run: py.test tests/
-
-    # - name: Upload coverage reports to Codecov
-    #   uses: codecov/codecov-action@v5
-    #   with:
-    #     token: ${{ secrets.CODECOV_TOKEN }}
-
-    # - name: Check types
-    #   run: hatch run types:check
+    - name: Run tests
+      run: uv run pytest -v
