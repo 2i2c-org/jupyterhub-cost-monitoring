@@ -1,8 +1,7 @@
 import logging
 from datetime import timedelta
 
-import requests
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, Query
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
@@ -47,10 +46,7 @@ def hub_names(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    try:
-        return aws_ce.query_hub_names(date_range)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}")
+    return aws_ce.query_hub_names(date_range)
 
 
 @app.get("/component-names")
@@ -58,10 +54,7 @@ def component_names():
     """
     Endpoint to serve component names.
     """
-    try:
-        return list(USAGE_MAP.keys())
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}")
+    return list(USAGE_MAP.keys())
 
 
 @app.get("/total-costs")
@@ -79,18 +72,15 @@ def total_costs(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    try:
-        account_costs = aws_ce.query_account_costs(date_range)
-        attributable_costs = aws_ce.query_attributable_costs(date_range)
+    account_costs = aws_ce.query_account_costs(date_range)
+    attributable_costs = aws_ce.query_attributable_costs(date_range)
 
-        # the infinity plugin appears needs us to sort by date, otherwise it fails
-        # to distinguish time series by the name field for some reason
-        sorted_response = sorted(
-            account_costs + attributable_costs, key=lambda x: x["date"]
-        )
-        return sorted_response
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}")
+    # the infinity plugin appears needs us to sort by date, otherwise it fails
+    # to distinguish time series by the name field for some reason
+    sorted_response = sorted(
+        account_costs + attributable_costs, key=lambda x: x["date"]
+    )
+    return sorted_response
 
 
 @app.get("/user-groups")
@@ -106,16 +96,8 @@ def user_groups(
     """
     Endpoint to serve user group memberships. Note that only the most recent date for each user group membership is returned.
     """
-
-    try:
-        return prometheus.query_user_groups(hub, username, usergroup)
-    except requests.exceptions.HTTPError as e:
-        response = e.response
-        raise HTTPException(
-            status_code=response.status_code, detail=f"{response.text}"
-        ) from e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}")
+    # FIXME: This isn't passing date_range correctly
+    return prometheus.query_user_groups(hub, username, usergroup)
 
 
 @app.get("/users-with-multiple-groups")
@@ -137,17 +119,7 @@ def users_with_multiple_groups(
         from_date.isoformat(), to_date.isoformat()
     )
 
-    try:
-        return prometheus.query_users_with_multiple_groups(
-            date_range, hub_name, user_name
-        )
-    except requests.exceptions.HTTPError as e:
-        response = e.response
-        raise HTTPException(
-            status_code=response.status_code, detail=f"{response.text}"
-        ) from e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}")
+    return prometheus.query_users_with_multiple_groups(date_range, hub_name, user_name)
 
 
 @app.get("/users-with-no-groups")
@@ -169,15 +141,7 @@ def users_with_no_groups(
         from_date.isoformat(), to_date.isoformat()
     )
 
-    try:
-        return prometheus.query_users_with_no_groups(date_range, hub_name, user_name)
-    except requests.exceptions.HTTPError as e:
-        response = e.response
-        raise HTTPException(
-            status_code=response.status_code, detail=f"{response.text}"
-        ) from e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}") from e
+    return prometheus.query_users_with_no_groups(date_range, hub_name, user_name)
 
 
 @app.get("/total-costs-per-hub")
@@ -195,10 +159,7 @@ def total_costs_per_hub(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    try:
-        return aws_ce.query_total_costs_per_hub(date_range)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}")
+    return aws_ce.query_total_costs_per_hub(date_range)
 
 
 @app.get("/total-costs-per-component")
@@ -225,10 +186,7 @@ def total_costs_per_component(
     if not component or component.lower() == "all":
         component = None
 
-    try:
-        return aws_ce.query_total_costs_per_component(date_range, hub, component)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}")
+    return aws_ce.query_total_costs_per_component(date_range, hub, component)
 
 
 @app.get("/total-costs-per-group")
@@ -246,13 +204,7 @@ def total_costs_per_group(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    try:
-        return aws_ce.query_total_costs_per_group(date_range)
-    except requests.exceptions.HTTPError as e:
-        response = e.response
-        raise HTTPException(status_code=response.status_code, detail=response.text)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}")
+    return aws_ce.query_total_costs_per_group(date_range)
 
 
 @app.get("/costs-per-user")
@@ -315,15 +267,9 @@ def costs_per_user(
     # Get per-user costs by combining AWS costs with Prometheus usage data
     results = []
     for ug in usergroup:
-        try:
-            per_user_costs = aws_ce.query_total_costs_per_user(
-                date_range, hub, component, user, ug, limit
-            )
-        except requests.exceptions.HTTPError as e:
-            response = e.response
-            raise HTTPException(status_code=response.status_code, detail=response.text)
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"{e}")
+        per_user_costs = aws_ce.query_total_costs_per_user(
+            date_range, hub, component, user, ug, limit
+        )
         results.extend(per_user_costs)
 
     return results
@@ -358,13 +304,7 @@ def total_usage(
     if not user or user.lower() == "all":
         user = None
 
-    try:
-        return prometheus.query_usage(date_range, hub, component, user)
-    except requests.exceptions.HTTPError as e:
-        response = e.response
-        raise HTTPException(status_code=response.status_code, detail=response.text)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}")
+    return prometheus.query_usage(date_range, hub, component, user)
 
 
 @app.get("/metrics")

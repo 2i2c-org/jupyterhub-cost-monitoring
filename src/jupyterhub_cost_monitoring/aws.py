@@ -263,7 +263,6 @@ class AWSCostExplorer(LoggingConfigurable):
             )
             return "other"
 
-
     def query(self, date_range: DateRange, filter, group_by):
         """
         Function meant to be responsible for making the API call and handling
