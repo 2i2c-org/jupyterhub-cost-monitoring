@@ -14,9 +14,9 @@ jobs:
       with:
         python-version: "3.13"
 
-    - name: Install package
+    - name: Install package + dev dependencies
       run: |
-        pip install --editable .
+        pip install --editable ".[dev]"
 
     - name: Run tests
       run: |
