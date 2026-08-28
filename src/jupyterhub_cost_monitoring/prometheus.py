@@ -113,6 +113,7 @@ class Prometheus(LoggingConfigurable):
             result = response.json()
             return result
 
+    @ttl_lru_cache(seconds_to_live=3600)
     def query_usage(
         self,
         date_range: DateRange,
