@@ -4,17 +4,48 @@ from datetime import timedelta
 from fastapi import FastAPI, Query
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from traitlets import Unicode
+from traitlets.config import Application
 
 from .aws import AWSCostExplorer
 from .date_utils import get_now_date, parse_from_to_in_query_params
 from .metrics import MetricsMiddleware
 from .prometheus import USAGE_MAP, Prometheus
 
+
+class JupyterHubCostMonitoring(Application):
+    # Used as prefix for setting config values via environment variables
+    # Important as `fastapi run` doesn't let us pass in variables
+    # via commandline parameters
+    name = "JupyterHubCostMonitoring"
+
+    config_file = Unicode(
+        "jupyterhub_config.py",
+        help="""
+        The config file to load.
+
+        Can be specified with the environment variable
+        `JUPYTERHUBCOSTMONITORING__JupyterHubCostMonitoring__config_file`
+        """,
+        config=True,
+    )
+
+    def initialize(self, *args, **kwargs) -> None:
+        super().initialize(*args, **kwargs)
+        self.load_config_environ()
+        self.load_config_file(self.config_file)
+
+
 app = FastAPI()
 app.add_middleware(MetricsMiddleware)
-logger = logging.getLogger(__name__)
-prometheus = Prometheus()
-aws_ce = AWSCostExplorer(prometheus=prometheus)
+
+# Create our traitlets app so we can specify config
+jupyterhub_cost_monitoring_app = JupyterHubCostMonitoring()
+jupyterhub_cost_monitoring_app.initialize()
+
+logger = jupyterhub_cost_monitoring_app.log
+prometheus = Prometheus(parent=jupyterhub_cost_monitoring_app)
+aws_ce = AWSCostExplorer(parent=jupyterhub_cost_monitoring_app)
 
 
 @app.get("/")
