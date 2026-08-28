@@ -308,6 +308,7 @@ class AWSCostExplorer(LoggingConfigurable):
 
         return response
 
+    @ttl_lru_cache(seconds_to_live=3600)
     def query_hub_names(self, date_range: DateRange):
         """
         Query list of hubs discovered via cost explorer in the date range
@@ -323,6 +324,7 @@ class AWSCostExplorer(LoggingConfigurable):
         hub_names = [t or "support" for t in response["Tags"]]
         return hub_names
 
+    @ttl_lru_cache(seconds_to_live=3600)
     def query_account_costs(self, date_range: DateRange):
         response = self.query(
             date_range=date_range,
@@ -341,6 +343,7 @@ class AWSCostExplorer(LoggingConfigurable):
 
         return processed_response
 
+    @ttl_lru_cache(seconds_to_live=3600)
     def query_attributable_costs(self, date_range: DateRange):
         response = self.query(
             date_range=date_range,
