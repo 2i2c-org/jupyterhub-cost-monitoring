@@ -12,6 +12,7 @@ spec:
   template:
     metadata:
       annotations:
+        checksum/config: {{ include (print .Template.BasePath "/secret.yaml") . | sha256sum }}
         checksum/service-account: {{ include (print .Template.BasePath "/serviceaccount.yaml") . | sha256sum }}
         {{- with .Values.podAnnotations }}
         {{- . | toYaml | nindent 8 }}
@@ -19,6 +20,10 @@ spec:
       labels:
         {{- include "jupyterhub-cost-monitoring.labels" . | nindent 8 }}
     spec:
+      volumes:
+      - name: config
+        secret:
+          secretName: {{ include "jupyterhub-cost-monitoring.resourceName" . }}
       containers:
         - name: webserver
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -50,6 +55,10 @@ spec:
             {{- .Values.resources | toYaml | nindent 12 }}
           securityContext:
             {{- .Values.securityContext | toYaml | nindent 12 }}
+          volumeMounts:
+          - name: config
+            mountPath: /usr/local/etc/jupyterhub_cost_monitoring.json
+            subPath: jupyterhub_cost_monitoring_config.json
           startupProbe:
             periodSeconds: 1
             failureThreshold: 60

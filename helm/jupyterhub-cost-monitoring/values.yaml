@@ -2,6 +2,9 @@ nameOverride: ''
 fullnameOverride: ''
 global: {}
 
+config:
+  test: hi
+
 replicas: 1
 extraEnv: []
 image:
