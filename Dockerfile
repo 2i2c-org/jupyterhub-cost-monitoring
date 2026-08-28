@@ -1,17 +1,19 @@
-FROM python:3.12-slim-bookworm
+FROM python:3.14-slim-bookworm
 
 RUN apt-get update && apt-get install -y tini git curl vim
 
-COPY --from=ghcr.io/astral-sh/uv:0.8.3 /uv /uvx /bin/
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 RUN mkdir /opt/jupyterhub_cost_monitoring
-COPY . /opt/jupyterhub_cost_monitoring
-WORKDIR /opt/jupyterhub_cost_monitoring
-RUN uv sync --locked
-ENV PATH="/opt/jupyterhub_cost_monitoring/.venv/bin:$PATH"
+COPY pyproject.toml /opt/jupyterhub_cost_monitoring
+COPY LICENSE.md /opt/jupyterhub_cost_monitoring
+COPY README.md /opt/jupyterhub_cost_monitoring
+COPY src/jupyterhub_cost_monitoring /opt/jupyterhub_cost_monitoring/src/jupyterhub_cost_monitoring
 
-WORKDIR /opt/jupyterhub_cost_monitoring/src/jupyterhub_cost_monitoring
-USER 65534
-EXPOSE 8080
+WORKDIR /opt/jupyterhub_cost_monitoring
+RUN pip install -e .
+
 ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["fastapi", "run", "--port", "8080", "--host", "0.0.0.0"]
+CMD ["fastapi", "run", "src/jupyterhub_cost_monitoring/app.py", "--port", "8080", "--host", "0.0.0.0"]
