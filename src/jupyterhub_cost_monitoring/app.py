@@ -95,8 +95,15 @@ def user_groups(
     """
     Endpoint to serve user group memberships. Note that only the most recent date for each user group membership is returned.
     """
-    # FIXME: This isn't passing date_range correctly
-    return prometheus.query_user_groups(hub, username, usergroup)
+    now_date = get_now_date() - timedelta(
+        days=1
+    )  # Use most recent complete day for group information
+    from_date = now_date
+    to_date = now_date
+    date_range = parse_from_to_in_query_params(
+        from_date.isoformat(), to_date.isoformat()
+    )
+    return prometheus.query_user_groups(date_range, hub, username, usergroup)
 
 
 @app.get("/users-with-multiple-groups")
