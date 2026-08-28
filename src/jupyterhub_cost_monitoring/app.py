@@ -1,4 +1,3 @@
-import logging
 from datetime import timedelta
 
 from fastapi import FastAPI, Query
