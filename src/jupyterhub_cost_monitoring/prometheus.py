@@ -374,7 +374,9 @@ class Prometheus(LoggingConfigurable):
         hub_name: str | None = None,
         user_name: str | None = None,
     ) -> list[dict]:
-        response = self.query_user_groups(hub_name=hub_name, user_name=user_name)
+        response = self.query_user_groups(
+            date_range, hub_name=hub_name, user_name=user_name
+        )
         grouped = defaultdict(lambda: {"username": None, "hub": None})
         for entry in response:
             key = (entry["username"], entry["hub"])
