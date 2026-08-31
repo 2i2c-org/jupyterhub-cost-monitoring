@@ -36,6 +36,8 @@ spec:
           env:
             - name: PYTHONUNBUFFERED
               value: "1"
+            - name: JUPYTERHUBCOSTMONITORING__JupyterHubCostMonitoring__config_file
+              value: "/usr/local/etc/jupyterhub_cost_monitoring/jupyterhub_cost_monitoring_config.py"
             {{- with .Values.extraEnv }}
             {{- tpl (. | toYaml) $ | nindent 12 }}
             {{- end }}
@@ -57,8 +59,7 @@ spec:
             {{- .Values.securityContext | toYaml | nindent 12 }}
           volumeMounts:
           - name: config
-            mountPath: /usr/local/etc/jupyterhub_cost_monitoring.json
-            subPath: jupyterhub_cost_monitoring_config.json
+            mountPath: /usr/local/etc/jupyterhub_cost_monitoring/
           startupProbe:
             periodSeconds: 1
             failureThreshold: 60
