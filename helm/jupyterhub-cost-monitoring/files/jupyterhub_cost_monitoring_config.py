@@ -2,5 +2,6 @@
 
 # Load the JSON extra config that we have
 
-load_subconfig("/usr/local/etc/jupyterhub_cost_monitoring/jupyterhub_cost_monitoring_config.json")  # noqa
-
+load_subconfig(  # noqa
+    "/usr/local/etc/jupyterhub_cost_monitoring/jupyterhub_cost_monitoring_config.json"
+)
