@@ -1,0 +1,456 @@
+{
+    "GroupDefinitions": [
+        {
+            "Type": "DIMENSION",
+            "Key": "SERVICE"
+        }
+    ],
+    "ResultsByTime": [
+        {
+            "TimePeriod": {
+                "Start": "2026-06-20",
+                "End": "2026-06-21"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "22.2842443756",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "21.3387744606",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0031814846",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Virtual Private Cloud"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.483525",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-21",
+                "End": "2026-06-22"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "22.543526878",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "23.0675029419",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0031814846",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Virtual Private Cloud"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.514891665",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-22",
+                "End": "2026-06-23"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "22.2571722552",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "21.1209513239",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0031818846",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Virtual Private Cloud"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.47646805",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-23",
+                "End": "2026-06-24"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "22.3723933335",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "15.6473753483",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0031838846",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Virtual Private Cloud"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.368038895",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-24",
+                "End": "2026-06-25"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "22.067093349",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "20.7153086431",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0031826885",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Virtual Private Cloud"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.46381806",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-25",
+                "End": "2026-06-26"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "21.7293288162",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "18.5924451399",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0059602807",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Virtual Private Cloud"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.429493065",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-26",
+                "End": "2026-06-27"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "21.2148513456",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "14.9769180913",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0031838969",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Virtual Private Cloud"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.354887505",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-27",
+                "End": "2026-06-28"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "20.6563309551",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "11.1640316577",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0031814846",
+                            "Unit": "USD"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Virtual Private Cloud"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.28484028",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        }
+    ],
+    "DimensionValueAttributes": [],
+    "ResponseMetadata": {
+        "RequestId": "bb715424-d275-497b-b377-1bad5eef444f",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+            "date": "Thu, 06 Aug 2026 19:55:36 GMT",
+            "content-type": "application/x-amz-json-1.1",
+            "content-length": "4323",
+            "connection": "keep-alive",
+            "x-amzn-requestid": "bb715424-d275-497b-b377-1bad5eef444f",
+            "cache-control": "no-cache"
+        },
+        "RetryAttempts": 0
+    }
+}

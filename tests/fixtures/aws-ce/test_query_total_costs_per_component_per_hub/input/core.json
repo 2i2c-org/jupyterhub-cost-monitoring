@@ -1,0 +1,136 @@
+{
+    "GroupDefinitions": [
+        {
+            "Type": "DIMENSION",
+            "Key": "SERVICE"
+        }
+    ],
+    "ResultsByTime": [
+        {
+            "TimePeriod": {
+                "Start": "2026-06-20",
+                "End": "2026-06-21"
+            },
+            "Total": {
+                "UnblendedCost": {
+                    "Amount": "0",
+                    "Unit": "USD"
+                }
+            },
+            "Groups": [],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-21",
+                "End": "2026-06-22"
+            },
+            "Total": {
+                "UnblendedCost": {
+                    "Amount": "0",
+                    "Unit": "USD"
+                }
+            },
+            "Groups": [],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-22",
+                "End": "2026-06-23"
+            },
+            "Total": {
+                "UnblendedCost": {
+                    "Amount": "0",
+                    "Unit": "USD"
+                }
+            },
+            "Groups": [],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-23",
+                "End": "2026-06-24"
+            },
+            "Total": {
+                "UnblendedCost": {
+                    "Amount": "0",
+                    "Unit": "USD"
+                }
+            },
+            "Groups": [],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-24",
+                "End": "2026-06-25"
+            },
+            "Total": {
+                "UnblendedCost": {
+                    "Amount": "0",
+                    "Unit": "USD"
+                }
+            },
+            "Groups": [],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-25",
+                "End": "2026-06-26"
+            },
+            "Total": {
+                "UnblendedCost": {
+                    "Amount": "0",
+                    "Unit": "USD"
+                }
+            },
+            "Groups": [],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-26",
+                "End": "2026-06-27"
+            },
+            "Total": {
+                "UnblendedCost": {
+                    "Amount": "0",
+                    "Unit": "USD"
+                }
+            },
+            "Groups": [],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-27",
+                "End": "2026-06-28"
+            },
+            "Total": {
+                "UnblendedCost": {
+                    "Amount": "0",
+                    "Unit": "USD"
+                }
+            },
+            "Groups": [],
+            "Estimated": false
+        }
+    ],
+    "DimensionValueAttributes": [],
+    "ResponseMetadata": {
+        "RequestId": "7d475bfb-7a00-486a-8e7b-2fb5a6ab6a8b",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+            "date": "Thu, 06 Aug 2026 22:18:54 GMT",
+            "content-type": "application/x-amz-json-1.1",
+            "content-length": "1235",
+            "connection": "keep-alive",
+            "x-amzn-requestid": "7d475bfb-7a00-486a-8e7b-2fb5a6ab6a8b",
+            "cache-control": "no-cache"
+        },
+        "RetryAttempts": 0
+    }
+}

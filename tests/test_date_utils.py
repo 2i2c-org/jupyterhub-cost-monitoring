@@ -158,16 +158,15 @@ class TestDateRange:
         assert aws_to == "2025-02-01"
 
     def test_prometheus_range_formatting(self):
-        """Test Prometheus date range formatting (inclusive dates, ISO format)."""
+        """Test Prometheus date range formatting (inclusive dates)."""
         start = datetime(2025, 1, 15, 12, 30, 45, tzinfo=timezone.utc)
         end = datetime(2025, 1, 31, 8, 15, 30, tzinfo=timezone.utc)
         dr = DateRange(start_date=start, end_date=end)
 
         prom_from, prom_to = dr.prometheus_range
 
-        # Should be full ISO format with normalized times, no +1 day adjustment
-        assert prom_from == "2025-01-15T00:00:00+00:00"  # Normalized to start of day
-        assert prom_to == "2025-01-31T23:59:59.999999+00:00"  # Normalized to end of day
+        assert prom_from == "1736899200.0"  # Normalized to start of day
+        assert prom_to == "1738367999.999999"  # Normalized to end of day
 
     def test_same_logical_range_different_formats(self):
         """Test that AWS and Prometheus formats represent the same logical date range."""
@@ -184,8 +183,8 @@ class TestDateRange:
         assert aws_to == "2025-02-01"  # +1 day for exclusive end
 
         # Prometheus: inclusive range should preserve normalized timestamps
-        assert prom_from == "2025-01-01T00:00:00+00:00"
-        assert prom_to == "2025-01-31T23:59:59.999999+00:00"
+        assert prom_from == "1735689600.0"
+        assert prom_to == "1738367999.999999"
 
 
 class TestParseDateRangeParams:

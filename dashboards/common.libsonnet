@@ -1,5 +1,5 @@
-#!/usr/bin/env -S jsonnet -J ../../vendor
-local grafonnet = import '../../vendor/gen/grafonnet-v11.4.0/main.libsonnet';
+#!/usr/bin/env -S jsonnet -J ./vendor
+local grafonnet = import 'github.com/grafana/grafonnet/gen/grafonnet-v11.4.0/main.libsonnet';
 local var = grafonnet.dashboard.variable;
 local ts = grafonnet.panel.timeSeries;
 local bc = grafonnet.panel.barChart;
@@ -27,7 +27,7 @@ local bg = grafonnet.panel.barGauge;
             refId: 'variable',
             source: 'url',
             type: 'json',
-            url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/hub-names?from=${__from:date}&to=${__to:date}',
+            url: '/hub-names?from=${__from:date}&to=${__to:date}',
             url_options: {
               data: '',
               method: 'GET',
@@ -47,7 +47,7 @@ local bg = grafonnet.panel.barGauge;
       })
       + var.query.selectionOptions.withIncludeAll(value=true)
       + var.query.selectionOptions.withMulti(value=true)
-      + var.query.refresh.onTime(),    
+      + var.query.refresh.onTime(),
     hub_user:
       var.query.new(
         'hub_user',
@@ -61,7 +61,7 @@ local bg = grafonnet.panel.barGauge;
             root_selector: '$append($filter($, function($v) {$v != "support" and $v != "binder"}) , "All")',
             source: 'url',
             type: 'json',
-            url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/hub-names?from=${__from:date}&to=${__to:date}',
+            url: '/hub-names?from=${__from:date}&to=${__to:date}',
             url_options: {
               data: '',
               method: 'GET',
@@ -87,7 +87,7 @@ local bg = grafonnet.panel.barGauge;
             refId: 'variable',
             source: 'url',
             type: 'json',
-            url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/component-names?from=${__from:date}&to=${__to:date}',
+            url: '/component-names?from=${__from:date}&to=${__to:date}',
             url_options: {
               data: '',
               method: 'GET',
@@ -102,7 +102,7 @@ local bg = grafonnet.panel.barGauge;
       + var.query.refresh.onTime(),
     usergroup:
       var.query.new(
-        'usergroup', 
+        'usergroup',
         query='label_values(jupyterhub_user_group_info,usergroup)')
       + var.query.withDatasource(
         type='prometheus',
@@ -185,48 +185,48 @@ local bg = grafonnet.panel.barGauge;
   // Individual queries for each component for accurate aggregation in table totals in the legend.
   queryComponentArray: [
     $.queryComponentTarget + {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=compute',
+      url: '/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=compute',
       refid: 'compute',
     },
     $.queryComponentTarget + {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=home%20storage',
+      url: '/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=home%20storage',
       refid: 'home storage',
     },
     $.queryComponentTarget + {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=object%20storage',
+      url: '/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=object%20storage',
       refid: 'object storage',
     },
     $.queryComponentTarget + {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=core',
+      url: '/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=core',
       refid: 'core',
     },
     $.queryComponentTarget + {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=networking',
+      url: '/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=networking',
       refid: 'networking',
-    },    
+    },
   ],
 
   queryComponentHubArray: [
     $.queryComponentTarget + {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=compute' + '&hub=$hub_general',
+      url: '/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=compute' + '&hub=$hub_general',
       refid: 'compute',
     },
     $.queryComponentTarget + {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=home%20storage' + '&hub=$hub_general',
+      url: '/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=home%20storage' + '&hub=$hub_general',
       refid: 'home storage',
     },
     $.queryComponentTarget + {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=object%20storage' + '&hub=$hub_general',
+      url: '/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=object%20storage' + '&hub=$hub_general',
       refid: 'object storage',
     },
     $.queryComponentTarget + {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=core' + '&hub=$hub_general',
+      url: '/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=core' + '&hub=$hub_general',
       refid: 'core',
     },
     $.queryComponentTarget + {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=networking' + '&hub=$hub_general',
+      url: '/total-costs-per-component?from=${__from:date}&to=${__to:date}' + '&component=networking' + '&hub=$hub_general',
       refid: 'networking',
-    },    
+    },
   ],
 
   queryUsersTarget: {

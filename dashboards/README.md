@@ -4,45 +4,22 @@ Grafana dashboard designs are encoded as jsonnet templates, using a library call
 
 ## Jsonnet library
 
-Manually install the Grafonnet jsonnet library:
+We use [jsonnet-bundler](https://github.com/jsonnet-bundler/jsonnet-bundler/)
+to manage our dependencies, just like [jupyterhub/grafana-dashboards](https://github.com/jupyterhub/grafana-dashboards/)
 
-1. Clone [https://github.com/grafana/grafonnet.git](https://github.com/grafana/grafonnet.git)
+1. Install [jsonnet-bundler](github.com/jupyterhub/grafana-dashboards/)
 
-   ```bash
-   git clone https://github.com/grafana/grafonnet.git vendor
-   ```
-
-   into the parent directory of the `jupyterhub-cost-monitoring` folder, and name this folder `vendor` e.g.
-
-   ```bash
-   .
-   ├── jupyterhub-cost-monitoring
-   └── vendor
-   ```
-
-1. Dashboard jsonnet files can import the Grafonnet library with
-
-   ```python
-   #!/usr/bin/env -S jsonnet -J ../../vendor
-   local grafonnet = import '../../vendor/gen/grafonnet-v11.4.0/main.libsonnet';
-   ```
+2. In the `dashboards` directory, run `jb install`
 
 ## Rendering templates
 
 To render the jsonnet templates, which is useful during development, you
 can:
 
-1. Clone the  [jupyterhub/grafana-dashboards](https://github.com/jupyterhub/grafana-dashboards) repository
-2. Change directory to the `grafana-dashboards` cloned repo, and then run:
+1. In the `dashboards` directory, run:
 
-   ```bash
-   jsonnet -J vendor /path/to/jupyterhub-cost-monitoring/dashboards/cloud-cost-aws.jsonnet
-   ```
+  ```bash
+  jsonnet -J vendor <jsonnet-file>
+  ```
 
-## Deployment
-
-These dashboards are deployed using a Python `deploy.py` script from [jupyterhub/grafana-dashboards](https://github.com/jupyterhub/grafana-dashboards)
-
-Running this command has a pre-requisite that you have jsonnet installed,
-specifically the jsonnet binary built using golang called go-jsonnet.
-
+2. You can paste the rendered JSON directly into the 'import dashboard' screen on a grafana to test it out

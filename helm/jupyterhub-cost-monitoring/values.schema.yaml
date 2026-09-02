@@ -8,8 +8,8 @@
 # We look to document everything we have default values for in values.yaml, but
 # we don't look to enforce the perfect validation logic within this file.
 #
-# ref: https://helm.sh/docs/topics/charts/#schema-files
-# ref: https://json-schema.org/learn/getting-started-step-by-step.html
+# https://helm.sh/docs/topics/charts/#schema-files
+# https://json-schema.org/learn/getting-started-step-by-step.html
 #
 $schema: http://json-schema.org/draft-07/schema#
 type: object
@@ -17,28 +17,20 @@ additionalProperties: false
 required:
   # General configuration
 - global
-  # Cluster name configuration
 - extraEnv
-  # Deployment resource
 - image
-  # Other resources
+- config
 - serviceAccount
 - service
 - ingress
 - networkPolicy
 - secrets
 properties:
-  # Flag to conditionally install the chart
-  # ---------------------------------------------------------------------------
-  #
   enabled:
     type: boolean
     description: |
       Configuration flag for charts depending on jupyterhub-cost-monitoring to toggle installing it.
 
-  # General configuration
-  # ---------------------------------------------------------------------------
-  #
   nameOverride:
     type: [string, 'null']
   fullnameOverride:
@@ -47,9 +39,10 @@ properties:
     type: object
     additionalProperties: true
 
-  # Deployment resource
-  # ---------------------------------------------------------------------------
-  #
+  config:
+    type: object
+    additionalProperties: true
+
   replicas:
     type: integer
   extraEnv:
@@ -91,9 +84,6 @@ properties:
   tolerations:
     type: array
 
-  # ServiceAccount resource
-  # ---------------------------------------------------------------------------
-  #
   serviceAccount:
     type: object
     additionalProperties: false
@@ -105,9 +95,6 @@ properties:
         type: string
       annotations: *labels-and-annotations
 
-  # Service resource
-  # ---------------------------------------------------------------------------
-  #
   service:
     type: object
     additionalProperties: false
@@ -121,9 +108,6 @@ properties:
         type: integer
       annotations: *labels-and-annotations
 
-  # Ingress resource
-  # ---------------------------------------------------------------------------
-  #
   ingress:
     type: object
     additionalProperties: false
@@ -143,9 +127,6 @@ properties:
       tls:
         type: array
 
-  # NetworkPolicy resource
-  # ---------------------------------------------------------------------------
-  #
   networkPolicy:
     type: object
     additionalProperties: false
@@ -163,9 +144,6 @@ properties:
           localGrafanaInstances:
             type: boolean
 
-# Secrets resource
-# -----------------------------------------------------------------------------
-#
 prometheusAuth:
   type: object
   additionalProperties: false

@@ -1,0 +1,202 @@
+[
+    {
+        "date": "2026-06-20",
+        "cost": "20.95",
+        "component": "compute"
+    },
+    {
+        "date": "2026-06-20",
+        "cost": "0.00",
+        "component": "object storage"
+    },
+    {
+        "date": "2026-06-20",
+        "cost": "0.48",
+        "component": "networking"
+    },
+    {
+        "date": "2026-06-20",
+        "cost": "19.24",
+        "component": "home storage"
+    },
+    {
+        "date": "2026-06-20",
+        "cost": "3.43",
+        "component": "core"
+    },
+    {
+        "date": "2026-06-21",
+        "cost": "22.95",
+        "component": "compute"
+    },
+    {
+        "date": "2026-06-21",
+        "cost": "0.00",
+        "component": "object storage"
+    },
+    {
+        "date": "2026-06-21",
+        "cost": "0.51",
+        "component": "networking"
+    },
+    {
+        "date": "2026-06-21",
+        "cost": "19.23",
+        "component": "home storage"
+    },
+    {
+        "date": "2026-06-21",
+        "cost": "3.43",
+        "component": "core"
+    },
+    {
+        "date": "2026-06-22",
+        "cost": "20.75",
+        "component": "compute"
+    },
+    {
+        "date": "2026-06-22",
+        "cost": "0.00",
+        "component": "object storage"
+    },
+    {
+        "date": "2026-06-22",
+        "cost": "0.48",
+        "component": "networking"
+    },
+    {
+        "date": "2026-06-22",
+        "cost": "19.20",
+        "component": "home storage"
+    },
+    {
+        "date": "2026-06-22",
+        "cost": "3.43",
+        "component": "core"
+    },
+    {
+        "date": "2026-06-23",
+        "cost": "15.41",
+        "component": "compute"
+    },
+    {
+        "date": "2026-06-23",
+        "cost": "0.00",
+        "component": "object storage"
+    },
+    {
+        "date": "2026-06-23",
+        "cost": "0.37",
+        "component": "networking"
+    },
+    {
+        "date": "2026-06-23",
+        "cost": "19.18",
+        "component": "home storage"
+    },
+    {
+        "date": "2026-06-23",
+        "cost": "3.43",
+        "component": "core"
+    },
+    {
+        "date": "2026-06-24",
+        "cost": "20.15",
+        "component": "compute"
+    },
+    {
+        "date": "2026-06-24",
+        "cost": "0.00",
+        "component": "object storage"
+    },
+    {
+        "date": "2026-06-24",
+        "cost": "0.46",
+        "component": "networking"
+    },
+    {
+        "date": "2026-06-24",
+        "cost": "19.20",
+        "component": "home storage"
+    },
+    {
+        "date": "2026-06-24",
+        "cost": "3.43",
+        "component": "core"
+    },
+    {
+        "date": "2026-06-25",
+        "cost": "17.69",
+        "component": "compute"
+    },
+    {
+        "date": "2026-06-25",
+        "cost": "0.01",
+        "component": "object storage"
+    },
+    {
+        "date": "2026-06-25",
+        "cost": "0.43",
+        "component": "networking"
+    },
+    {
+        "date": "2026-06-25",
+        "cost": "19.19",
+        "component": "home storage"
+    },
+    {
+        "date": "2026-06-25",
+        "cost": "3.44",
+        "component": "core"
+    },
+    {
+        "date": "2026-06-26",
+        "cost": "13.57",
+        "component": "compute"
+    },
+    {
+        "date": "2026-06-26",
+        "cost": "0.00",
+        "component": "object storage"
+    },
+    {
+        "date": "2026-06-26",
+        "cost": "0.35",
+        "component": "networking"
+    },
+    {
+        "date": "2026-06-26",
+        "cost": "19.19",
+        "component": "home storage"
+    },
+    {
+        "date": "2026-06-26",
+        "cost": "3.43",
+        "component": "core"
+    },
+    {
+        "date": "2026-06-27",
+        "cost": "9.20",
+        "component": "compute"
+    },
+    {
+        "date": "2026-06-27",
+        "cost": "0.00",
+        "component": "object storage"
+    },
+    {
+        "date": "2026-06-27",
+        "cost": "0.28",
+        "component": "networking"
+    },
+    {
+        "date": "2026-06-27",
+        "cost": "19.20",
+        "component": "home storage"
+    },
+    {
+        "date": "2026-06-27",
+        "cost": "3.42",
+        "component": "core"
+    }
+]

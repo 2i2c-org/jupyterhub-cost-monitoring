@@ -1,0 +1,64 @@
+{
+    "status": "success",
+    "data": {
+        "resultType": "matrix",
+        "result": [
+            {
+                "metric": {
+                    "namespace": "staging",
+                    "usergroup": "group_1",
+                    "username": "user_1",
+                    "username_escaped": "user_1"
+                },
+                "values": [
+                    [
+                        1785024000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "staging",
+                    "usergroup": "group_1",
+                    "username": "user_2",
+                    "username_escaped": "user_2"
+                },
+                "values": [
+                    [
+                        1785024000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "staging",
+                    "usergroup": "group_1",
+                    "username": "user_3",
+                    "username_escaped": "user_3"
+                },
+                "values": [
+                    [
+                        1785024000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "staging",
+                    "usergroup": "group_2",
+                    "username": "user_4",
+                    "username_escaped": "user_4"
+                },
+                "values": [
+                    [
+                        1785024000,
+                        "1"
+                    ]
+                ]
+            }
+        ]
+    }
+}

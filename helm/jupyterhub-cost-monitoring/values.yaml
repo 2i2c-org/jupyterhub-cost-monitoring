@@ -1,13 +1,10 @@
-# General configuration
-# -----------------------------------------------------------------------------
-#
 nameOverride: ''
 fullnameOverride: ''
 global: {}
 
-# Deployment resource
-# -----------------------------------------------------------------------------
-#
+config:
+  test: hi
+
 replicas: 1
 extraEnv: []
 image:
@@ -31,17 +28,11 @@ nodeSelector: {}
 affinity: {}
 tolerations: []
 
-# ServiceAccount resource
-# -----------------------------------------------------------------------------
-#
 serviceAccount:
   create: true
   name: ''
   annotations: {}
 
-# Service resource
-# -----------------------------------------------------------------------------
-#
 service:
   type: ClusterIP
   port: 80
@@ -49,9 +40,6 @@ service:
     prometheus.io/scrape: "true"
     prometheus.io/port: "8080"
 
-# Ingress resource
-# -----------------------------------------------------------------------------
-#
 ingress:
   enabled: false
   annotations: {}
@@ -61,18 +49,12 @@ ingress:
   pathType: Prefix
   tls: []
 
-# NetworkPolicy resource
-# -----------------------------------------------------------------------------
-#
 networkPolicy:
   enabled: true
   ingress: []
   ingressAllowRules:
     localGrafanaInstances: true
 
-# Secrets resource
-# -----------------------------------------------------------------------------
-#
 prometheusAuth:
   enabled: false
   envFromSecret: ""

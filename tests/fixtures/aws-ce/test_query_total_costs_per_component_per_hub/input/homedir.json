@@ -1,0 +1,192 @@
+{
+    "GroupDefinitions": [
+        {
+            "Type": "DIMENSION",
+            "Key": "SERVICE"
+        }
+    ],
+    "ResultsByTime": [
+        {
+            "TimePeriod": {
+                "Start": "2026-06-20",
+                "End": "2026-06-21"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "19.1564208317",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-21",
+                "End": "2026-06-22"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "19.1472388046",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-22",
+                "End": "2026-06-23"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "19.1208648355",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-23",
+                "End": "2026-06-24"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "19.0971166664",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-24",
+                "End": "2026-06-25"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "19.1120523083",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-25",
+                "End": "2026-06-26"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "19.1107168252",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-26",
+                "End": "2026-06-27"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "19.109060331",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        },
+        {
+            "TimePeriod": {
+                "Start": "2026-06-27",
+                "End": "2026-06-28"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "EC2 - Other"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "19.1116849444",
+                            "Unit": "USD"
+                        }
+                    }
+                }
+            ],
+            "Estimated": false
+        }
+    ],
+    "DimensionValueAttributes": [],
+    "ResponseMetadata": {
+        "RequestId": "9c5adfa3-0e6d-4832-8c72-dafe63c22080",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+            "date": "Thu, 06 Aug 2026 22:18:54 GMT",
+            "content-type": "application/x-amz-json-1.1",
+            "content-length": "1626",
+            "connection": "keep-alive",
+            "x-amzn-requestid": "9c5adfa3-0e6d-4832-8c72-dafe63c22080",
+            "cache-control": "no-cache"
+        },
+        "RetryAttempts": 0
+    }
+}
