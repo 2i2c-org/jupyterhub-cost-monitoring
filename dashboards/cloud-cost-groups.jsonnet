@@ -185,7 +185,7 @@ local Hub =
 ;
 
 dashboard.new('Group cloud costs')
-+ dashboard.withUid('cloud-cost-users')
++ dashboard.withUid('cloud-cost-groups')
 + dashboard.withTimezone('utc')
 + dashboard.withEditable(true)
 + dashboard.time.withFrom('now-30d')
