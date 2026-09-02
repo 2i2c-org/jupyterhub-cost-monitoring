@@ -24,7 +24,7 @@ local TotalHub =
   + bg.queryOptions.withTargets([
     common.queryHubTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-hub?from=${__from:date}&to=${__to:date}',
+      url: '/total-costs-per-hub?from=${__from:date}&to=${__to:date}',
     },
   ])
   + bg.queryOptions.withTransformations([
@@ -85,7 +85,7 @@ local TotalComponent =
   + bg.queryOptions.withTargets([
     common.queryComponentTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-component?from=${__from:date}&to=${__to:date}',
+      url: '/total-costs-per-component?from=${__from:date}&to=${__to:date}',
     },
   ])
   + bg.queryOptions.withTransformations([
@@ -132,7 +132,7 @@ local Top5 =
   + bg.queryOptions.withTargets([
     common.queryUsersTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/costs-per-user?from=${__from:date}&to=${__to:date}',
+      url: '/costs-per-user?from=${__from:date}&to=${__to:date}',
     },
   ])
   + bg.options.reduceOptions.withValues(true)
@@ -227,7 +227,7 @@ local Hub =
   + bc.queryOptions.withTargets([
     common.queryUsersTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/costs-per-user?from=${__from:date}&to=${__to:date}&hub=$hub_user&component=$component&limit=$limit',
+      url: '/costs-per-user?from=${__from:date}&to=${__to:date}&hub=$hub_user&component=$component&limit=$limit',
     },
   ])
   + bc.panelOptions.withRepeat('hub_user')

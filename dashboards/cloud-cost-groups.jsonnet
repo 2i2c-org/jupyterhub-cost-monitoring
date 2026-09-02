@@ -25,7 +25,7 @@ local TotalGroup =
   + bg.queryOptions.withTargets([
     common.queryGroupTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-group?from=${__from:date}&to=${__to:date}',
+      url: '/total-costs-per-group?from=${__from:date}&to=${__to:date}',
     },
   ])
   + bg.queryOptions.withTransformations([
@@ -71,7 +71,7 @@ local MultipleGroup =
   + tb.queryOptions.withTargets([
     common.queryGroupMembershipTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/users-with-multiple-groups',
+      url: '/users-with-multiple-groups',
     },
   ])
   + tb.queryOptions.withTransformations([
@@ -111,7 +111,7 @@ local NoGroup =
   + tb.queryOptions.withTargets([
     common.queryGroupMembershipTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/users-with-no-groups',
+      url: '/users-with-no-groups',
     },
   ])
   + tb.queryOptions.withTransformations([
@@ -145,7 +145,7 @@ local Hub =
   + ts.queryOptions.withTargets([
     common.queryUsersTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/costs-per-user?from=${__from:date}&to=${__to:date}&hub=$hub_user&component=$component&usergroup=$usergroup',
+      url: '/costs-per-user?from=${__from:date}&to=${__to:date}&hub=$hub_user&component=$component&usergroup=$usergroup',
     },
   ])
   + ts.panelOptions.withRepeat('hub_user')

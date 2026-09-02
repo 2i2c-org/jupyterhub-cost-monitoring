@@ -37,7 +37,7 @@ local dailyCosts =
   + ts.queryOptions.withTargets([
     common.queryDailyTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs?from=${__from:date}&to=${__to:date}',
+      url: '/total-costs?from=${__from:date}&to=${__to:date}',
     },
   ]);
 
@@ -71,7 +71,7 @@ local dailyCostsPerHub =
   + ts.queryOptions.withTargets([
     common.queryDailyTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-hub?from=${__from:date}&to=${__to:date}',
+      url: '/total-costs-per-hub?from=${__from:date}&to=${__to:date}',
     },
   ]);
 
