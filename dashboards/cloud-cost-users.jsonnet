@@ -238,7 +238,7 @@ local Hub =
         "outputFormat": "MMM DD",
         "timeField": "Date",
         "timezone": "utc",
-        "useTimezone": true        
+        "useTimezone": true
       }),
       bc.queryOptions.transformation.withId('groupBy')
       + bc.queryOptions.transformation.withOptions({
@@ -266,7 +266,7 @@ local Hub =
         "rowField": "Date",
         "valueField": "Cost (firstNotNull)"
       })
-  ])  
+  ])
 ;
 
 dashboard.new('User cloud costs')

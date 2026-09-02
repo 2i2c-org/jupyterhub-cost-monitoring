@@ -52,7 +52,7 @@ local TotalGroup =
           field: 'Group',
         },
       ],
-    }),    
+    }),
     bg.queryOptions.transformation.withId('transpose')
   ])
   + bg.standardOptions.color.withMode('continuous-BlYlRd')
@@ -89,12 +89,12 @@ local MultipleGroup =
         "User": {
           "aggregations": [],
           "operation": "groupby"
-        },      
+        },
       },
       "showSubframeHeaders": true
-    }),    
+    }),
   ])
-  + tb.fieldConfig.defaults.custom.withFilterable(value=true)    
+  + tb.fieldConfig.defaults.custom.withFilterable(value=true)
 ;
 
 local NoGroup =
@@ -126,9 +126,9 @@ local NoGroup =
         "hub": "Hub",
         "username": "User",
       }
-    }), 
+    }),
   ])
-  + tb.fieldConfig.defaults.custom.withFilterable(value=true)  
+  + tb.fieldConfig.defaults.custom.withFilterable(value=true)
 ;
 
 local Hub =
