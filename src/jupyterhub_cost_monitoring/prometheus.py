@@ -13,7 +13,7 @@ from traitlets.config import LoggingConfigurable
 from yarl import URL
 
 from .cache import ttl_lru_cache
-from .date_utils import DateRange
+from .date_utils import DateRange, get_now_date
 
 # PromQL queries used
 MEMORY_REQUESTS_PER_USER = """
@@ -309,6 +309,11 @@ class Prometheus(LoggingConfigurable):
         """
         Get user group information from the Prometheus server for the most recent day.
         """
+        # FIXME: We are ignoring the passed in `date_range` to preserve
+        # older behavior of how groups are determined. This should be
+        # changed in the future
+        now_date = get_now_date() - timedelta(days=1)
+        date_range = DateRange(start_date=now_date, end_date=now_date)
         response = self.query(USER_GROUP_INFO, date_range, step="1d")
 
         result = []
