@@ -4,7 +4,7 @@ Query the Prometheus server to get usage of JupyterHub resources.
 
 import os
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import escapism
 import requests
@@ -127,7 +127,7 @@ def _process_response(
         hub = data["metric"]["namespace"]
         user = data["metric"]["username"]
         date = [
-            datetime.fromtimestamp(value[0], tz=timezone.utc).strftime("%Y-%m-%d")
+            datetime.fromtimestamp(value[0], tz=UTC).strftime("%Y-%m-%d")
             for value in data["values"]
         ]
         usage = [float(value[1]) for value in data["values"]]
