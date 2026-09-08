@@ -3,7 +3,7 @@ from datetime import timedelta
 from fastapi import FastAPI, Query
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
-from traitlets import Unicode
+from traitlets import Instance, Unicode
 from traitlets.config import Application
 
 from .aws import AWSCostExplorer
