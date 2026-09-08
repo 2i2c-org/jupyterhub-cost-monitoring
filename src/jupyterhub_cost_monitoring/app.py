@@ -29,10 +29,16 @@ class JupyterHubCostMonitoring(Application):
         config=True,
     )
 
+    prometheus = Instance(klass=Prometheus)
+
+    aws_ce = Instance(klass=AWSCostExplorer)
+
     def initialize(self, *args, **kwargs) -> None:
         super().initialize(*args, **kwargs)
         self.load_config_environ()
         self.load_config_file(self.config_file)
+        self.prometheus = Prometheus(parent=self)
+        self.aws_ce = AWSCostExplorer(parent=self)
 
 
 app = FastAPI()
@@ -43,8 +49,6 @@ jupyterhub_cost_monitoring_app = JupyterHubCostMonitoring()
 jupyterhub_cost_monitoring_app.initialize()
 
 logger = jupyterhub_cost_monitoring_app.log
-prometheus = Prometheus(parent=jupyterhub_cost_monitoring_app)
-aws_ce = AWSCostExplorer(parent=jupyterhub_cost_monitoring_app)
 
 
 @app.get("/")
@@ -75,7 +79,7 @@ def hub_names(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    return aws_ce.query_hub_names(date_range)
+    return jupyterhub_cost_monitoring_app.aws_ce.query_hub_names(date_range)
 
 
 @app.get("/component-names")
@@ -101,8 +105,12 @@ def total_costs(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    account_costs = aws_ce.query_account_costs(date_range)
-    attributable_costs = aws_ce.query_attributable_costs(date_range)
+    account_costs = jupyterhub_cost_monitoring_app.aws_ce.query_account_costs(
+        date_range
+    )
+    attributable_costs = jupyterhub_cost_monitoring_app.aws_ce.query_attributable_costs(
+        date_range
+    )
 
     # the infinity plugin appears needs us to sort by date, otherwise it fails
     # to distinguish time series by the name field for some reason
@@ -133,7 +141,9 @@ def user_groups(
     date_range = parse_from_to_in_query_params(
         from_date.isoformat(), to_date.isoformat()
     )
-    return prometheus.query_user_groups(date_range, hub, username, usergroup)
+    return jupyterhub_cost_monitoring_app.prometheus.query_user_groups(
+        date_range, hub, username, usergroup
+    )
 
 
 @app.get("/users-with-multiple-groups")
@@ -155,7 +165,9 @@ def users_with_multiple_groups(
         from_date.isoformat(), to_date.isoformat()
     )
 
-    return prometheus.query_users_with_multiple_groups(date_range, hub_name, user_name)
+    return jupyterhub_cost_monitoring_app.prometheus.query_users_with_multiple_groups(
+        date_range, hub_name, user_name
+    )
 
 
 @app.get("/users-with-no-groups")
@@ -177,7 +189,9 @@ def users_with_no_groups(
         from_date.isoformat(), to_date.isoformat()
     )
 
-    return prometheus.query_users_with_no_groups(date_range, hub_name, user_name)
+    return jupyterhub_cost_monitoring_app.prometheus.query_users_with_no_groups(
+        date_range, hub_name, user_name
+    )
 
 
 @app.get("/total-costs-per-hub")
@@ -195,7 +209,7 @@ def total_costs_per_hub(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    return aws_ce.query_total_costs_per_hub(date_range)
+    return jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_hub(date_range)
 
 
 @app.get("/total-costs-per-component")
@@ -222,7 +236,9 @@ def total_costs_per_component(
     if not component or component.lower() == "all":
         component = None
 
-    return aws_ce.query_total_costs_per_component(date_range, hub, component)
+    return jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_component(
+        date_range, hub, component
+    )
 
 
 @app.get("/total-costs-per-group")
@@ -240,7 +256,7 @@ def total_costs_per_group(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    return aws_ce.query_total_costs_per_group(date_range)
+    return jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_group(date_range)
 
 
 @app.get("/costs-per-user")
@@ -303,8 +319,10 @@ def costs_per_user(
     # Get per-user costs by combining AWS costs with Prometheus usage data
     results = []
     for ug in usergroup:
-        per_user_costs = aws_ce.query_total_costs_per_user(
-            date_range, hub, component, user, ug, limit
+        per_user_costs = (
+            jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_user(
+                date_range, hub, component, user, ug, limit
+            )
         )
         results.extend(per_user_costs)
 
@@ -340,7 +358,9 @@ def total_usage(
     if not user or user.lower() == "all":
         user = None
 
-    return prometheus.query_usage(date_range, hub, component, user)
+    return jupyterhub_cost_monitoring_app.prometheus.query_usage(
+        date_range, hub, component, user
+    )
 
 
 @app.get("/metrics")
