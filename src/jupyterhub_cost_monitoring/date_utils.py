@@ -92,18 +92,20 @@ class DateRange:
         """
         Format dates for Prometheus API.
 
-        Prometheus uses inclusive date ranges, as rfc3339 or unix timestamps. Let'
-        use unix timestamps here as those work with both tz aware and tz unaware
-        datetime objects.
+        Prometheus uses inclusive date ranges, as rfc3339 or unix timestamps. However,
+        there seems to be some minor differences in how it interprets unix timestamps
+        vs RFC3339 - so we stick to RCF3339.
 
         Both start and end dates are included in the query results.
 
         Returns:
             Tuple of (start_date_ts, end_date_ts) formatted for Prometheus
         """
+        # FIXME: Ensure there's a tz component, prometheus API will fail
+        # if the generated dates don't have that.
         return (
-            str(self.normalized_start_date.timestamp()),
-            str(self.normalized_end_date.timestamp()),
+            self.normalized_start_date.isoformat(),
+            self.normalized_end_date.isoformat(),
         )
 
 

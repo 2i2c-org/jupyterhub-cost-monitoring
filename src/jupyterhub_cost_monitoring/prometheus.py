@@ -4,7 +4,7 @@ Query the Prometheus server to get usage of JupyterHub resources.
 
 import os
 from collections import defaultdict
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 import escapism
 import requests
