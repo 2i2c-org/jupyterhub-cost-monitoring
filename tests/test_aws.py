@@ -1,9 +1,10 @@
 import json
+from datetime import timedelta
 from pathlib import Path
 
 from pytest_httpserver import HTTPServer
 
-from jupyterhub_cost_monitoring.date_utils import DateRange
+from jupyterhub_cost_monitoring.date_utils import DateRange, get_now_date
 from jupyterhub_cost_monitoring.prometheus import USAGE_MAP, USER_GROUP_INFO, Prometheus
 
 from .utils import mock_prometheus_queries, setup_mock_ce
@@ -123,11 +124,18 @@ def test_query_total_costs_per_user(httpserver: HTTPServer, aws_date_range: Date
         }
         for component in ["compute", "home storage"]
     ]
+
+    # FIXME: We are ignoring the passed in `date_range` to preserve
+    # older behavior of how groups are determined. This should be
+    # changed in the future
+    now_date = get_now_date() - timedelta(days=1)
+    groups_date_range = DateRange(start_date=now_date, end_date=now_date)
+    groups_start, groups_end = groups_date_range.prometheus_range
     query_responses.append(
         {
             "query": USER_GROUP_INFO,
-            "start": start,
-            "end": end,
+            "start": groups_start,
+            "end": groups_end,
             "step": "1d",
             "response": Path(
                 "tests/fixtures/aws-ce/test_query_total_costs_per_user/input/prometheus-groups.json"

@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -59,4 +59,6 @@ def date_validation_test_cases():
 
 @pytest.fixture
 def aws_date_range() -> DateRange:
-    return DateRange(datetime(2026, 6, 20), datetime(2026, 6, 27))
+    # The timezone when the sample data fixtures were generated
+    tz = timezone(timedelta(days=-1, seconds=61200), "PDT")
+    return DateRange(datetime(2026, 6, 20, tzinfo=tz), datetime(2026, 6, 27, tzinfo=tz))
