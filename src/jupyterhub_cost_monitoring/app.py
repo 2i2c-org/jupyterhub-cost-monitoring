@@ -19,7 +19,7 @@ class JupyterHubCostMonitoring(Application):
     name = "JupyterHubCostMonitoring"
 
     config_file = Unicode(
-        "jupyterhub_config.py",
+        "jupyterhub_cost_monitoring_config.py",
         help="""
         The config file to load.
 
