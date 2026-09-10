@@ -158,14 +158,13 @@ class TestDateRange:
         assert aws_to == "2025-02-01"
 
     def test_prometheus_range_formatting(self):
-        """Test Prometheus date range formatting (inclusive dates, ISO format)."""
+        """Test Prometheus date range formatting (inclusive dates)."""
         start = datetime(2025, 1, 15, 12, 30, 45, tzinfo=timezone.utc)
         end = datetime(2025, 1, 31, 8, 15, 30, tzinfo=timezone.utc)
         dr = DateRange(start_date=start, end_date=end)
 
         prom_from, prom_to = dr.prometheus_range
 
-        # Should be full ISO format with normalized times, no +1 day adjustment
         assert prom_from == "2025-01-15T00:00:00+00:00"  # Normalized to start of day
         assert prom_to == "2025-01-31T23:59:59.999999+00:00"  # Normalized to end of day
 

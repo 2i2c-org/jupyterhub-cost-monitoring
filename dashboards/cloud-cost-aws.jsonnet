@@ -1,5 +1,5 @@
-#!/usr/bin/env -S jsonnet -J ../../vendor
-local grafonnet = import '../../vendor/gen/grafonnet-v11.4.0/main.libsonnet';
+#!/usr/bin/env -S jsonnet -J /vendor
+local grafonnet = import 'github.com/grafana/grafonnet/gen/grafonnet-v11.4.0/main.libsonnet';
 local dashboard = grafonnet.dashboard;
 local ts = grafonnet.panel.timeSeries;
 local var = grafonnet.dashboard.variable;
@@ -37,7 +37,7 @@ local dailyCosts =
   + ts.queryOptions.withTargets([
     common.queryDailyTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs?from=${__from:date}&to=${__to:date}',
+      url: '/total-costs?from=${__from:date}&to=${__to:date}',
     },
   ]);
 
@@ -71,7 +71,7 @@ local dailyCostsPerHub =
   + ts.queryOptions.withTargets([
     common.queryDailyTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-hub?from=${__from:date}&to=${__to:date}',
+      url: '/total-costs-per-hub?from=${__from:date}&to=${__to:date}',
     },
   ]);
 

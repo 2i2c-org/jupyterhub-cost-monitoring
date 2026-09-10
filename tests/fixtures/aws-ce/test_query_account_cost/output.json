@@ -1,0 +1,42 @@
+[
+    {
+        "date": "2026-06-20",
+        "cost": "52.06",
+        "name": "account"
+    },
+    {
+        "date": "2026-06-21",
+        "cost": "54.07",
+        "name": "account"
+    },
+    {
+        "date": "2026-06-22",
+        "cost": "51.84",
+        "name": "account"
+    },
+    {
+        "date": "2026-06-23",
+        "cost": "46.36",
+        "name": "account"
+    },
+    {
+        "date": "2026-06-24",
+        "cost": "53.50",
+        "name": "account"
+    },
+    {
+        "date": "2026-06-25",
+        "cost": "50.79",
+        "name": "account"
+    },
+    {
+        "date": "2026-06-26",
+        "cost": "44.58",
+        "name": "account"
+    },
+    {
+        "date": "2026-06-27",
+        "cost": "40.02",
+        "name": "account"
+    }
+]

@@ -1,0 +1,86 @@
+[
+    {
+        "date": "2026-07-26",
+        "user": "user-0",
+        "hub": "prod",
+        "component": "compute",
+        "value": 0.27555988315605734
+    },
+    {
+        "date": "2026-07-26",
+        "user": "user-1",
+        "hub": "prod",
+        "component": "compute",
+        "value": 0.28042843232842585
+    },
+    {
+        "date": "2026-07-26",
+        "user": "user-2",
+        "hub": "prod",
+        "component": "compute",
+        "value": 0.257059396301057
+    },
+    {
+        "date": "2026-07-26",
+        "user": "user-3",
+        "hub": "prod",
+        "component": "compute",
+        "value": 0.046738072054737644
+    },
+    {
+        "date": "2026-07-26",
+        "user": "user-4",
+        "hub": "prod",
+        "component": "compute",
+        "value": 0.14021421615972215
+    },
+    {
+        "date": "2026-07-26",
+        "user": "user-0",
+        "hub": "prod",
+        "component": "home storage",
+        "value": 0.0
+    },
+    {
+        "date": "2026-07-26",
+        "user": "user-1",
+        "hub": "prod",
+        "component": "home storage",
+        "value": 0.9955635159604186
+    },
+    {
+        "date": "2026-07-26",
+        "user": "user-2",
+        "hub": "prod",
+        "component": "home storage",
+        "value": 1.5605722752296604e-05
+    },
+    {
+        "date": "2026-07-26",
+        "user": "user-3",
+        "hub": "prod",
+        "component": "home storage",
+        "value": 5.350533515073121e-06
+    },
+    {
+        "date": "2026-07-26",
+        "user": "user-4",
+        "hub": "prod",
+        "component": "home storage",
+        "value": 0.00441329839434948
+    },
+    {
+        "date": "2026-07-26",
+        "user": "user-1",
+        "hub": "staging",
+        "component": "home storage",
+        "value": 1.3376333787682803e-06
+    },
+    {
+        "date": "2026-07-26",
+        "user": "user-2",
+        "hub": "staging",
+        "component": "home storage",
+        "value": 8.917555858455203e-07
+    }
+]

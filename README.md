@@ -2,7 +2,7 @@
 
 ![Grafana dashboard with multiple panels showing stacked bar charts of user cloud costs over time.](./images/dashboard_users.png)
 
-Cloud cost monitoring is moving beyond just preventing runaway cost explosions – it’s about empowering JupyterHub administrators with the guardrails they need to run efficient, transparent, and sustainable infrastructures. A cloud cost bill can show a broad view of services and machines provisioned, but how can we provide granular insights into each user and the value they are deriving from the hub on an application level?  
+Cloud cost monitoring is moving beyond just preventing runaway cost explosions – it’s about empowering JupyterHub administrators with the guardrails they need to run efficient, transparent, and sustainable infrastructures. A cloud cost bill can show a broad view of services and machines provisioned, but how can we provide granular insights into each user and the value they are deriving from the hub on an application level?
 
 This tool provides a per-user cost reporting system for JupyterHubs running on AWS, enabling hub administrators to monitor and report the costs associated with each user. This approach delivers cloud observability and cost transparency that can be reliably deployed using Kubernetes and integrated with Zero to JupyterHub distributions.
 

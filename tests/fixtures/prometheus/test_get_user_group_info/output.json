@@ -1,0 +1,26 @@
+[
+    {
+        "hub": "staging",
+        "username": "user_1",
+        "username_escaped": "user_1",
+        "usergroup": "group_1"
+    },
+    {
+        "hub": "staging",
+        "username": "user_2",
+        "username_escaped": "user_2",
+        "usergroup": "group_1"
+    },
+    {
+        "hub": "staging",
+        "username": "user_3",
+        "username_escaped": "user_3",
+        "usergroup": "group_1"
+    },
+    {
+        "hub": "staging",
+        "username": "user_4",
+        "username_escaped": "user_4",
+        "usergroup": "group_2"
+    }
+]

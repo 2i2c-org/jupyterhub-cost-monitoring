@@ -1,0 +1,368 @@
+{
+    "status": "success",
+    "data": {
+        "resultType": "matrix",
+        "result": [
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "geolab",
+                    "username": "user-0",
+                    "username_escaped": "auth0-7c62be2fb29ecde3ad6a47c96e"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "geolab",
+                    "username": "user-1",
+                    "username_escaped": "auth0-7c62be3a56da3ce6657fc55eb9"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "geolab",
+                    "username": "user-2",
+                    "username_escaped": "auth0-7c62d7b6e6dbfb90d69d24b9b7"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "geolab",
+                    "username": "user-3",
+                    "username_escaped": "auth0-7c63038116d5939cebfff4c80d"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "geolab",
+                    "username": "user-4",
+                    "username_escaped": "auth0-7c630e2b0c83b090bef3edc5cc"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "multiple",
+                    "username": "user-0",
+                    "username_escaped": "auth0-7c62be2fb29ecde3ad6a47c96e"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "multiple",
+                    "username": "user-1",
+                    "username_escaped": "auth0-7c62be3a56da3ce6657fc55eb9"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "multiple",
+                    "username": "user-2",
+                    "username_escaped": "auth0-7c62d7b6e6dbfb90d69d24b9b7"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "multiple",
+                    "username": "user-3",
+                    "username_escaped": "auth0-7c63038116d5939cebfff4c80d"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "multiple",
+                    "username": "user-4",
+                    "username_escaped": "auth0-7c630e2b0c83b090bef3edc5cc"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "offline_access",
+                    "username": "user-0",
+                    "username_escaped": "auth0-7c62be2fb29ecde3ad6a47c96e"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "offline_access",
+                    "username": "user-1",
+                    "username_escaped": "auth0-7c62be3a56da3ce6657fc55eb9"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "offline_access",
+                    "username": "user-2",
+                    "username_escaped": "auth0-7c62d7b6e6dbfb90d69d24b9b7"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "offline_access",
+                    "username": "user-3",
+                    "username_escaped": "auth0-7c63038116d5939cebfff4c80d"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "offline_access",
+                    "username": "user-4",
+                    "username_escaped": "auth0-7c630e2b0c83b090bef3edc5cc"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "openid",
+                    "username": "user-0",
+                    "username_escaped": "auth0-7c62be2fb29ecde3ad6a47c96e"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "openid",
+                    "username": "user-1",
+                    "username_escaped": "auth0-7c62be3a56da3ce6657fc55eb9"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "openid",
+                    "username": "user-2",
+                    "username_escaped": "auth0-7c62d7b6e6dbfb90d69d24b9b7"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "openid",
+                    "username": "user-3",
+                    "username_escaped": "auth0-7c63038116d5939cebfff4c80d"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            },
+            {
+                "metric": {
+                    "namespace": "prod",
+                    "usergroup": "openid",
+                    "username": "user-4",
+                    "username_escaped": "auth0-7c630e2b0c83b090bef3edc5cc"
+                },
+                "values": [
+                    [
+                        1787529600,
+                        "1"
+                    ],
+                    [
+                        1787616000,
+                        "1"
+                    ]
+                ]
+            }
+        ]
+    }
+}

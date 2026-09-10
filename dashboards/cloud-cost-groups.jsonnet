@@ -1,5 +1,5 @@
-#!/usr/bin/env -S jsonnet -J ../../vendor
-local grafonnet = import '../../vendor/gen/grafonnet-v11.4.0/main.libsonnet';
+#!/usr/bin/env -S jsonnet -J ./vendor
+local grafonnet = import 'github.com/grafana/grafonnet/gen/grafonnet-v11.4.0/main.libsonnet';
 local dashboard = grafonnet.dashboard;
 local ts = grafonnet.panel.timeSeries;
 local bc = grafonnet.panel.barChart;
@@ -25,7 +25,7 @@ local TotalGroup =
   + bg.queryOptions.withTargets([
     common.queryGroupTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/total-costs-per-group?from=${__from:date}&to=${__to:date}',
+      url: '/total-costs-per-group?from=${__from:date}&to=${__to:date}',
     },
   ])
   + bg.queryOptions.withTransformations([
@@ -52,7 +52,7 @@ local TotalGroup =
           field: 'Group',
         },
       ],
-    }),    
+    }),
     bg.queryOptions.transformation.withId('transpose')
   ])
   + bg.standardOptions.color.withMode('continuous-BlYlRd')
@@ -71,7 +71,7 @@ local MultipleGroup =
   + tb.queryOptions.withTargets([
     common.queryGroupMembershipTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/users-with-multiple-groups',
+      url: '/users-with-multiple-groups',
     },
   ])
   + tb.queryOptions.withTransformations([
@@ -89,12 +89,12 @@ local MultipleGroup =
         "User": {
           "aggregations": [],
           "operation": "groupby"
-        },      
+        },
       },
       "showSubframeHeaders": true
-    }),    
+    }),
   ])
-  + tb.fieldConfig.defaults.custom.withFilterable(value=true)    
+  + tb.fieldConfig.defaults.custom.withFilterable(value=true)
 ;
 
 local NoGroup =
@@ -111,7 +111,7 @@ local NoGroup =
   + tb.queryOptions.withTargets([
     common.queryGroupMembershipTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/users-with-no-groups',
+      url: '/users-with-no-groups',
     },
   ])
   + tb.queryOptions.withTransformations([
@@ -126,9 +126,9 @@ local NoGroup =
         "hub": "Hub",
         "username": "User",
       }
-    }), 
+    }),
   ])
-  + tb.fieldConfig.defaults.custom.withFilterable(value=true)  
+  + tb.fieldConfig.defaults.custom.withFilterable(value=true)
 ;
 
 local Hub =
@@ -145,7 +145,7 @@ local Hub =
   + ts.queryOptions.withTargets([
     common.queryUsersTarget
     {
-      url: 'http://jupyterhub-cost-monitoring.support.svc.cluster.local/costs-per-user?from=${__from:date}&to=${__to:date}&hub=$hub_user&component=$component&usergroup=$usergroup',
+      url: '/costs-per-user?from=${__from:date}&to=${__to:date}&hub=$hub_user&component=$component&usergroup=$usergroup',
     },
   ])
   + ts.panelOptions.withRepeat('hub_user')
@@ -185,7 +185,7 @@ local Hub =
 ;
 
 dashboard.new('Group cloud costs')
-+ dashboard.withUid('cloud-cost-users')
++ dashboard.withUid('cloud-cost-groups')
 + dashboard.withTimezone('utc')
 + dashboard.withEditable(true)
 + dashboard.time.withFrom('now-30d')

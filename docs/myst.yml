@@ -16,11 +16,13 @@ project:
     - file: how-to/dashboard.md
   - title: Topics
     children:
+    - file: topics/concepts.md
     - file: topics/architecture.md
     - file: topics/components.md
     - file: topics/cost-calculations.md
   - title: Reference
     children:
+    - file: reference/tags.md
     - file: reference/api.md
     - file: reference/License.md
     - file: reference/CODE-OF-CONDUCT.md

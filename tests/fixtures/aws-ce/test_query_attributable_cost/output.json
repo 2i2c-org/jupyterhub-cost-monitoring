@@ -1,0 +1,42 @@
+[
+    {
+        "date": "2026-06-20",
+        "cost": "44.11",
+        "name": "attributable"
+    },
+    {
+        "date": "2026-06-21",
+        "cost": "46.13",
+        "name": "attributable"
+    },
+    {
+        "date": "2026-06-22",
+        "cost": "43.86",
+        "name": "attributable"
+    },
+    {
+        "date": "2026-06-23",
+        "cost": "38.39",
+        "name": "attributable"
+    },
+    {
+        "date": "2026-06-24",
+        "cost": "43.25",
+        "name": "attributable"
+    },
+    {
+        "date": "2026-06-25",
+        "cost": "40.76",
+        "name": "attributable"
+    },
+    {
+        "date": "2026-06-26",
+        "cost": "36.55",
+        "name": "attributable"
+    },
+    {
+        "date": "2026-06-27",
+        "cost": "32.11",
+        "name": "attributable"
+    }
+]

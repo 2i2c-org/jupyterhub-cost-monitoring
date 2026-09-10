@@ -35,7 +35,7 @@ class DateRange:
     properties to format them correctly for different APIs that have different
     date range requirements:
     - AWS Cost Explorer: Uses exclusive end dates (end date not included in range)
-    - Prometheus: Uses inclusive dates with ISO timestamp format
+    - Prometheus: Uses inclusive dates with unix / rfc3339 timestamp format
 
     This ensures consistent date ranges across different API calls while respecting
     each API's specific formatting requirements.
@@ -92,12 +92,17 @@ class DateRange:
         """
         Format dates for Prometheus API.
 
-        Prometheus uses inclusive date ranges with ISO format timestamps.
+        Prometheus uses inclusive date ranges, as rfc3339 or unix timestamps. However,
+        there seems to be some minor differences in how it interprets unix timestamps
+        vs RFC3339 - so we stick to RCF3339.
+
         Both start and end dates are included in the query results.
 
         Returns:
-            Tuple of (start_date_iso, end_date_iso) formatted for Prometheus
+            Tuple of (start_date_ts, end_date_ts) formatted for Prometheus
         """
+        # FIXME: Ensure there's a tz component, prometheus API will fail
+        # if the generated dates don't have that.
         return (
             self.normalized_start_date.isoformat(),
             self.normalized_end_date.isoformat(),

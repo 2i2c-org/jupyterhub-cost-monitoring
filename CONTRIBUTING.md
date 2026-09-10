@@ -4,25 +4,23 @@ Please refer to [Project Jupyter's Code of Conduct](https://github.com/jupyter/g
 
 ## Setting up a local development environment
 
-This project uses the Python package manager `uv`. Below are the steps to set up a local development environment.
-
 1. Clone this repository
 
   ```bash
   git clone https://github.com/2i2c-org/jupyterhub-cost-monitoring.git
   ```
 
-1. Install `uv`
+1. Create a virtual environment (we use `venv`, but you can use `conda` or any other tool of your choice)
 
    ```bash
-   curl -LsSf https://astral.sh/uv/install.sh | sh
+   python3 -m venv venv/
    ```
 
-1. Install project dependencies and source the `.venv` environment
+1. Install project dependencies and source the `venv` environment
 
    ```bash
-   uv sync
-   source .venv/bin/activate
+   source venv/bin/activate
+   pip install --editable "[.dev]"
    ```
 
 1. Authenticate with [AWS credentials](https://docs.aws.amazon.com/cli/v1/userguide/cli-configure-files.html) (requires [AWS CLI installation](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)). This example uses a [session token](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) from an MFA code associated with an MFA device:
@@ -42,8 +40,6 @@ This project uses the Python package manager `uv`. Below are the steps to set up
    ```
 
 1. Visit [http://127.0.0.1:8080](http://127.0.0.1:8080) to view the application.
-
-If you need to add or update dependencies, follow the guidance in [Working on projects | uv](https://docs.astral.sh/uv/guides/projects/#managing-dependencies)
 
 ## Pre-commit
 
@@ -68,7 +64,7 @@ See the configuration in the [`chartpress.yaml`](https://github.com/2i2c-org/jup
 To run tests, use `pytest`:
 
 ```bash
-uv run pytest
+py.test tests/
 ```
 
 ## Documentation
@@ -79,7 +75,7 @@ To build the documentation locally, run:
 
 ```bash
 cd docs
-uv run myst start
+myst start
 ```
 
 To build the API documentation, download the OpenAPI specification from the FastAPI server default URL `/openapi.json` and place it in the `docs/reference` directory.

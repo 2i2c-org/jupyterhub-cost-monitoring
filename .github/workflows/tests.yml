@@ -5,28 +5,19 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.12']
 
     steps:
     - uses: actions/checkout@v5
 
-    - name: Install uv
-      uses: astral-sh/setup-uv@v6
+    - name: Setup python
+      uses: actions/setup-python@v7
       with:
-        version: latest
-    - name: Set up Python ${{ matrix.python-version }}
-      run: uv python install ${{ matrix.python-version }}
+        python-version: '3.13'
 
-    - name: Install dependencies
-      run: uv sync --dev
-
-    - name: Run linter
-      run: uv run ruff check .
-
-    - name: Run formatter check
-      run: uv run ruff format --check .
+    - name: Install package + dev dependencies
+      run: |
+        pip install --editable ".[dev]"
 
     - name: Run tests
-      run: uv run pytest -v
+      run: |
+        py.test tests/
