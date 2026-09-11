@@ -1,5 +1,4 @@
 import json
-import logging
 from datetime import timedelta
 from pathlib import Path
 
@@ -13,8 +12,6 @@ from jupyterhub_cost_monitoring.date_utils import (
 from jupyterhub_cost_monitoring.prometheus import USAGE_MAP, USER_GROUP_INFO, Prometheus
 
 from .utils import mock_prometheus_queries
-
-logger = logging.getLogger(__name__)
 
 date_range = parse_from_to_in_query_params("2025-09-01", "2025-09-02")
 
