@@ -4,7 +4,6 @@ Queries to AWS Cost Explorer to get different kinds of cost data.
 
 import copy
 import functools
-import os
 from pprint import pformat
 
 import boto3
@@ -85,7 +84,7 @@ class AWSCostExplorer(LoggingConfigurable):
             "Tags": {
                 "Key": "JupyterHubCostMonitoring:AccountsFor",
                 "Values": ["True"],
-                "MatchOptions": ["EQUALS"]
+                "MatchOptions": ["EQUALS"],
             }
         }
 
