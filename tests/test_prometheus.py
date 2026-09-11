@@ -9,7 +9,12 @@ from jupyterhub_cost_monitoring.date_utils import (
     get_now_date,
     parse_from_to_in_query_params,
 )
-from jupyterhub_cost_monitoring.prometheus import USAGE_MAP, USER_GROUP_INFO, Prometheus
+from jupyterhub_cost_monitoring.prometheus import (
+    USAGE_MAP,
+    USER_GROUP_INFO,
+    Prometheus,
+    User,
+)
 
 from .utils import mock_prometheus_queries
 
@@ -52,9 +57,33 @@ def test_get_user_group_info(httpserver: HTTPServer):
         group_name=None,
     )
 
-    with open("tests/fixtures/prometheus/test_get_user_group_info/output.json") as f:
-        expected_response = json.load(f)
-        assert expected_response == response
+    assert response == [
+        User(hub="staging", name="user_1", escaped_name="user_1", groups={"group_1"}),
+        User(
+            hub="staging",
+            name="user_2",
+            escaped_name="user_2",
+            groups={
+                "group_1",
+            },
+        ),
+        User(
+            hub="staging",
+            name="user_3",
+            escaped_name="user_3",
+            groups={
+                "group_1",
+            },
+        ),
+        User(
+            hub="staging",
+            name="user_4",
+            escaped_name="user_4",
+            groups={
+                "group_2",
+            },
+        ),
+    ]
 
 
 def test_get_usage_data(httpserver: HTTPServer):
