@@ -48,8 +48,6 @@ app.add_middleware(MetricsMiddleware)
 jupyterhub_cost_monitoring_app = JupyterHubCostMonitoring()
 jupyterhub_cost_monitoring_app.initialize()
 
-logger = jupyterhub_cost_monitoring_app.log
-
 
 @app.get("/")
 def index():
