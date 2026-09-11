@@ -4,7 +4,6 @@ Queries to AWS Cost Explorer to get different kinds of cost data.
 
 import copy
 import functools
-import os
 from pprint import pformat
 
 import boto3
@@ -47,7 +46,7 @@ class AWSCostExplorer(LoggingConfigurable):
     )
 
     hub_name_tag = Unicode(
-        "2i2c:hub-name",
+        "JupyterHubCostMonitoring:HubName",
         help="""
         Tag name that associates a cloud resource as belonging to a particular hub
         """,
@@ -58,8 +57,8 @@ class AWSCostExplorer(LoggingConfigurable):
         Dict(),
         default_value={
             "Tags": {
-                "Key": "2i2c:volume-purpose",
-                "Values": ["home-nfs"],
+                "Key": "JupyterHubCostMonitoring:Purpose",
+                "Values": ["home-storage"],
                 "MatchOptions": ["EQUALS"],
             }
         },
@@ -81,66 +80,18 @@ class AWSCostExplorer(LoggingConfigurable):
 
     @default("attributable_costs_filter")
     def _attributable_costs_filter_default(self):
-        cluster_name = os.environ.get("CLUSTER_NAME")
-
-        if cluster_name is None:
-            # We don't want to rely on this environment variable in the future
-            raise ValueError(
-                "CLUSTER_NAME env var is not set, and required currently. This will change in the future."
-            )
-
         return {
-            # https://github.com/2i2c-org/infrastructure/issues/4787#issue-2519110356
-            "Or": [
-                {
-                    "Tags": {
-                        "Key": "alpha.eksctl.io/cluster-name",
-                        "Values": [cluster_name],
-                        "MatchOptions": ["EQUALS"],
-                    },
-                },
-                {
-                    "Tags": {
-                        "Key": f"kubernetes.io/cluster/{cluster_name}",
-                        "Values": ["owned"],
-                        "MatchOptions": ["EQUALS"],
-                    },
-                },
-                {
-                    "Tags": {
-                        "Key": "2i2c.org/cluster-name",
-                        "Values": [cluster_name],
-                        "MatchOptions": ["EQUALS"],
-                    },
-                },
-                # FIXME: The inclusion of tags 2i2c:hub-name and 2i2c:node-purpose below
-                #        in this filter is a patch to capture openscapes data from 1st
-                #        July and up to 24th September 2024, and can be removed once
-                #        that date range is considered irrelevant.
-                #
-                {
-                    "Not": {
-                        "Tags": {
-                            "Key": "2i2c:hub-name",
-                            "MatchOptions": ["ABSENT"],
-                        },
-                    },
-                },
-                {
-                    "Not": {
-                        "Tags": {
-                            "Key": "2i2c:node-purpose",
-                            "MatchOptions": ["ABSENT"],
-                        },
-                    },
-                },
-            ]
+            "Tags": {
+                "Key": "JupyterHubCostMonitoring:AccountsFor",
+                "Values": ["True"],
+                "MatchOptions": ["EQUALS"],
+            }
         }
 
     core_costs_filter = Dict(
         default_value={
             "Or": [
-                # Core node storage
+                # EBS storage of core nodes
                 {
                     "And": [
                         {
@@ -152,7 +103,7 @@ class AWSCostExplorer(LoggingConfigurable):
                         },
                         {
                             "Tags": {
-                                "Key": "2i2c:node-purpose",
+                                "Key": "JupyterHubCostMonitoring:Purpose",
                                 "Values": ["core"],
                                 "MatchOptions": ["EQUALS"],
                             },
@@ -171,7 +122,7 @@ class AWSCostExplorer(LoggingConfigurable):
                         },
                         {
                             "Tags": {
-                                "Key": "2i2c:node-purpose",
+                                "Key": "JupyterHubCostMonitoring:Purpose",
                                 "Values": ["core"],
                                 "MatchOptions": ["EQUALS"],
                             },
@@ -212,7 +163,7 @@ class AWSCostExplorer(LoggingConfigurable):
                         },
                         {
                             "Tags": {
-                                "Key": "kubernetes.io/created-for/pvc/name",
+                                "Key": "JupyterHubCostMonitoring:Purpose",
                                 "Values": ["hub-db-dir"],
                                 "MatchOptions": ["EQUALS"],
                             },
@@ -231,7 +182,7 @@ class AWSCostExplorer(LoggingConfigurable):
                         },
                         {
                             "Tags": {
-                                "Key": "kubernetes.io/created-for/pvc/namespace",
+                                "Key": "JupyterHubCostMonitoring:Purpose",
                                 "Values": ["support"],
                                 "MatchOptions": ["EQUALS"],
                             },
