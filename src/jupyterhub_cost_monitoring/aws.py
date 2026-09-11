@@ -58,8 +58,8 @@ class AWSCostExplorer(LoggingConfigurable):
         Dict(),
         default_value={
             "Tags": {
-                "Key": "JupyterHubCostMonitoring:VolumePurpose",
-                "Values": ["jupyterhub-home-nfs"],
+                "Key": "JupyterHubCostMonitoring:Purpose",
+                "Values": ["home-storage"],
                 "MatchOptions": ["EQUALS"],
             }
         },
@@ -104,7 +104,7 @@ class AWSCostExplorer(LoggingConfigurable):
                         },
                         {
                             "Tags": {
-                                "Key": "JupyterHubCostMonitoring:NodePurpose",
+                                "Key": "JupyterHubCostMonitoring:Purpose",
                                 "Values": ["core"],
                                 "MatchOptions": ["EQUALS"],
                             },
@@ -123,7 +123,7 @@ class AWSCostExplorer(LoggingConfigurable):
                         },
                         {
                             "Tags": {
-                                "Key": "JupyterHubCostMonitoring:NodePurpose",
+                                "Key": "JupyterHubCostMonitoring:Purpose",
                                 "Values": ["core"],
                                 "MatchOptions": ["EQUALS"],
                             },
@@ -164,7 +164,7 @@ class AWSCostExplorer(LoggingConfigurable):
                         },
                         {
                             "Tags": {
-                                "Key": "JupyterHubCostMonitoring:VolumePurpose"
+                                "Key": "JupyterHubCostMonitoring:Purpose",
                                 "Values": ["hub-db-dir"],
                                 "MatchOptions": ["EQUALS"],
                             },
@@ -183,7 +183,7 @@ class AWSCostExplorer(LoggingConfigurable):
                         },
                         {
                             "Tags": {
-                                "Key": "JupyterHubCostMonitoring:VolumePurpose"
+                                "Key": "JupyterHubCostMonitoring:Purpose",
                                 "Values": ["support"],
                                 "MatchOptions": ["EQUALS"],
                             },
