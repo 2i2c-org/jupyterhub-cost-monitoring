@@ -92,7 +92,7 @@ class AWSCostExplorer(LoggingConfigurable):
     core_costs_filter = Dict(
         default_value={
             "Or": [
-                # Core node storage
+                # EBS storage of core nodes
                 {
                     "And": [
                         {
@@ -104,7 +104,7 @@ class AWSCostExplorer(LoggingConfigurable):
                         },
                         {
                             "Tags": {
-                                "Key": "2i2c:node-purpose",
+                                "Key": "JupyterHubCostMonitoring:NodePurpose",
                                 "Values": ["core"],
                                 "MatchOptions": ["EQUALS"],
                             },
@@ -123,7 +123,7 @@ class AWSCostExplorer(LoggingConfigurable):
                         },
                         {
                             "Tags": {
-                                "Key": "2i2c:node-purpose",
+                                "Key": "JupyterHubCostMonitoring:NodePurpose",
                                 "Values": ["core"],
                                 "MatchOptions": ["EQUALS"],
                             },
@@ -164,7 +164,7 @@ class AWSCostExplorer(LoggingConfigurable):
                         },
                         {
                             "Tags": {
-                                "Key": "kubernetes.io/created-for/pvc/name",
+                                "Key": "JupyterHubCostMonitoring:VolumePurpose"
                                 "Values": ["hub-db-dir"],
                                 "MatchOptions": ["EQUALS"],
                             },
@@ -183,7 +183,7 @@ class AWSCostExplorer(LoggingConfigurable):
                         },
                         {
                             "Tags": {
-                                "Key": "kubernetes.io/created-for/pvc/namespace",
+                                "Key": "JupyterHubCostMonitoring:VolumePurpose"
                                 "Values": ["support"],
                                 "MatchOptions": ["EQUALS"],
                             },
