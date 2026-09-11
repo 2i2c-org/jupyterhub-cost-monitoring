@@ -145,11 +145,7 @@ def user_groups(
     )
 
     # Flatten our users (which has nested groups) into something that Grafana can consume more easily
-    entries = []
-    for user in users:
-        entries += user.flatten()
-
-    return entries
+    return list(itertools.chain.from_iterable([u.flatten() for u in users]))
 
 
 @app.get("/users-with-multiple-groups")
@@ -173,7 +169,21 @@ def users_with_multiple_groups(
 
     users = jupyterhub_cost_monitoring_app.prometheus.query_user_groups(date_range)
 
-    return itertools.chain([u.flatten() for u in users if len(u.groups) > 1])
+    # FIXME: For backwards compatibility, we do two things here:
+    # 1. Remove the `username_escaped` field
+    # 2. Remove group named `multiple` as that is implied
+    # We should break compatibility at some point
+
+    user_entries = []
+    for entry in itertools.chain.from_iterable(
+        [u.flatten() for u in users if len(u.groups) > 1]
+    ):
+        del entry["username_escaped"]
+        if entry["usergroup"] == "multiple":
+            continue
+        user_entries.append(entry)
+
+    return user_entries
 
 
 @app.get("/users-with-no-groups")
@@ -197,7 +207,22 @@ def users_with_no_groups(
 
     users = jupyterhub_cost_monitoring_app.prometheus.query_user_groups(date_range)
 
-    return itertools.chain([u.flatten() for u in users if len(u.groups) > 0])
+    # FIXME: For backwards compatibility, we do two things here:
+    # 1. Remove the `username_escaped` field
+    # 2. Remove the `group` field
+    # We should break compatibility at some point
+
+    user_entries = []
+    for entry in itertools.chain.from_iterable(
+        # FIXME: We shouldn't export values with special meaning like "none" or "multiple"
+        # when they can be inferred.
+        [u.flatten() for u in users if u.groups == set(["none"])]
+    ):
+        del entry["username_escaped"]
+        del entry["usergroup"]
+        user_entries.append(entry)
+
+    return user_entries
 
 
 @app.get("/total-costs-per-hub")
