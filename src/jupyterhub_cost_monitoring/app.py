@@ -1,3 +1,4 @@
+import itertools
 from datetime import timedelta
 
 from fastapi import FastAPI, Query
@@ -139,9 +140,16 @@ def user_groups(
     date_range = parse_from_to_in_query_params(
         from_date.isoformat(), to_date.isoformat()
     )
-    return jupyterhub_cost_monitoring_app.prometheus.query_user_groups(
+    users = jupyterhub_cost_monitoring_app.prometheus.query_user_groups(
         date_range, hub, username, usergroup
     )
+
+    # Flatten our users (which has nested groups) into something that Grafana can consume more easily
+    entries = []
+    for user in users:
+        entries += user.flatten()
+
+    return entries
 
 
 @app.get("/users-with-multiple-groups")
@@ -163,9 +171,9 @@ def users_with_multiple_groups(
         from_date.isoformat(), to_date.isoformat()
     )
 
-    return jupyterhub_cost_monitoring_app.prometheus.query_users_with_multiple_groups(
-        date_range, hub_name, user_name
-    )
+    users = jupyterhub_cost_monitoring_app.prometheus.query_user_groups(date_range)
+
+    return itertools.chain([u.flatten() for u in users if len(u.groups) > 1])
 
 
 @app.get("/users-with-no-groups")
@@ -187,9 +195,9 @@ def users_with_no_groups(
         from_date.isoformat(), to_date.isoformat()
     )
 
-    return jupyterhub_cost_monitoring_app.prometheus.query_users_with_no_groups(
-        date_range, hub_name, user_name
-    )
+    users = jupyterhub_cost_monitoring_app.prometheus.query_user_groups(date_range)
+
+    return itertools.chain([u.flatten() for u in users if len(u.groups) > 0])
 
 
 @app.get("/total-costs-per-hub")

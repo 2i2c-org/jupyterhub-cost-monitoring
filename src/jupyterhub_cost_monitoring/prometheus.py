@@ -2,9 +2,12 @@
 Query the Prometheus server to get usage of JupyterHub resources.
 """
 
+import json
 import os
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from typing import Dict, Tuple
 
 import escapism
 import requests
@@ -50,6 +53,29 @@ USAGE_MAP = {
 USER_GROUP_INFO = """
     group(jupyterhub_user_group_info) by (namespace, username, username_escaped, usergroup)
     """
+
+
+@dataclass(frozen=True)
+class User:
+    hub: str
+    name: str
+    escaped_name: str
+    groups: set[str]
+
+    def flatten(self):
+        """
+        Return a flat list, with one entry per group this user is in
+        """
+        return [
+            {
+                "hub": self.hub,
+                "username": self.name,
+                "username_escaped": self.escaped_name,
+                "usergroup": group,
+            }
+            # Sort so we always get consistent ordering in our outputs
+            for group in sorted(self.groups)
+        ]
 
 
 class Prometheus(LoggingConfigurable):
@@ -305,7 +331,7 @@ class Prometheus(LoggingConfigurable):
         hub_name: str | None = None,
         user_name: str | None = None,
         group_name: str | None = None,
-    ) -> list[dict]:
+    ) -> list[User]:
         """
         Get user group information from the Prometheus server for the most recent day.
         """
@@ -315,90 +341,20 @@ class Prometheus(LoggingConfigurable):
         now_date = get_now_date() - timedelta(days=1)
         date_range = DateRange(start_date=now_date, end_date=now_date)
         response = self.query(USER_GROUP_INFO, date_range, step="1d")
+        with open("1-raw.json", "w") as f:
+            json.dump(response, f)
 
-        result = []
-        unique_keys = set()
+        users: Dict[Tuple[str, str], User] = {}
         for data in response["data"]["result"]:
             hub = data["metric"]["namespace"]
-            user = data["metric"]["username"]
+            username = data["metric"]["username"]
             user_escaped = data["metric"]["username_escaped"]
             group = data["metric"]["usergroup"]
-            key = (hub, user, user_escaped, group)
-            if key not in unique_keys:
-                unique_keys.add(key)
-                result.append(
-                    {
-                        "hub": hub,
-                        "username": user,
-                        "username_escaped": user_escaped,
-                        "usergroup": group,
-                    }
-                )
-        return result
+            key = (hub, username)
+            if key in users:
+                user = users[key]
+                user.groups.add(group)
+            else:
+                users[key] = User(hub, username, user_escaped, set([group]))
 
-    @ttl_lru_cache(seconds_to_live=3600)
-    def query_users_with_multiple_groups(
-        self,
-        date_range: DateRange,
-        hub_name: str | None = None,
-        user_name: str | None = None,
-    ) -> list[dict]:
-        response = self.query_user_groups(
-            date_range, hub_name=hub_name, user_name=user_name
-        )
-        grouped = defaultdict(
-            lambda: {
-                "username": None,
-                "hub": None,
-                "usergroups": [],
-                "has_multiple": False,
-            }
-        )
-        for entry in response:
-            k = (entry["username"], entry["hub"])
-            g = grouped[k]
-            g["username"] = entry["username"]
-            g["hub"] = entry["hub"]
-            if entry["usergroup"] == "multiple":
-                g["has_multiple"] = True
-                continue
-            g["usergroups"].append(entry["usergroup"])
-        result = []
-        for v in grouped.values():
-            if v["has_multiple"]:
-                for group in v["usergroups"]:
-                    result.append(
-                        {"username": v["username"], "hub": v["hub"], "usergroup": group}
-                    )
-
-        return result
-
-    @ttl_lru_cache(seconds_to_live=3600)
-    def query_users_with_no_groups(
-        self,
-        date_range: DateRange,
-        hub_name: str | None = None,
-        user_name: str | None = None,
-    ) -> list[dict]:
-        response = self.query_user_groups(
-            date_range, hub_name=hub_name, user_name=user_name
-        )
-        grouped = defaultdict(lambda: {"username": None, "hub": None})
-        for entry in response:
-            key = (entry["username"], entry["hub"])
-            if grouped[key]["username"] is None:
-                grouped[key]["username"] = entry["username"]
-                grouped[key]["hub"] = entry["hub"]
-                if entry["usergroup"] == "none":
-                    self.log.debug(
-                        f"User {entry['username']} in hub {entry['hub']} has no groups."
-                    )
-                    grouped[key]["has_none"] = True
-                else:
-                    grouped[key]["has_none"] = False
-        result = [
-            {"username": v["username"], "hub": v["hub"]}
-            for v in grouped.values()
-            if v["has_none"]
-        ]
-        return result
+        return list(users.values())
