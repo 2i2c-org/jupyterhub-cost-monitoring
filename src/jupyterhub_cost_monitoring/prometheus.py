@@ -4,9 +4,9 @@ Query the Prometheus server to get usage of JupyterHub resources.
 
 import json
 import os
-from collections import defaultdict
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import date, timedelta
+from enum import Enum
 from typing import Dict, Tuple
 
 import escapism
@@ -18,7 +18,55 @@ from yarl import URL
 from .cache import ttl_lru_cache
 from .date_utils import DateRange, get_now_date
 
-# PromQL queries used
+#
+MEMORY_USAGE_FRACTION = """
+    sum_over_time(
+        sum(
+            kube_pod_container_resource_requests{resource="memory"} * on (namespace, pod)
+                group_left(annotation_hub_jupyter_org_username)
+                group(
+                    kube_pod_annotations{annotation_hub_jupyter_org_username!=""}
+                ) by (pod, namespace, annotation_hub_jupyter_org_username)
+        ) by (annotation_hub_jupyter_org_username, namespace)
+        [1d:1m]
+    )
+
+     / ignoring(annotation_hub_jupyter_org_username) group_left(namespace)
+
+     sum_over_time(
+         sum(
+             kube_pod_container_resource_requests{resource="memory"} * on (namespace, pod)
+                 group_left(annotation_hub_jupyter_org_username)
+                 group(
+                     kube_pod_annotations{annotation_hub_jupyter_org_username!=""}
+                 ) by (pod, namespace, annotation_hub_jupyter_org_username)
+         ) by (namespace)
+         [1d:1m]
+     )
+"""
+
+
+class Component(Enum):
+    """
+    Components that we split all costs into
+    """
+
+    USER_COMPUTE = "user_compute"
+    """Compute costs from infrastructure spawned for user pods"""
+
+    CORE = "core"
+    """Compute costs for 'always on' core infrastructure"""
+
+    USER_HOME_STORAGE = "home_storage"
+    """Costs for home directory storage"""
+
+    USER_OBJECT_STORAGE = "object_storage"
+    """Costs for object storage"""
+
+    NETWORKING = "networking"
+    """Costs for network related actions (ingress, egress, etc)"""
+
+
 MEMORY_REQUESTS_PER_USER = """
     label_replace(
         sum(
@@ -31,24 +79,11 @@ MEMORY_REQUESTS_PER_USER = """
     )
 """
 
-STORAGE_USAGE_PER_USER = """
-    label_replace(
-        sum(dirsize_total_size_bytes{namespace!=""}) by (namespace, directory),
-        "username", "$1", "directory", "(.*)"
-    )
+STORAGE_USER_FRACTION = """
+    sum(dirsize_total_size_bytes{namespace!=""}) by (namespace, directory)
+    / ignoring(directory) group_left(namespace)
+    sum(dirsize_total_size_bytes{namespace!=""}) by (namespace)
 """
-
-# Time step for Prometheus queries: "5m" for compute since user pods come and go on this timescale, "1d" for home storage since we do not need to track changes in storage usage more frequently than daily.
-USAGE_MAP = {
-    "compute": {
-        "query": MEMORY_REQUESTS_PER_USER,
-        "step": "5m",
-    },
-    "home storage": {
-        "query": STORAGE_USAGE_PER_USER,
-        "step": "1d",
-    },
-}
 
 USER_GROUP_INFO = """
     group(jupyterhub_user_group_info) by (namespace, username, username_escaped, usergroup)
@@ -76,6 +111,14 @@ class User:
             # Sort so we always get consistent ordering in our outputs
             for group in sorted(self.groups)
         ]
+
+
+@dataclass(frozen=True)
+class UsageFraction:
+    username: str
+    hub: str
+    component: Component
+    fraction: float
 
 
 class Prometheus(LoggingConfigurable):
@@ -143,10 +186,10 @@ class Prometheus(LoggingConfigurable):
     def query_usage(
         self,
         date_range: DateRange,
-        hub_name: str | None,
-        component_name: str | None,
-        user_name: str | None,
-    ) -> list[dict]:
+        hub_name: str | None = None,
+        components: list[Component] | None = None,
+        user_name: str | None = None,
+    ) -> Dict[date, list[UsageFraction]]:
         """
         Query usage cost factors per user from the Prometheus server.
 
@@ -160,169 +203,49 @@ class Prometheus(LoggingConfigurable):
             component_name: Optional name of the component to filter results.
             user_name: Optional name of the user to filter results.
         """
-        result = []
-        if component_name is None:
-            # Query all components defined in USAGE_MAP
-            for component, params in USAGE_MAP.items():
-                response = self.query(params["query"], date_range, step=params["step"])
-                result.extend(self._process_response(response, component))
-        else:
-            # Query specific component only
-            response = self.query(
-                USAGE_MAP[component_name]["query"],
-                date_range,
-                step=USAGE_MAP[component_name]["step"],
-            )
-            result.extend(self._process_response(response, component_name))
-        # Calculate daily cost factors from absolute usage totals)
-        result = self._calculate_daily_cost_factors(result, hub_name=hub_name)
-        # sort the result by date
-        result.sort(key=lambda x: (x["date"], x["component"], x["hub"], x["user"]))
-        result = self._filter_json(result, hub=hub_name, user=user_name)
-        return result
+        if components is None:
+            components = [Component.USER_COMPUTE, Component.USER_HOME_STORAGE]
 
-    def _process_response(
-        self,
-        response: requests.Response,
-        component_name: str,
-    ) -> dict:
-        """
-        Process the response from the Prometheus server to extract absolute usage data.
+        # FIXME: implement hub_name filtering
+        # FIXME: implement user_name filtering
 
-        Converts the time series data into a list of usage records, then pivots by date
-        and sums the absolute usage values across time steps within each date.
+        usage_fractions: Dict[date, list[UsageFraction]] = {}
 
-        If the component_name is home storage, then rename the escaped username used for the directory to the unescaped version.
-        """
-        result = []
-        for data in response["data"]["result"]:
-            hub = data["metric"]["namespace"]
-            user = data["metric"]["username"]
-            date = [
-                datetime.fromtimestamp(value[0], tz=timezone.utc).strftime("%Y-%m-%d")
-                for value in data["values"]
-            ]
-            usage = [float(value[1]) for value in data["values"]]
-            result.append(
-                {
-                    "hub": hub,
-                    "component": component_name,
-                    "user": user,
-                    "date": date,
-                    "value": usage,
-                }
-            )
-        pivoted_result = self._pivot_response_dict(result)
-        processed_result = self._sum_absolute_usage_by_date(pivoted_result)
+        if Component.USER_COMPUTE in components:
+            usage_response = self.query(MEMORY_USAGE_FRACTION, date_range, "1d")
 
-        if component_name == "home storage":
-            for entry in processed_result:
-                if "shared" not in entry["user"]:
-                    try:
-                        entry["user"] = escapism.unescape(
-                            entry["user"], escape_char="-"
-                        )
-                    except ValueError:
-                        self.log.warning(
-                            f"Could not unescape username {entry['user']} for home storage component."
-                        )
-                        continue
-        return processed_result
+            for entry in usage_response["data"]["result"]:
+                username = entry["metric"]["annotation_hub_jupyter_org_username"]
+                hub = entry["metric"]["namespace"]
+                for value in entry["values"]:
+                    ts = date.fromtimestamp(value[0])
+                    uf = UsageFraction(
+                        username=username,
+                        hub=hub,
+                        component=Component.USER_COMPUTE,
+                        fraction=float(value[1]),
+                    )
+                    usage_fractions.setdefault(ts, []).append(uf)
 
-    def _filter_json(self, result: list[dict], **filters):
-        return [
-            item
-            for item in result
-            if all(filters[k] is None or item.get(k) == filters[k] for k in filters)
-        ]
+        if Component.USER_HOME_STORAGE in components:
+            usage_response = self.query(STORAGE_USER_FRACTION, date_range, "1d")
 
-    def _pivot_response_dict(self, result: list[dict]) -> list[dict]:
-        """
-        Pivot the response dictionary to have top-level keys as dates.
-        """
-        pivot = []
-        for entry in result:
-            for date, value in zip(entry["date"], entry["value"]):
-                pivot.append(
-                    {
-                        "date": date,
-                        "user": entry["user"],
-                        "hub": entry["hub"],
-                        "component": entry["component"],
-                        "value": value,
-                    }
+            for entry in usage_response["data"]["result"]:
+                username = escapism.unescape(
+                    entry["metric"]["directory"], escape_char="-"
                 )
-        return pivot
+                hub = entry["metric"]["namespace"]
+                for value in entry["values"]:
+                    ts = date.fromtimestamp(value[0])
+                    uf = UsageFraction(
+                        username=username,
+                        hub=hub,
+                        component=Component.USER_HOME_STORAGE,
+                        fraction=float(value[1]),
+                    )
+                    usage_fractions.setdefault(ts, []).append(uf)
 
-    def _sum_absolute_usage_by_date(self, result: list[dict]) -> list[dict]:
-        """
-        Sum the absolute usage values by date.
-
-        The Prometheus queries can return multiple absolute usage values per day.
-        We sum across all entries within each date to get the total daily usage for each user.
-        """
-        sums = defaultdict(float)
-
-        for entry in result:
-            key = (
-                entry["date"],
-                entry["user"],
-                entry["hub"],
-                entry["component"],
-            )
-            sums[key] += entry["value"]
-
-        return [
-            {
-                "date": date,
-                "user": user,
-                "hub": hub,
-                "component": component,
-                "value": total,
-            }
-            for (date, user, hub, component), total in sums.items()
-        ]
-
-    def _calculate_daily_cost_factors(
-        self, result: list[dict], hub_name: str | None = None
-    ) -> list[dict]:
-        """
-        Calculate daily usage cost factors from absolute usage values.
-
-        Converts absolute usage values to cost factors by dividing each user's usage
-        by the total usage for all users within the appropriate grouping.
-
-        If hub_name is None: cost factors are calculated across all hubs for each date/component
-        If hub_name is specified: cost factors are calculated per hub for each date/component
-
-        This ensures that cost factors sum to 1 for the appropriate grouping.
-        """
-        # Calculate total usage for the appropriate grouping
-        totals = defaultdict(float)
-        for entry in result:
-            if hub_name is None:
-                # When no specific hub requested, calculate totals across all hubs
-                key = (entry["date"], entry["component"])
-            else:
-                # When specific hub requested, calculate totals per hub
-                key = (entry["date"], entry["hub"], entry["component"])
-            totals[key] += entry["value"]
-
-        # Convert absolute values to cost factors
-        for entry in result:
-            if hub_name is None:
-                # When no specific hub requested, use cross-hub totals
-                key = (entry["date"], entry["component"])
-            else:
-                # When specific hub requested, use per-hub totals
-                key = (entry["date"], entry["hub"], entry["component"])
-
-            total = totals[key]
-            if total > 0:
-                entry["value"] = entry["value"] / total
-            else:
-                entry["value"] = 0.0
-        return result
+        return usage_fractions
 
     @ttl_lru_cache(seconds_to_live=3600)
     def query_user_groups(
