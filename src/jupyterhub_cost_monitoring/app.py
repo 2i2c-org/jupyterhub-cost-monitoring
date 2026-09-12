@@ -1,3 +1,4 @@
+import itertools
 from datetime import timedelta
 
 from fastapi import FastAPI, Query
@@ -139,9 +140,12 @@ def user_groups(
     date_range = parse_from_to_in_query_params(
         from_date.isoformat(), to_date.isoformat()
     )
-    return jupyterhub_cost_monitoring_app.prometheus.query_user_groups(
+    users = jupyterhub_cost_monitoring_app.prometheus.query_user_groups(
         date_range, hub, username, usergroup
     )
+
+    # Flatten our users (which has nested groups) into something that Grafana can consume more easily
+    return list(itertools.chain.from_iterable([u.flatten() for u in users]))
 
 
 @app.get("/users-with-multiple-groups")
@@ -163,9 +167,23 @@ def users_with_multiple_groups(
         from_date.isoformat(), to_date.isoformat()
     )
 
-    return jupyterhub_cost_monitoring_app.prometheus.query_users_with_multiple_groups(
-        date_range, hub_name, user_name
-    )
+    users = jupyterhub_cost_monitoring_app.prometheus.query_user_groups(date_range)
+
+    # FIXME: For backwards compatibility, we do two things here:
+    # 1. Remove the `username_escaped` field
+    # 2. Remove group named `multiple` as that is implied
+    # We should break compatibility at some point
+
+    user_entries = []
+    for entry in itertools.chain.from_iterable(
+        [u.flatten() for u in users if len(u.groups) > 1]
+    ):
+        del entry["username_escaped"]
+        if entry["usergroup"] == "multiple":
+            continue
+        user_entries.append(entry)
+
+    return user_entries
 
 
 @app.get("/users-with-no-groups")
@@ -187,9 +205,24 @@ def users_with_no_groups(
         from_date.isoformat(), to_date.isoformat()
     )
 
-    return jupyterhub_cost_monitoring_app.prometheus.query_users_with_no_groups(
-        date_range, hub_name, user_name
-    )
+    users = jupyterhub_cost_monitoring_app.prometheus.query_user_groups(date_range)
+
+    # FIXME: For backwards compatibility, we do two things here:
+    # 1. Remove the `username_escaped` field
+    # 2. Remove the `group` field
+    # We should break compatibility at some point
+
+    user_entries = []
+    for entry in itertools.chain.from_iterable(
+        # FIXME: We shouldn't export values with special meaning like "none" or "multiple"
+        # when they can be inferred.
+        [u.flatten() for u in users if u.groups == set(["none"])]
+    ):
+        del entry["username_escaped"]
+        del entry["usergroup"]
+        user_entries.append(entry)
+
+    return user_entries
 
 
 @app.get("/total-costs-per-hub")

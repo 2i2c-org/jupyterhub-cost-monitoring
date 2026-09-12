@@ -758,7 +758,11 @@ class AWSCostExplorer(LoggingConfigurable):
                 )  # Adjust usage share to cost
                 results.append(entry)
         results = [x for x in results if x["hub"] != "binder"]  # Exclude binder hubs
-        user_groups = self.prometheus.query_user_groups(date_range, hub, user)
+        # FIXME: Keep the same flat list of dicts datastructure here as we refactor the logic to be clearer
+        users = self.prometheus.query_user_groups(date_range, hub, user)
+        user_groups = []
+        for u in users:
+            user_groups += u.flatten()
         seen = set()
         list_groups = []
         # Ensure uniquely keyed entries when double-counting group costs
