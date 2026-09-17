@@ -243,7 +243,37 @@ def total_costs_per_hub(
     return jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_hub(date_range)
 
 
-@app.get("/total-costs-per-component")
+@app.get("/per-hub/component")
+def per_hub_per_component(
+    from_date: str | None = Query(
+        None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    to_date: str | None = Query(
+        None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    hub: str = Query(None, description="Name of the hub to filter results on"),
+):
+    # Parse and validate date parameters into DateRange object
+    date_range = parse_from_to_in_query_params(from_date, to_date)
+
+    costs_by_component = (
+        jupyterhub_cost_monitoring_app.aws_ce.query_per_hub_costs_per_component(
+            date_range, hub
+        )
+    )
+
+    response = []
+
+    for component, entries in costs_by_component.items():
+        for ts, value in entries.items():
+            response.append(
+                {"component": component, "date": ts.isoformat(), "cost": value}
+            )
+
+    return sorted(response, key=lambda i: i["date"])
+
+
+@app.get("/totals/component")
 def total_costs_per_component(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
@@ -251,7 +281,6 @@ def total_costs_per_component(
     to_date: str | None = Query(
         None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
     ),
-    hub: str | None = Query(None, description="Name of the hub to filter results"),
     component: str | None = Query(
         None, description="Name of the component to filter results"
     ),
@@ -262,14 +291,26 @@ def total_costs_per_component(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    if not hub or hub.lower() == "all":
-        hub = None
     if not component or component.lower() == "all":
-        component = None
+        components = None
+    else:
+        components = [Component(component)]
 
-    return jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_component(
-        date_range, hub, component
+    costs_by_component = (
+        jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_component(
+            date_range, components
+        )
     )
+
+    response = []
+
+    for component, entries in costs_by_component.items():
+        for ts, value in entries.items():
+            response.append(
+                {"component": component, "date": ts.isoformat(), "cost": value}
+            )
+
+    return sorted(response, key=lambda i: i["date"])
 
 
 @app.get("/total-costs-per-group")
@@ -348,16 +389,11 @@ def costs_per_user(
         usergroup = [None]
 
     # Get per-user costs by combining AWS costs with Prometheus usage data
-    results = []
-    for ug in usergroup:
-        per_user_costs = (
-            jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_user(
-                date_range, hub, component, user, ug, limit
-            )
-        )
-        results.extend(per_user_costs)
+    per_user_costs = jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_user(
+        date_range, hub, component, user, None, limit
+    )
 
-    return results
+    return per_user_costs
 
 
 @app.get("/total-usage")

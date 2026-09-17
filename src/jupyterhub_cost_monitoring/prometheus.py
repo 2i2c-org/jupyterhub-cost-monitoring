@@ -6,7 +6,7 @@ import json
 import os
 from dataclasses import dataclass
 from datetime import date, timedelta
-from enum import Enum, StrEnum
+from enum import StrEnum
 from typing import Dict, Tuple
 
 import escapism
@@ -65,6 +65,9 @@ class Component(StrEnum):
 
     NETWORKING = "networking"
     """Costs for network related actions (ingress, egress, etc)"""
+
+    OTHER = "other"
+    """Costs not categorized yet"""
 
 
 MEMORY_REQUESTS_PER_USER = """
@@ -204,6 +207,7 @@ class Prometheus(LoggingConfigurable):
             user_name: Optional name of the user to filter results.
         """
         if components is None:
+            # FIXME: Uh, maybe this gets set as a default? Can Python Enums be |'d?
             components = [Component.USER_COMPUTE, Component.USER_HOME_STORAGE]
 
         # FIXME: implement hub_name filtering
@@ -211,6 +215,11 @@ class Prometheus(LoggingConfigurable):
 
         usage_fractions: Dict[date, list[UsageFraction]] = {}
 
+        # FIXME: I *think* we need this because of how `sum_over_time` works?
+        date_range = DateRange(
+            date_range.start_date + timedelta(days=1),
+            date_range.end_date + timedelta(days=1),
+        )
         if Component.USER_COMPUTE in components:
             usage_response = self.query(MEMORY_USAGE_FRACTION, date_range, "1d")
 
