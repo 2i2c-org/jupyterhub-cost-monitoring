@@ -10,7 +10,7 @@ from traitlets.config import Application
 from .aws import AWSCostExplorer
 from .date_utils import get_now_date, parse_from_to_in_query_params
 from .metrics import MetricsMiddleware
-from .prometheus import USAGE_MAP, Prometheus
+from .prometheus import Component, Prometheus
 
 
 class JupyterHubCostMonitoring(Application):
@@ -86,7 +86,7 @@ def component_names():
     """
     Endpoint to serve component names.
     """
-    return list(USAGE_MAP.keys())
+    return [Component.USER_COMPUTE, Component.USER_HOME_STORAGE]
 
 
 @app.get("/total-costs")
