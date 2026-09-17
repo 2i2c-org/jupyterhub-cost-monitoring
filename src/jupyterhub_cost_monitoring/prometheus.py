@@ -6,7 +6,7 @@ import json
 import os
 from dataclasses import dataclass
 from datetime import date, timedelta
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Dict, Tuple
 
 import escapism
@@ -46,21 +46,21 @@ MEMORY_USAGE_FRACTION = """
 """
 
 
-class Component(Enum):
+class Component(StrEnum):
     """
     Components that we split all costs into
     """
 
-    USER_COMPUTE = "user_compute"
+    USER_COMPUTE = "compute"
     """Compute costs from infrastructure spawned for user pods"""
 
     CORE = "core"
     """Compute costs for 'always on' core infrastructure"""
 
-    USER_HOME_STORAGE = "home_storage"
+    USER_HOME_STORAGE = "home storage"
     """Costs for home directory storage"""
 
-    USER_OBJECT_STORAGE = "object_storage"
+    USER_OBJECT_STORAGE = "object storage"
     """Costs for object storage"""
 
     NETWORKING = "networking"
