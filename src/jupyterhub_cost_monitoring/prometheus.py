@@ -189,9 +189,7 @@ class Prometheus(LoggingConfigurable):
     def query_usage(
         self,
         date_range: DateRange,
-        hub_name: str | None = None,
         components: list[Component] | None = None,
-        user_name: str | None = None,
     ) -> Dict[date, list[UsageFraction]]:
         """
         Query usage cost factors per user from the Prometheus server.

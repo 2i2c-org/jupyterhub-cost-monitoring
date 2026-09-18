@@ -1,4 +1,6 @@
+import dataclasses
 import itertools
+import json
 from datetime import timedelta
 
 from fastapi import FastAPI, Query
@@ -89,8 +91,8 @@ def component_names():
     return [Component.USER_COMPUTE, Component.USER_HOME_STORAGE]
 
 
-@app.get("/total-costs")
-def total_costs(
+@app.get("/totals/account")
+def totals_account(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
     ),
@@ -107,15 +109,35 @@ def total_costs(
     account_costs = jupyterhub_cost_monitoring_app.aws_ce.query_account_costs(
         date_range
     )
+
+    # the infinity plugin appears needs us to sort by date, otherwise it fails
+    # to distinguish time series by the name field for some reason
+    sorted_response = sorted(account_costs, key=lambda x: x["date"])
+    return sorted_response
+
+
+@app.get("/totals/attributable")
+def totals_attributable(
+    from_date: str | None = Query(
+        None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    to_date: str | None = Query(
+        None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
+    ),
+):
+    """
+    Endpoint to query total costs.
+    """
+    # Parse and validate date parameters into DateRange object
+    date_range = parse_from_to_in_query_params(from_date, to_date)
+
     attributable_costs = jupyterhub_cost_monitoring_app.aws_ce.query_attributable_costs(
         date_range
     )
 
     # the infinity plugin appears needs us to sort by date, otherwise it fails
     # to distinguish time series by the name field for some reason
-    sorted_response = sorted(
-        account_costs + attributable_costs, key=lambda x: x["date"]
-    )
+    sorted_response = sorted(attributable_costs, key=lambda x: x["date"])
     return sorted_response
 
 
@@ -225,8 +247,8 @@ def users_with_no_groups(
     return user_entries
 
 
-@app.get("/total-costs-per-hub")
-def total_costs_per_hub(
+@app.get("/totals/by-hub")
+def totals_by_hub(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
     ),
@@ -243,7 +265,7 @@ def total_costs_per_hub(
     return jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_hub(date_range)
 
 
-@app.get("/per-hub/component")
+@app.get("/hub/by-component")
 def per_hub_per_component(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
@@ -273,8 +295,8 @@ def per_hub_per_component(
     return sorted(response, key=lambda i: i["date"])
 
 
-@app.get("/totals/component")
-def total_costs_per_component(
+@app.get("/totals/by-component")
+def totals_by_component(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
     ),
@@ -331,7 +353,7 @@ def total_costs_per_group(
     return jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_group(date_range)
 
 
-@app.get("/costs-per-user")
+@app.get("/user")
 def costs_per_user(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
@@ -374,26 +396,35 @@ def costs_per_user(
     """
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
-    if usergroup:
-        usergroup = usergroup.strip("{}").split(",")
-
-    if not hub or hub.lower() == "all":
-        hub = None
-    if not component or component.lower() == "all":
-        component = None
-    if not user or user.lower() == "all":
-        user = None
-    if not limit or (str(limit).lower() == "all"):
-        limit = None
     if not usergroup or ("all" in [u.lower() for u in usergroup]):
-        usergroup = [None]
+        usergroup = []
 
     # Get per-user costs by combining AWS costs with Prometheus usage data
     per_user_costs = jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_user(
-        date_range, hub, component, user, None, limit
+        date_range
     )
 
-    return per_user_costs
+    # We filter after the fact. If this becomes too expensive we can
+    # fix that later
+    if hub and hub.casefold() != "all":
+        per_user_costs = [i for i in per_user_costs if i.hub == hub]
+
+    if component and component.casefold() != "all":
+        per_user_costs = [i for i in per_user_costs if i.component == component]
+
+    if user and user.casefold() != "all":
+        per_user_costs = [i for i in per_user_costs if i.user == user]
+
+    if limit is not None and limit and limit.casefold() != "all" and int(limit):
+        limit = int(limit)
+        per_user_costs = per_user_costs[0 : min(limit, len(per_user_costs) - 1)]
+
+    # FIXME: implement user group filtering
+
+    return Response(
+        json.dumps([dataclasses.asdict(p) for p in per_user_costs], default=str),
+        headers={"Content-Type": "application/json"},
+    )
 
 
 @app.get("/total-usage")

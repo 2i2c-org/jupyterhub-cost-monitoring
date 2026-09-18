@@ -453,35 +453,6 @@ class AWSCostExplorer(LoggingConfigurable):
 
         return processed_response
 
-    def _add_hub_filter(self, filter_dict: dict, hub_name: str | None = None) -> None:
-        """
-        Add hub-specific filtering to a given filter dictionary.
-
-        Args:
-            filter_dict: The filter dictionary to modify (must have "And" key)
-            hub_name: The hub name to filter by. If "support", filters for absent hub tags.
-                    If a specific name, filters for that hub. If None, no filter added.
-        """
-        if hub_name == "support":
-            filter_dict["And"].append(
-                {
-                    "Tags": {
-                        "Key": self.hub_name_tag,
-                        "MatchOptions": ["ABSENT"],
-                    },
-                }
-            )
-        elif hub_name:
-            filter_dict["And"].append(
-                {
-                    "Tags": {
-                        "Key": self.hub_name_tag,
-                        "Values": [hub_name],
-                        "MatchOptions": ["EQUALS"],
-                    },
-                }
-            )
-
     def get_per_day_costs(
         self, date_range: DateRange, ce_filter: list[dict]
     ) -> dict[date, float]:
@@ -563,11 +534,6 @@ class AWSCostExplorer(LoggingConfigurable):
     def query_total_costs_per_user(
         self,
         date_range: DateRange,
-        hub: str | None = None,
-        component: Component | None = None,
-        user: str | None = None,
-        usergroup: str | None = None,
-        limit: int | None = None,
     ) -> list[UserCostItem]:
         """
         Query total costs per user by combining AWS costs with Prometheus usage data.
@@ -592,29 +558,16 @@ class AWSCostExplorer(LoggingConfigurable):
             Results are sorted by date, hub, component, then value (highest cost first)
         """
         # Get AWS cost data using the DateRange object
-        costs_per_component = self.query_total_costs_per_component(
-            date_range, hub, component
-        )
-        print(costs_per_component)
+        costs_per_component = self.query_total_costs_per_component(date_range)
 
         # Get user usage percentages from Prometheus using the same DateRange object
         # This ensures we query the same logical date range for both AWS and Prometheus,
         # accounting for their different date range semantics (exclusive vs inclusive)
-        usage = self.prometheus.query_usage(
-            date_range,
-            hub_name=hub,
-            components=None,  # FIXME: Actually pass in what we care about
-            user_name=user,
-        )
+        usage = self.prometheus.query_usage(date_range)
 
         cost_items: list[UserCostItem] = []
         for ts, usage_fractions in usage.items():
             for uf in usage_fractions:
-                # FIXME: Filter somewhere else maybe?
-                if user and uf.username != user:
-                    continue
-                if hub and uf.hub != hub:
-                    continue
                 # FIXME: This should be a general filter elsewhere
                 # filter out "binder" items
                 if uf.hub == "binder":
