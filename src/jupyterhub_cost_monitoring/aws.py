@@ -445,7 +445,7 @@ class AWSCostExplorer(LoggingConfigurable):
                     {
                         "date": e["TimePeriod"]["Start"],
                         "cost": f"{float(g['Metrics']['UnblendedCost']['Amount']):.2f}",
-                        "name": g["Keys"][0].split("$", maxsplit=1)[1] or "support",
+                        "name": g["Keys"][0].split("$", maxsplit=1)[1] or "other",
                     }
                     for g in e["Groups"]
                 ]
