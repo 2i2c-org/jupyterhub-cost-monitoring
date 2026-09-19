@@ -1,7 +1,5 @@
-import dataclasses
 import itertools
-import json
-from datetime import timedelta
+from datetime import date, timedelta
 
 from fastapi import FastAPI, Query
 from fastapi.responses import Response
@@ -353,7 +351,7 @@ def total_costs_per_group(
     return jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_group(date_range)
 
 
-@app.get("/user")
+@app.get("/totals/by-user")
 def costs_per_user(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
@@ -362,9 +360,6 @@ def costs_per_user(
         None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
     ),
     hub: str | None = Query(None, description="Name of the hub to filter results"),
-    component: str | None = Query(
-        None, description="Name of the component to filter results"
-    ),
     user: str | None = Query(None, description="Name of the user to filter results"),
     usergroup: str | None = Query(
         None, description="Name of user group to filter results"
@@ -374,25 +369,7 @@ def costs_per_user(
     ),
 ):
     """
-    Endpoint to query costs per user by combining AWS costs with Prometheus usage data.
-
-    This endpoint calculates individual user costs by:
-    1. Getting total AWS costs per component (compute, storage) from Cost Explorer
-    2. Getting usage fractions per user from Prometheus metrics
-    3. Multiplying total costs by each user's usage fraction
-
-    Query Parameters:
-        from (str): Start date in YYYY-MM-DD format (defaults to 30 days ago)
-        to (str): End date in YYYY-MM-DD format (defaults to current date)
-        hub (str, optional): Filter to specific hub namespace
-        component (str, optional): Filter to specific component (compute, home storage)
-        user (str, optional): Filter to specific user
-        usergroup (str, optional): Filter to specific user group
-        limit (int, optional): Limit number of results to top N users by total cost.
-
-    Returns:
-        List of dicts with keys: date, hub, component, user, value (cost in USD)
-        Results are sorted by date, hub, component, then value (highest cost first)
+    Query total cost for each user for each hub, with specific filters
     """
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
@@ -409,22 +386,36 @@ def costs_per_user(
     if hub and hub.casefold() != "all":
         per_user_costs = [i for i in per_user_costs if i.hub == hub]
 
-    if component and component.casefold() != "all":
-        per_user_costs = [i for i in per_user_costs if i.component == component]
-
     if user and user.casefold() != "all":
         per_user_costs = [i for i in per_user_costs if i.user == user]
 
+    # Let's sum these
+    summed_results: dict[date, dict[tuple[str, str], float]] = {}
+    for p in per_user_costs:
+        if p.date not in summed_results:
+            summed_results[p.date] = {}
+        key = (p.hub, p.user)
+        summed_results[p.date][key] = summed_results[p.date].get(key, 0) + p.value
+
+    response = []
+    for ts, entries in summed_results.items():
+        for (hub, username), value in entries.items():
+            response.append(
+                {
+                    "date": ts.isoformat(),
+                    "hub": hub,
+                    "username": username,
+                    "cost": value,
+                }
+            )
+
     if limit is not None and limit and limit.casefold() != "all" and int(limit):
         limit = int(limit)
-        per_user_costs = per_user_costs[0 : min(limit, len(per_user_costs) - 1)]
+        response = response[0 : min(limit, len(per_user_costs) - 1)]
 
     # FIXME: implement user group filtering
 
-    return Response(
-        json.dumps([dataclasses.asdict(p) for p in per_user_costs], default=str),
-        headers={"Content-Type": "application/json"},
-    )
+    return response
 
 
 @app.get("/total-usage")
