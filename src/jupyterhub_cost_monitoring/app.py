@@ -1,4 +1,5 @@
-from datetime import timedelta
+import itertools
+from datetime import date, timedelta
 
 from fastapi import FastAPI, Query
 from fastapi.responses import Response
@@ -9,7 +10,7 @@ from traitlets.config import Application
 from .aws import AWSCostExplorer
 from .date_utils import get_now_date, parse_from_to_in_query_params
 from .metrics import MetricsMiddleware
-from .prometheus import USAGE_MAP, Prometheus
+from .prometheus import Component, Prometheus
 
 
 class JupyterHubCostMonitoring(Application):
@@ -62,7 +63,7 @@ def ready():
     return ("200: OK", 200)
 
 
-@app.get("/hub-names")
+@app.get("/hub/names")
 def hub_names(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
@@ -85,11 +86,11 @@ def component_names():
     """
     Endpoint to serve component names.
     """
-    return list(USAGE_MAP.keys())
+    return [Component.USER_COMPUTE, Component.USER_HOME_STORAGE]
 
 
-@app.get("/total-costs")
-def total_costs(
+@app.get("/totals/account")
+def totals_account(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
     ),
@@ -106,15 +107,35 @@ def total_costs(
     account_costs = jupyterhub_cost_monitoring_app.aws_ce.query_account_costs(
         date_range
     )
+
+    # the infinity plugin appears needs us to sort by date, otherwise it fails
+    # to distinguish time series by the name field for some reason
+    sorted_response = sorted(account_costs, key=lambda x: x["date"])
+    return sorted_response
+
+
+@app.get("/totals/attributable")
+def totals_attributable(
+    from_date: str | None = Query(
+        None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    to_date: str | None = Query(
+        None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
+    ),
+):
+    """
+    Endpoint to query total costs.
+    """
+    # Parse and validate date parameters into DateRange object
+    date_range = parse_from_to_in_query_params(from_date, to_date)
+
     attributable_costs = jupyterhub_cost_monitoring_app.aws_ce.query_attributable_costs(
         date_range
     )
 
     # the infinity plugin appears needs us to sort by date, otherwise it fails
     # to distinguish time series by the name field for some reason
-    sorted_response = sorted(
-        account_costs + attributable_costs, key=lambda x: x["date"]
-    )
+    sorted_response = sorted(attributable_costs, key=lambda x: x["date"])
     return sorted_response
 
 
@@ -139,9 +160,12 @@ def user_groups(
     date_range = parse_from_to_in_query_params(
         from_date.isoformat(), to_date.isoformat()
     )
-    return jupyterhub_cost_monitoring_app.prometheus.query_user_groups(
+    users = jupyterhub_cost_monitoring_app.prometheus.query_user_groups(
         date_range, hub, username, usergroup
     )
+
+    # Flatten our users (which has nested groups) into something that Grafana can consume more easily
+    return list(itertools.chain.from_iterable([u.flatten() for u in users]))
 
 
 @app.get("/users-with-multiple-groups")
@@ -163,9 +187,23 @@ def users_with_multiple_groups(
         from_date.isoformat(), to_date.isoformat()
     )
 
-    return jupyterhub_cost_monitoring_app.prometheus.query_users_with_multiple_groups(
-        date_range, hub_name, user_name
-    )
+    users = jupyterhub_cost_monitoring_app.prometheus.query_user_groups(date_range)
+
+    # FIXME: For backwards compatibility, we do two things here:
+    # 1. Remove the `username_escaped` field
+    # 2. Remove group named `multiple` as that is implied
+    # We should break compatibility at some point
+
+    user_entries = []
+    for entry in itertools.chain.from_iterable(
+        [u.flatten() for u in users if len(u.groups) > 1]
+    ):
+        del entry["username_escaped"]
+        if entry["usergroup"] == "multiple":
+            continue
+        user_entries.append(entry)
+
+    return user_entries
 
 
 @app.get("/users-with-no-groups")
@@ -187,19 +225,35 @@ def users_with_no_groups(
         from_date.isoformat(), to_date.isoformat()
     )
 
-    return jupyterhub_cost_monitoring_app.prometheus.query_users_with_no_groups(
-        date_range, hub_name, user_name
-    )
+    users = jupyterhub_cost_monitoring_app.prometheus.query_user_groups(date_range)
+
+    # FIXME: For backwards compatibility, we do two things here:
+    # 1. Remove the `username_escaped` field
+    # 2. Remove the `group` field
+    # We should break compatibility at some point
+
+    user_entries = []
+    for entry in itertools.chain.from_iterable(
+        # FIXME: We shouldn't export values with special meaning like "none" or "multiple"
+        # when they can be inferred.
+        [u.flatten() for u in users if u.groups == set(["none"])]
+    ):
+        del entry["username_escaped"]
+        del entry["usergroup"]
+        user_entries.append(entry)
+
+    return user_entries
 
 
-@app.get("/total-costs-per-hub")
-def total_costs_per_hub(
+@app.get("/totals/by-hub")
+def totals_by_hub(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
     ),
     to_date: str | None = Query(
         None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
     ),
+    hub: str | None = Query(default=None, description="Hub to provide information for"),
 ):
     """
     Endpoint to query total costs per hub.
@@ -207,18 +261,50 @@ def total_costs_per_hub(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    return jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_hub(date_range)
+    return jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_hub(
+        date_range, hub
+    )
 
 
-@app.get("/total-costs-per-component")
-def total_costs_per_component(
+@app.get("/hub/by-component")
+def per_hub_per_component(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
     ),
     to_date: str | None = Query(
         None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
     ),
-    hub: str | None = Query(None, description="Name of the hub to filter results"),
+    hub: str = Query(None, description="Name of the hub to filter results on"),
+    component: str | None = Query(
+        default=None, description="Component to get cost info for"
+    ),
+):
+    # Parse and validate date parameters into DateRange object
+    date_range = parse_from_to_in_query_params(from_date, to_date)
+
+    costs_by_component = (
+        jupyterhub_cost_monitoring_app.aws_ce.query_per_hub_costs_per_component(
+            date_range, hub, component=Component(component) if component else None
+        )
+    )
+
+    response = []
+
+    for comp, entries in costs_by_component.items():
+        for ts, value in entries.items():
+            response.append({"component": comp, "date": ts.isoformat(), "cost": value})
+
+    return sorted(response, key=lambda i: i["date"])
+
+
+@app.get("/totals/by-component")
+def totals_by_component(
+    from_date: str | None = Query(
+        None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
+    ),
+    to_date: str | None = Query(
+        None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
+    ),
     component: str | None = Query(
         None, description="Name of the component to filter results"
     ),
@@ -229,14 +315,26 @@ def total_costs_per_component(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    if not hub or hub.lower() == "all":
-        hub = None
     if not component or component.lower() == "all":
-        component = None
+        components = None
+    else:
+        components = [Component(component)]
 
-    return jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_component(
-        date_range, hub, component
+    costs_by_component = (
+        jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_component(
+            date_range, components
+        )
     )
+
+    response = []
+
+    for component, entries in costs_by_component.items():
+        for ts, value in entries.items():
+            response.append(
+                {"component": component, "date": ts.isoformat(), "cost": value}
+            )
+
+    return sorted(response, key=lambda i: i["date"])
 
 
 @app.get("/total-costs-per-group")
@@ -257,7 +355,7 @@ def total_costs_per_group(
     return jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_group(date_range)
 
 
-@app.get("/costs-per-user")
+@app.get("/totals/by-user")
 def costs_per_user(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
@@ -265,10 +363,7 @@ def costs_per_user(
     to_date: str | None = Query(
         None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
     ),
-    hub: str | None = Query(None, description="Name of the hub to filter results"),
-    component: str | None = Query(
-        None, description="Name of the component to filter results"
-    ),
+    hub: str = Query(description="Name of the hub to filter results"),
     user: str | None = Query(None, description="Name of the user to filter results"),
     usergroup: str | None = Query(
         None, description="Name of user group to filter results"
@@ -278,53 +373,55 @@ def costs_per_user(
     ),
 ):
     """
-    Endpoint to query costs per user by combining AWS costs with Prometheus usage data.
-
-    This endpoint calculates individual user costs by:
-    1. Getting total AWS costs per component (compute, storage) from Cost Explorer
-    2. Getting usage fractions per user from Prometheus metrics
-    3. Multiplying total costs by each user's usage fraction
-
-    Query Parameters:
-        from (str): Start date in YYYY-MM-DD format (defaults to 30 days ago)
-        to (str): End date in YYYY-MM-DD format (defaults to current date)
-        hub (str, optional): Filter to specific hub namespace
-        component (str, optional): Filter to specific component (compute, home storage)
-        user (str, optional): Filter to specific user
-        usergroup (str, optional): Filter to specific user group
-        limit (int, optional): Limit number of results to top N users by total cost.
-
-    Returns:
-        List of dicts with keys: date, hub, component, user, value (cost in USD)
-        Results are sorted by date, hub, component, then value (highest cost first)
+    Query total cost for each user for each hub, with specific filters
     """
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
-    if usergroup:
-        usergroup = usergroup.strip("{}").split(",")
-
-    if not hub or hub.lower() == "all":
-        hub = None
-    if not component or component.lower() == "all":
-        component = None
-    if not user or user.lower() == "all":
-        user = None
-    if not limit or (str(limit).lower() == "all"):
-        limit = None
     if not usergroup or ("all" in [u.lower() for u in usergroup]):
-        usergroup = [None]
+        usergroup = []
 
     # Get per-user costs by combining AWS costs with Prometheus usage data
-    results = []
-    for ug in usergroup:
-        per_user_costs = (
-            jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_user(
-                date_range, hub, component, user, ug, limit
-            )
-        )
-        results.extend(per_user_costs)
+    per_user_costs = jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_user(
+        date_range, hub
+    )
 
-    return results
+    if user and user.casefold() != "all":
+        per_user_costs = [i for i in per_user_costs if i.user == user]
+
+    summed_results: dict[date, dict[tuple[str, str], dict[Component, float]]] = {}
+    for p in per_user_costs:
+        if p.date not in summed_results:
+            summed_results[p.date] = {}
+        key = (p.hub, p.user)
+        summed_results[p.date].setdefault(
+            key,
+            {
+                # Set defaults so we always specify these, even if 0
+                Component.USER_COMPUTE: 0.0,
+                Component.USER_HOME_STORAGE: 0.0,
+            },
+        )[p.component] = p.value
+
+    response = []
+    for ts, entries in summed_results.items():
+        for (hub, username), values in entries.items():
+            response.append(
+                {
+                    "date": ts.isoformat(),
+                    "hub": hub,
+                    "username": username,
+                    "component_costs": values,
+                    "total_cost": sum(values.values()),
+                }
+            )
+
+    if limit is not None and limit and limit.casefold() != "all" and int(limit):
+        limit = int(limit)
+        response = response[0 : min(limit, len(per_user_costs) - 1)]
+
+    # FIXME: implement user group filtering
+
+    return response
 
 
 @app.get("/total-usage")
