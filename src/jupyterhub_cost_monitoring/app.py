@@ -65,7 +65,7 @@ def ready():
     return ("200: OK", 200)
 
 
-@app.get("/hub-names")
+@app.get("/hub/names")
 def hub_names(
     from_date: str | None = Query(
         None, alias="from", description="Start date in YYYY-MM-DDTHH:MMZ format"
