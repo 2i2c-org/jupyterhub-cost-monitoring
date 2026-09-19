@@ -1,7 +1,7 @@
 from typing import TypedDict
 
 from grafana_foundation_sdk.builders import common as common_builder
-from grafana_foundation_sdk.builders import timeseries, stat, table
+from grafana_foundation_sdk.builders import stat, table, timeseries
 from grafana_foundation_sdk.builders.dashboard import (
     Dashboard,
     QueryVariable,
@@ -12,8 +12,6 @@ from grafana_foundation_sdk.cog.encoder import JSONEncoder
 from grafana_foundation_sdk.models import common, units
 from grafana_foundation_sdk.models.common import (
     DataSourceRef,
-    ReduceDataOptions,
-    TableFooterOptions,
     TimeZoneUtc,
 )
 from grafana_foundation_sdk.models.dashboard import (
@@ -23,13 +21,13 @@ from grafana_foundation_sdk.models.dashboard import (
     VariableRefresh,
 )
 from grafana_foundation_sdk.models.resource import DashboardKind, Manifest, Metadata
-from overview import per_hub_per_component
 from infinity import (
     Column,
     ColumnFormat,
     InfinityQueryBuilder,
     QueryFormat,
 )
+from overview import per_hub_per_component
 
 
 class UrlQueryEntries(TypedDict):
@@ -134,9 +132,21 @@ def user_table():
                         "type": ColumnFormat.TIMESTAMP,
                         "text": "Date",
                     },
-                    {"selector": "component_costs.compute", "type": ColumnFormat.NUMBER, "text": "Compute Cost"},
-                    {"selector": "component_costs.home_storage", "type": ColumnFormat.NUMBER, "text": "Home Directory Cost"},
-                    {"selector": "total_cost", "type": ColumnFormat.NUMBER, "text": "Total Cost"},
+                    {
+                        "selector": "component_costs.compute",
+                        "type": ColumnFormat.NUMBER,
+                        "text": "Compute Cost",
+                    },
+                    {
+                        "selector": "component_costs.home_storage",
+                        "type": ColumnFormat.NUMBER,
+                        "text": "Home Directory Cost",
+                    },
+                    {
+                        "selector": "total_cost",
+                        "type": ColumnFormat.NUMBER,
+                        "text": "Total Cost",
+                    },
                     {
                         "selector": "username",
                         "type": ColumnFormat.STRING,
@@ -151,9 +161,18 @@ def user_table():
                 "groupBy",
                 options={
                     "fields": {
-                        "Total Cost": {"aggregations": ["sum"], "operation": "aggregate"},
-                        "Compute Cost": {"aggregations": ["sum"], "operation": "aggregate"},
-                        "Home Directory Cost": {"aggregations": ["sum"], "operation": "aggregate"},
+                        "Total Cost": {
+                            "aggregations": ["sum"],
+                            "operation": "aggregate",
+                        },
+                        "Compute Cost": {
+                            "aggregations": ["sum"],
+                            "operation": "aggregate",
+                        },
+                        "Home Directory Cost": {
+                            "aggregations": ["sum"],
+                            "operation": "aggregate",
+                        },
                         "User Name": {"aggregations": [], "operation": "groupby"},
                     }
                 },
