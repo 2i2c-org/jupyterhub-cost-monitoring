@@ -532,8 +532,7 @@ class AWSCostExplorer(LoggingConfigurable):
 
     @ttl_lru_cache(seconds_to_live=3600)
     def query_total_costs_per_user(
-        self,
-        date_range: DateRange,
+        self, date_range: DateRange, hub: str
     ) -> list[UserCostItem]:
         """
         Query total costs per user by combining AWS costs with Prometheus usage data.
@@ -558,7 +557,7 @@ class AWSCostExplorer(LoggingConfigurable):
             Results are sorted by date, hub, component, then value (highest cost first)
         """
         # Get AWS cost data using the DateRange object
-        costs_per_component = self.query_total_costs_per_component(date_range)
+        costs_per_component = self.query_per_hub_costs_per_component(date_range, hub)
 
         # Get user usage percentages from Prometheus using the same DateRange object
         # This ensures we query the same logical date range for both AWS and Prometheus,

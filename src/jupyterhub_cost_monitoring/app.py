@@ -359,7 +359,7 @@ def costs_per_user(
     to_date: str | None = Query(
         None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
     ),
-    hub: str | None = Query(None, description="Name of the hub to filter results"),
+    hub: str = Query(description="Name of the hub to filter results"),
     user: str | None = Query(None, description="Name of the user to filter results"),
     usergroup: str | None = Query(
         None, description="Name of user group to filter results"
@@ -378,13 +378,8 @@ def costs_per_user(
 
     # Get per-user costs by combining AWS costs with Prometheus usage data
     per_user_costs = jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_user(
-        date_range
+        date_range, hub
     )
-
-    # We filter after the fact. If this becomes too expensive we can
-    # fix that later
-    if hub and hub.casefold() != "all":
-        per_user_costs = [i for i in per_user_costs if i.hub == hub]
 
     if user and user.casefold() != "all":
         per_user_costs = [i for i in per_user_costs if i.user == user]
