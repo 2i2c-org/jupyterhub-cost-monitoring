@@ -148,7 +148,7 @@ def totals() -> Builder[Panel]:
 
 
 def per_hub_per_component():
-    p = make_total_panel(
+    return make_total_panel(
         "Cost by component for ${hub}",
         [
             {
@@ -173,9 +173,6 @@ def per_hub_per_component():
             }
         ],
     )
-    (p.repeat("hub").max_per_row(2).span(12))
-
-    return p
 
 
 def build_dashboard() -> Dashboard:
@@ -219,7 +216,7 @@ def build_dashboard() -> Dashboard:
         .with_panel(components())
         .with_panel(hubs())
         .with_row(Row("User Costs Per Hub"))
-        .with_panel(per_hub_per_component())
+        .with_panel(per_hub_per_component().repeat("hub").max_per_row(2))
         .preload(True)
     )
 

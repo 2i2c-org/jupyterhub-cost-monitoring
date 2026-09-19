@@ -57,10 +57,10 @@ class Component(StrEnum):
     CORE = "core"
     """Compute costs for 'always on' core infrastructure"""
 
-    USER_HOME_STORAGE = "home storage"
+    USER_HOME_STORAGE = "home_storage"
     """Costs for home directory storage"""
 
-    USER_OBJECT_STORAGE = "object storage"
+    USER_OBJECT_STORAGE = "object_storage"
     """Costs for object storage"""
 
     NETWORKING = "networking"

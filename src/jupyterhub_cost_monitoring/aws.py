@@ -5,6 +5,7 @@ Queries to AWS Cost Explorer to get different kinds of cost data.
 import os
 from dataclasses import dataclass
 from datetime import date
+from typing import Optional
 
 import boto3
 from traitlets import Dict, Instance, Unicode, default
@@ -414,7 +415,7 @@ class AWSCostExplorer(LoggingConfigurable):
         return processed_response
 
     @ttl_lru_cache(seconds_to_live=3600)
-    def query_total_costs_per_hub(self, date_range: DateRange):
+    def query_total_costs_per_hub(self, date_range: DateRange, hub: Optional[str]):
         """
         Query total costs per hub from AWS Cost Explorer for the given date range.
 
@@ -427,6 +428,17 @@ class AWSCostExplorer(LoggingConfigurable):
             List of cost entries with 'date', 'cost', and 'name' (hub name) fields
         """
 
+        hub_filter = []
+        if hub:
+            hub_filter = [
+                {
+                    "Tags": {
+                        "Key": self.hub_name_tag,
+                        "Values": [hub],
+                        "MatchOptions": ["EQUALS"],
+                    }
+                }
+            ]
         response = self.query(
             date_range=date_range,
             filter={
@@ -434,6 +446,7 @@ class AWSCostExplorer(LoggingConfigurable):
                     FILTER_USAGE_COSTS,
                     self.attributable_costs_filter,
                 ]
+                + hub_filter
             },
             group_by=[{"Type": "TAG", "Key": self.hub_name_tag}],
         )
@@ -468,7 +481,12 @@ class AWSCostExplorer(LoggingConfigurable):
 
         return costs
 
-    def query_per_hub_costs_per_component(self, date_range: DateRange, hub_name: str):
+    def query_per_hub_costs_per_component(
+        self,
+        date_range: DateRange,
+        hub_name: str,
+        component: Optional[Component] = None,
+    ):
         hub_filter = {
             "Tags": {
                 "Key": self.hub_name_tag,
@@ -477,17 +495,23 @@ class AWSCostExplorer(LoggingConfigurable):
             }
         }
 
-        compute_costs = self.get_per_day_costs(
-            date_range, [self.user_compute_costs_filter, hub_filter]
-        )
-        home_storage_costs = self.get_per_day_costs(
-            date_range, [self.home_storage_costs_filter, hub_filter]
-        )
+        if component is None:
+            components = [Component.USER_COMPUTE, Component.USER_HOME_STORAGE]
+        else:
+            components = [component]
 
-        return {
-            Component.USER_COMPUTE: compute_costs,
-            Component.USER_HOME_STORAGE: home_storage_costs,
-        }
+        response = {}
+        if Component.USER_COMPUTE in components:
+            response[Component.USER_COMPUTE] = self.get_per_day_costs(
+                date_range, [self.user_compute_costs_filter, hub_filter]
+            )
+
+        if Component.USER_HOME_STORAGE in components:
+            response[Component.USER_HOME_STORAGE] = self.get_per_day_costs(
+                date_range, [self.home_storage_costs_filter, hub_filter]
+            )
+
+        return response
 
     def query_total_costs_per_component(
         self, date_range: DateRange, components: list[Component] | None = None
@@ -567,6 +591,8 @@ class AWSCostExplorer(LoggingConfigurable):
         cost_items: list[UserCostItem] = []
         for ts, usage_fractions in usage.items():
             for uf in usage_fractions:
+                if uf.hub != hub:
+                    continue
                 # FIXME: This should be a general filter elsewhere
                 # filter out "binder" items
                 if uf.hub == "binder":

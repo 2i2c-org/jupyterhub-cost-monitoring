@@ -253,6 +253,7 @@ def totals_by_hub(
     to_date: str | None = Query(
         None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
     ),
+    hub: str | None = Query(default=None, description="Hub to provide information for"),
 ):
     """
     Endpoint to query total costs per hub.
@@ -260,7 +261,9 @@ def totals_by_hub(
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
-    return jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_hub(date_range)
+    return jupyterhub_cost_monitoring_app.aws_ce.query_total_costs_per_hub(
+        date_range, hub
+    )
 
 
 @app.get("/hub/by-component")
@@ -272,23 +275,24 @@ def per_hub_per_component(
         None, alias="to", description="End date in YYYY-MM-DDTHH:MMZ format"
     ),
     hub: str = Query(None, description="Name of the hub to filter results on"),
+    component: str | None = Query(
+        default=None, description="Component to get cost info for"
+    ),
 ):
     # Parse and validate date parameters into DateRange object
     date_range = parse_from_to_in_query_params(from_date, to_date)
 
     costs_by_component = (
         jupyterhub_cost_monitoring_app.aws_ce.query_per_hub_costs_per_component(
-            date_range, hub
+            date_range, hub, component=Component(component) if component else None
         )
     )
 
     response = []
 
-    for component, entries in costs_by_component.items():
+    for comp, entries in costs_by_component.items():
         for ts, value in entries.items():
-            response.append(
-                {"component": component, "date": ts.isoformat(), "cost": value}
-            )
+            response.append({"component": comp, "date": ts.isoformat(), "cost": value})
 
     return sorted(response, key=lambda i: i["date"])
 
@@ -384,23 +388,30 @@ def costs_per_user(
     if user and user.casefold() != "all":
         per_user_costs = [i for i in per_user_costs if i.user == user]
 
-    # Let's sum these
-    summed_results: dict[date, dict[tuple[str, str], float]] = {}
+    summed_results: dict[date, dict[tuple[str, str], dict[Component, float]]] = {}
     for p in per_user_costs:
         if p.date not in summed_results:
             summed_results[p.date] = {}
         key = (p.hub, p.user)
-        summed_results[p.date][key] = summed_results[p.date].get(key, 0) + p.value
+        summed_results[p.date].setdefault(
+            key,
+            {
+                # Set defaults so we always specify these, even if 0
+                Component.USER_COMPUTE: 0.0,
+                Component.USER_HOME_STORAGE: 0.0,
+            },
+        )[p.component] = p.value
 
     response = []
     for ts, entries in summed_results.items():
-        for (hub, username), value in entries.items():
+        for (hub, username), values in entries.items():
             response.append(
                 {
                     "date": ts.isoformat(),
                     "hub": hub,
                     "username": username,
-                    "cost": value,
+                    "component_costs": values,
+                    "total_cost": sum(values.values()),
                 }
             )
 
