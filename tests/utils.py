@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, TypedDict
+from typing import TypedDict
 
 from botocore import UNSIGNED
 from botocore.config import Config
@@ -34,7 +34,7 @@ def mock_prometheus_queries(
         ).respond_with_data(response)
 
 
-def setup_mock_ce(httpserver: HTTPServer, responses: Path | List[Path]):
+def setup_mock_ce(httpserver: HTTPServer, responses: Path | list[Path]):
 
     aws_endpoint_url = f"http://{httpserver.host}:{httpserver.port}/"
     ce = AWSCostExplorer(
